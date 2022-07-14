@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:tools="http://schemas.android.com/tools"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:orientation="vertical">
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:orientation="horizontal"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="4dp">
+        <LinearLayout android:layout_width="0dp"
+                      android:layout_height="match_parent"
+                      android:layout_weight="0.05" tools:ignore="UselessLeaf"/>
+        <TextView
+                android:text="@string/addressLbl"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="0.2"
+                android:id="@+id/textView"
+                android:textSize="24sp"
+                android:gravity="end|center_vertical"/>
+        <LinearLayout android:layout_width="0dp"
+                      android:layout_height="match_parent"
+                      android:layout_weight="0.02" tools:ignore="UselessLeaf"/>
+        <EditText
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="0.4"
+                android:ems="10"
+                android:id="@+id/hostTxt"
+                android:inputType="text"
+                android:layout_marginStart="5dp"
+                android:layout_marginEnd="15dp"
+                android:gravity="start|center_vertical"
+                android:hint="@string/addressHint" android:importantForAutofill="no"/>
+        <LinearLayout android:layout_width="0dp"
+                      android:layout_height="match_parent"
+                      android:layout_weight="0.02" tools:ignore="UselessLeaf"/>
+        <Button
+                android:id="@+id/btnScanHost"
+                android:text="@string/scanBtnTxt"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="0.2"
+                android:backgroundTint="#FF999999"
+                android:autoSizeTextType="uniform"
+                android:autoSizeMinTextSize="14sp"
+                android:autoSizeMaxTextSize="20sp"
+                android:autoSizeStepGranularity="1sp"
+                android:textAppearance="@style/TextAppearance.AppCompat.Button"
+                android:textStyle="bold"/>
+        <LinearLayout android:layout_width="0dp"
+                      android:layout_height="match_parent"
+                      android:layout_weight="0.05" tools:ignore="UselessLeaf"/>
+    </LinearLayout>
+    <TextView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:id="@+id/txtOutput"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:textAlignment="viewStart"
+            android:textAllCaps="false" android:textSize="14sp" android:typeface="normal"
+            android:lineSpacingExtra="6sp" android:scrollY="?android:attr/scrollbarSize"
+            android:scrollbars="vertical"
+            android:scrollbarAlwaysDrawVerticalTrack="true"
+            android:layout_marginTop="12dp"/>
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="64dp"
+            android:orientation="horizontal"
+            android:layout_marginTop="6dp">
+        <LinearLayout android:layout_width="0dp"
+                      android:layout_height="match_parent"
+                      android:layout_weight="0.02" tools:ignore="UselessLeaf"/>
+        <Button
+                android:id="@+id/btnSendTxt"
+                android:text="@string/btnSendTxt"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="0.23"
+                android:backgroundTint="#FFFF0000"
+                android:autoSizeTextType="uniform"
+                android:autoSizeMinTextSize="18sp"
+                android:autoSizeMaxTextSize="24sp"
+                android:autoSizeStepGranularity="1sp"
+                android:textAppearance="@style/TextAppearance.AppCompat.Button"
+                android:textStyle="bold"/>
+        <LinearLayout android:layout_width="0dp"
+                      android:layout_height="match_parent"
+                      android:layout_weight="0.02" tools:ignore="UselessLeaf"/>
+        <Button
+                android:id="@+id/btnSendFile"
+                android:text="@string/btnFileTxt"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="0.23"
+                android:backgroundTint="#FFFF0000"
+                android:autoSizeTextType="uniform"
+                android:autoSizeMinTextSize="18sp"
+                android:autoSizeMaxTextSize="24sp"
+                android:autoSizeStepGranularity="1sp"
+                android:textAppearance="@style/TextAppearance.AppCompat.Button"
+                android:textStyle="bold"/>
+        <LinearLayout android:layout_width="0dp"
+                      android:layout_height="match_parent"
+                      android:layout_weight="0.02" tools:ignore="UselessLeaf"/>
+    </LinearLayout>
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="64dp"
+            android:orientation="horizontal"
+            android:layout_marginTop="6dp"
+            android:layout_marginBottom="18dp">
+        <LinearLayout android:layout_width="0dp"
+                      android:layout_height="match_parent"
+                      android:layout_weight="0.02" tools:ignore="UselessLeaf"/>
+        <Button
+                android:id="@+id/btnGetTxt"
+                android:text="@string/btnGetTxt"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="0.23"
+                android:backgroundTint="#FF00DD00"
+                android:autoSizeTextType="uniform"
+                android:autoSizeMinTextSize="18sp"
+                android:autoSizeMaxTextSize="24sp"
+                android:autoSizeStepGranularity="1sp"
+                android:textAppearance="@style/TextAppearance.AppCompat.Button"
+                android:textStyle="bold"/>
+        <LinearLayout android:layout_width="0dp"
+                      android:layout_height="match_parent"
+                      android:layout_weight="0.02" tools:ignore="UselessLeaf"/>
+        <Button
+                android:id="@+id/btnGetImg"
+                android:text="@string/btnImgTxt"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="0.23"
+                android:backgroundTint="#FF00DD00"
+                android:autoSizeTextType="uniform"
+                android:autoSizeMinTextSize="18sp"
+                android:autoSizeMaxTextSize="24sp"
+                android:autoSizeStepGranularity="1sp"
+                android:textAppearance="@style/TextAppearance.AppCompat.Button"
+                android:textStyle="bold"
+                android:singleLine="true"/>
+        <LinearLayout android:layout_width="0dp"
+                      android:layout_height="match_parent"
+                      android:layout_weight="0.02" tools:ignore="UselessLeaf"/>
+        <Button
+                android:id="@+id/btnGetFile"
+                android:text="@string/btnFileTxt"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="0.23"
+                android:backgroundTint="#FF00DD00"
+                android:autoSizeTextType="uniform"
+                android:autoSizeMinTextSize="18sp"
+                android:autoSizeMaxTextSize="24sp"
+                android:autoSizeStepGranularity="1sp"
+                android:textAppearance="@style/TextAppearance.AppCompat.Button"
+                android:textStyle="bold"/>
+        <LinearLayout android:layout_width="0dp"
+                      android:layout_height="match_parent"
+                      android:layout_weight="0.02" tools:ignore="UselessLeaf"/>
+    </LinearLayout>
+</LinearLayout>

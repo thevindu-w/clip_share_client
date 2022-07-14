@@ -1,0 +1,18 @@
+<resources>
+    <string name="app_name">Clip Share</string>
+    <string name="btnImgTxt">Image</string>
+    <string name="btnGetTxt">Get</string>
+    <string name="btnSendTxt">Send</string>
+    <string name="addressLbl">Server :</string>
+    <string name="addressHint">192.168.1.2</string>
+    <string name="ReadClipSuccess">Read data from clipboard</string>
+    <string name="WriteClipSuccess">Copied to clipboard</string>
+    <string name="btnFileTxt">File</string>
+    <string name="scanBtnTxt">Scan</string>
+    <string name="fileSelectedTxt">File selected. Press send file button.</string>
+    <string name="channel_name">upload_notification</string>
+    <string name="channel_description">File Upload</string>
+    <string name="filesSelectedTxt">%d files selected. Press send file button.</string>
+    <string name="noFilesTxt">No files selected</string>
+    <string name="recvAllFiles">Received all files</string>
+</resources>
