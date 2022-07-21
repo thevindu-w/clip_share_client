@@ -1,6 +1,7 @@
 package com.tw.clipshare;
 
 import android.content.Context;
+import android.util.Log;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
@@ -130,7 +131,13 @@ public class FileSender {
                 fileSendingCount++;
             }
             try {
-                parent.output.setText(String.format("File : %s\nSize : %s bytes", fileName, fileSizeStr));
+                parent.runOnUiThread(() -> {
+                    try {
+                        parent.output.setText(String.format("File : %s\nSize : %s bytes", fileName, fileSizeStr));
+                    } catch (Exception e) {
+                        Log.d("sendfile", e.getMessage());
+                    }
+                });
                 long fileSize = Long.parseLong(fileSizeStr);
 
                 notificationManager = NotificationManagerCompat.from(context);

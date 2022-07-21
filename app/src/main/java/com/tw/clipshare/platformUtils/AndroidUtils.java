@@ -18,9 +18,35 @@ public class AndroidUtils {
         this.activity = activity;
     }
 
+    private ClipboardManager getClipboardManager() {
+        try {
+            Object lock = new Object();
+            ClipboardManager[] clipboardManagers = new ClipboardManager[1];
+            this.activity.runOnUiThread(() -> {
+                clipboardManagers[0] = (ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
+                synchronized (lock) {
+                    lock.notifyAll();
+                }
+            });
+            while (clipboardManagers[0] == null) {
+                try {
+                    synchronized (lock) {
+                        if (clipboardManagers[0] == null) {
+                            lock.wait(100);
+                        }
+                    }
+                } catch (Exception ignored) {
+                }
+            }
+            return clipboardManagers[0];
+        } catch (Exception ignored) {
+            return null;
+        }
+    }
+
     public String getClipboardText() {
         try {
-            ClipboardManager clipboard = (ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
+            ClipboardManager clipboard = this.getClipboardManager();
             if (clipboard == null || !(clipboard.hasPrimaryClip()) || !(clipboard.getPrimaryClipDescription().hasMimeType(MIMETYPE_TEXT_PLAIN) || clipboard.getPrimaryClipDescription().hasMimeType(MIMETYPE_TEXT_HTML))) {
                 return null;
             }
@@ -37,9 +63,9 @@ public class AndroidUtils {
 
     public void setClipboardText(String text) {
         try {
-            ClipboardManager clipboard = (ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
+            ClipboardManager clipboard = this.getClipboardManager();
             ClipData clip = ClipData.newPlainText("clip_share", text);
-            clipboard.setPrimaryClip(clip);
+            if (clipboard != null) clipboard.setPrimaryClip(clip);
         } catch (Exception ignored) {
         }
     }

@@ -15,7 +15,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.provider.OpenableColumns;
 import android.text.method.ScrollingMovementMethod;
-import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -211,8 +210,7 @@ class ServerFinder implements Runnable {
                 executor.shutdown();
             }
             executor.shutdownNow();
-        } catch (IOException | RuntimeException ex) {
-            Log.d("Error", ex.getMessage());
+        } catch (IOException | RuntimeException ignored) {
             if (executorStatic != null) executorStatic.shutdownNow();
         }
         return serverAddress;
@@ -267,12 +265,10 @@ class ServerFinder implements Runnable {
                             break;
                         }
                     }
-                } catch (RuntimeException ex) {
-                    Log.d("Error", ex.getMessage());
+                } catch (RuntimeException ignored) {
                 }
             }
-        } catch (Exception ex) {
-            Log.d("Error", ex.getMessage());
+        } catch (Exception ignored) {
         }
     }
 }
@@ -349,7 +345,6 @@ public class ClipShareActivity extends AppCompatActivity {
                             sendFromURI(uri);
                         }
                     } catch (Exception e) {
-                        Log.d("Error", e.getMessage());
                         output.setText(String.format("Error %s", e.getMessage()));
                     }
                 });
@@ -384,8 +379,7 @@ public class ClipShareActivity extends AppCompatActivity {
                 NotificationManager notificationManager = getSystemService(NotificationManager.class);
                 notificationManager.createNotificationChannel(channel);
             }
-        } catch (Exception ex) {
-            Log.d("Error", ex.getMessage());
+        } catch (Exception ignored) {
         }
     }
 
@@ -462,11 +456,10 @@ public class ClipShareActivity extends AppCompatActivity {
                 boolean status = proto.sendText(clipDataString);
                 connection.close();
                 if (!status) return;
-                if (clipDataString.length() < 16384) output.setText(clipDataString);
-                else output.setText(R.string.ReadClipSuccess);
+                if (clipDataString.length() < 16384) runOnUiThread(() -> output.setText(clipDataString));
+                else runOnUiThread(() -> output.setText(R.string.ReadClipSuccess));
             } catch (IOException | RuntimeException e) {
-                Log.d("Testing_Error", e.getMessage());
-                output.setText(String.format("Error %s", e.getMessage()));
+                runOnUiThread(() -> output.setText(String.format("Error %s", e.getMessage())));
             }
         };
         executorService.submit(sendClip);
@@ -534,10 +527,10 @@ public class ClipShareActivity extends AppCompatActivity {
                 connection.close();
                 if (text == null) return;
                 utils.setClipboardText(text);
-                if (text.length() < 16384) output.setText(text);
-                else output.setText(R.string.WriteClipSuccess);
+                if (text.length() < 16384) runOnUiThread(() -> output.setText(text));
+                else runOnUiThread(() -> output.setText(R.string.WriteClipSuccess));
             } catch (IOException | RuntimeException e) {
-                output.setText(String.format("Error %s", e.getMessage()));
+                runOnUiThread(() -> output.setText(String.format("Error %s", e.getMessage())));
             }
         };
         executorService.submit(getClip);
@@ -554,9 +547,10 @@ public class ClipShareActivity extends AppCompatActivity {
                 Proto_v1 proto = ProtocolSelector.getProto_v1(connection, utils, null);
                 boolean status = proto != null && proto.getImage();
                 connection.close();
+                if (!status)
+                    runOnUiThread(() -> Toast.makeText(ClipShareActivity.this, "Getting image failed", Toast.LENGTH_SHORT).show());
             } catch (IOException | RuntimeException e) {
-                Log.d("Testing_Error", e.getMessage());
-                output.setText(String.format("Error %s", e.getMessage()));
+                runOnUiThread(() -> output.setText(String.format("Error %s", e.getMessage())));
             }
         };
         executorService.submit(getImg);
@@ -606,7 +600,7 @@ public class ClipShareActivity extends AppCompatActivity {
                     });
                 }
             } catch (IOException | RuntimeException e) {
-                output.setText(String.format("Error %s", e.getMessage()));
+                runOnUiThread(() -> output.setText(String.format("Error %s", e.getMessage())));
             } finally {
                 synchronized (fileGetCntLock) {
                     fileGettingCount--;
