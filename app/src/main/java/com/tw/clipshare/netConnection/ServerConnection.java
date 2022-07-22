@@ -1,13 +1,64 @@
 package com.tw.clipshare.netConnection;
 
-public interface ServerConnection {
-    boolean send(byte[] data);
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.Socket;
 
-    boolean send(byte[] data, int offset, int length);
+public abstract class ServerConnection {
 
-    boolean receive(byte[] buffer);
+    protected OutputStream outStream;
+    protected InputStream inStream;
+    protected Socket socket;
 
-    boolean receive(byte[] buffer, int offset, int length);
+    protected ServerConnection() {
+        this.socket = null;
+    }
 
-    void close();
+    protected ServerConnection(Socket socket) {
+        this.socket = socket;
+    }
+
+    public boolean send(byte[] data, int offset, int length) {
+        try {
+            outStream.write(data, offset, length);
+            return true;
+        } catch (RuntimeException | IOException ex) {
+            return false;
+        }
+    }
+
+    public boolean receive(byte[] buffer, int offset, int length) {
+        int remaining = length;
+        try {
+            while (remaining > 0) {
+                int read = inStream.read(buffer, offset, remaining);
+                if (read > 0) {
+                    offset += read;
+                    remaining -= read;
+                } else if (read < 0) {
+                    return false;
+                }
+            }
+            return true;
+        } catch (RuntimeException | IOException ex) {
+            return false;
+        }
+    }
+
+    public boolean send(byte[] data) {
+        return this.send(data, 0, data.length);
+    }
+
+    public boolean receive(byte[] buffer) {
+        return this.receive(buffer, 0, buffer.length);
+    }
+
+    public void close() {
+        try {
+            this.socket.close();
+        } catch (RuntimeException | IOException ignored) {
+        }
+    }
+
 }

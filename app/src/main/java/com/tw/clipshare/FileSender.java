@@ -6,7 +6,6 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
-import com.tw.clipshare.netConnection.PlainConnection;
 import com.tw.clipshare.netConnection.ServerConnection;
 import com.tw.clipshare.platformUtils.AndroidStatusNotifier;
 import com.tw.clipshare.platformUtils.FSUtils;
@@ -15,7 +14,6 @@ import com.tw.clipshare.protocol.Proto_v1;
 import com.tw.clipshare.protocol.ProtocolSelector;
 
 import java.io.InputStream;
-import java.net.Inet4Address;
 import java.util.LinkedList;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
@@ -148,7 +146,7 @@ public class FileSender {
                         .setPriority(NotificationCompat.PRIORITY_DEFAULT);
 
                 FSUtils utils = new FSUtils(context, parent, fileName, fileSize, fileInputStream);
-                ServerConnection connection = new PlainConnection(Inet4Address.getByName(serverAddress));
+                ServerConnection connection = parent.getServerConnection(serverAddress);
                 StatusNotifier notifier = new AndroidStatusNotifier(parent, notificationManager, builder, notificationId);
                 Proto_v1 proto = ProtocolSelector.getProto_v1(connection, utils, notifier);
                 boolean status = proto != null && proto.sendFile();

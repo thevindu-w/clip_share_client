@@ -15,6 +15,10 @@ import android.os.Build;
 import android.os.Bundle;
 import android.provider.OpenableColumns;
 import android.text.method.ScrollingMovementMethod;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -29,6 +33,7 @@ import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
 import com.tw.clipshare.netConnection.PlainConnection;
+import com.tw.clipshare.netConnection.SecureConnection;
 import com.tw.clipshare.netConnection.ServerConnection;
 import com.tw.clipshare.platformUtils.AndroidStatusNotifier;
 import com.tw.clipshare.platformUtils.AndroidUtils;
@@ -282,11 +287,34 @@ public class ClipShareActivity extends AppCompatActivity {
     private static final Object fileGetCntLock = new Object();
     private static int fileGettingCount = 0;
     public TextView output;
-    private ActivityResultLauncher<Intent> fileSendActivityLauncher;
+    private ActivityResultLauncher<Intent> activityLauncherForResult;
     private EditText editAddress;
     private Context context;
     private ArrayList<Uri> fileURIs;
     private FileSender fileSender;
+    private Menu menu;
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.action_bar, menu);
+        this.menu = menu;
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int itemID = item.getItemId();
+        if (itemID == R.id.action_settings) {
+            Intent settingsIntent = new Intent(ClipShareActivity.this, SettingsActivity.class);
+            settingsIntent.putExtra("settingsResult", 1);
+            activityLauncherForResult.launch(settingsIntent);
+        } else if (itemID == R.id.action_secure) {
+            Toast.makeText(ClipShareActivity.this, "Change this in settings", Toast.LENGTH_SHORT).show();
+        }
+
+        return true;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -322,7 +350,7 @@ public class ClipShareActivity extends AppCompatActivity {
             this.fileURIs = null;
         }
 
-        this.fileSendActivityLauncher = registerForActivityResult(
+        this.activityLauncherForResult = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
                     if (result.getResultCode() != Activity.RESULT_OK) {
@@ -332,20 +360,26 @@ public class ClipShareActivity extends AppCompatActivity {
                     if (intent1 == null) {
                         return;
                     }
-                    try {
-                        ClipData clipData = intent1.getClipData();
-                        if (clipData != null) {
-                            int itemCount = clipData.getItemCount();
-                            for (int cnt = 0; cnt < itemCount; cnt++) {
-                                Uri uri = clipData.getItemAt(cnt).getUri();
+                    if (intent1.hasExtra("settingsResult")) {
+                        boolean sec = Settings.INSTANCE.getSecure();
+                        int icon_id = sec ? R.drawable.ic_secure : R.drawable.ic_insecure;
+                        menu.getItem(0).setIcon(ContextCompat.getDrawable(ClipShareActivity.this, icon_id));
+                    } else {
+                        try {
+                            ClipData clipData = intent1.getClipData();
+                            if (clipData != null) {
+                                int itemCount = clipData.getItemCount();
+                                for (int cnt = 0; cnt < itemCount; cnt++) {
+                                    Uri uri = clipData.getItemAt(cnt).getUri();
+                                    sendFromURI(uri);
+                                }
+                            } else {
+                                Uri uri = intent1.getData();
                                 sendFromURI(uri);
                             }
-                        } else {
-                            Uri uri = intent1.getData();
-                            sendFromURI(uri);
+                        } catch (Exception e) {
+                            output.setText(String.format("Error %s", e.getMessage()));
                         }
-                    } catch (Exception e) {
-                        output.setText(String.format("Error %s", e.getMessage()));
                     }
                 });
 
@@ -381,6 +415,23 @@ public class ClipShareActivity extends AppCompatActivity {
             }
         } catch (Exception ignored) {
         }
+    }
+
+    ServerConnection getServerConnection(String addressStr) {
+        ServerConnection connection = null;
+        try {
+            if (Settings.INSTANCE.getSecure()) {
+                InputStream caCertIn = getResources().openRawResource(R.raw.ca);
+                InputStream clientCertKeyIn = getResources().openRawResource(R.raw.client);
+                String[] acceptedServers = Settings.INSTANCE.getTrustedList().toArray(new String[0]);
+                connection = new SecureConnection(Inet4Address.getByName(addressStr), caCertIn, clientCertKeyIn, "clipshareclient".toCharArray(), acceptedServers);
+            } else {
+                connection = new PlainConnection(Inet4Address.getByName(addressStr));
+            }
+        } catch (Exception e) {
+            Log.d("ConnectionError", e.getMessage());
+        }
+        return connection;
     }
 
     @Override
@@ -450,7 +501,7 @@ public class ClipShareActivity extends AppCompatActivity {
                 AndroidUtils utils = new AndroidUtils(context, ClipShareActivity.this);
                 String clipDataString = utils.getClipboardText();
                 if (clipDataString == null) return;
-                ServerConnection connection = new PlainConnection(Inet4Address.getByName(address));
+                ServerConnection connection = getServerConnection(address);
                 Proto_v1 proto = ProtocolSelector.getProto_v1(connection, utils, null);
                 if (proto == null) return;
                 boolean status = proto.sendText(clipDataString);
@@ -458,7 +509,7 @@ public class ClipShareActivity extends AppCompatActivity {
                 if (!status) return;
                 if (clipDataString.length() < 16384) runOnUiThread(() -> output.setText(clipDataString));
                 else runOnUiThread(() -> output.setText(R.string.ReadClipSuccess));
-            } catch (IOException | RuntimeException e) {
+            } catch (Exception e) {
                 runOnUiThread(() -> output.setText(String.format("Error %s", e.getMessage())));
             }
         };
@@ -471,7 +522,7 @@ public class ClipShareActivity extends AppCompatActivity {
             intent.setType("*/*");
             intent.addCategory(Intent.CATEGORY_OPENABLE);
             intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
-            fileSendActivityLauncher.launch(intent);
+            activityLauncherForResult.launch(intent);
         } else {
             ArrayList<Uri> tmp = this.fileURIs;
             this.fileURIs = null;
@@ -520,7 +571,7 @@ public class ClipShareActivity extends AppCompatActivity {
         Runnable getClip = () -> {
             try {
                 AndroidUtils utils = new AndroidUtils(context, ClipShareActivity.this);
-                ServerConnection connection = new PlainConnection(Inet4Address.getByName(address));
+                ServerConnection connection = getServerConnection(address);
                 Proto_v1 proto = ProtocolSelector.getProto_v1(connection, utils, null);
                 if (proto == null) return;
                 String text = proto.getText();
@@ -529,7 +580,7 @@ public class ClipShareActivity extends AppCompatActivity {
                 utils.setClipboardText(text);
                 if (text.length() < 16384) runOnUiThread(() -> output.setText(text));
                 else runOnUiThread(() -> output.setText(R.string.WriteClipSuccess));
-            } catch (IOException | RuntimeException e) {
+            } catch (Exception e) {
                 runOnUiThread(() -> output.setText(String.format("Error %s", e.getMessage())));
             }
         };
@@ -543,13 +594,13 @@ public class ClipShareActivity extends AppCompatActivity {
         Runnable getImg = () -> {
             try {
                 FSUtils utils = new FSUtils(context, ClipShareActivity.this);
-                ServerConnection connection = new PlainConnection(Inet4Address.getByName(address));
+                ServerConnection connection = getServerConnection(address);
                 Proto_v1 proto = ProtocolSelector.getProto_v1(connection, utils, null);
                 boolean status = proto != null && proto.getImage();
                 connection.close();
                 if (!status)
                     runOnUiThread(() -> Toast.makeText(ClipShareActivity.this, "Getting image failed", Toast.LENGTH_SHORT).show());
-            } catch (IOException | RuntimeException e) {
+            } catch (Exception e) {
                 runOnUiThread(() -> output.setText(String.format("Error %s", e.getMessage())));
             }
         };
@@ -586,7 +637,7 @@ public class ClipShareActivity extends AppCompatActivity {
                         .setPriority(NotificationCompat.PRIORITY_DEFAULT);
 
                 FSUtils utils = new FSUtils(context, ClipShareActivity.this);
-                ServerConnection connection = new PlainConnection(Inet4Address.getByName(address));
+                ServerConnection connection = getServerConnection(address);
                 StatusNotifier notifier = new AndroidStatusNotifier(ClipShareActivity.this, notificationManager, builder, notificationId);
                 Proto_v1 proto = ProtocolSelector.getProto_v1(connection, utils, notifier);
                 boolean status = proto != null && proto.getFile();
@@ -599,7 +650,7 @@ public class ClipShareActivity extends AppCompatActivity {
                         }
                     });
                 }
-            } catch (IOException | RuntimeException e) {
+            } catch (Exception e) {
                 runOnUiThread(() -> output.setText(String.format("Error %s", e.getMessage())));
             } finally {
                 synchronized (fileGetCntLock) {
