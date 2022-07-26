@@ -13,15 +13,128 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:checked="false"/>
+
+    <TextView android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:padding="9dp"
+              android:textSize="20sp"
+              android:textColor="@color/black"
+              android:text="@string/ca_certificate"
+              android:background="#221111ff"
+    />
+    <LinearLayout android:layout_width="match_parent"
+                  android:layout_height="wrap_content"
+                  android:orientation="horizontal">
+        <TextView android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:layout_marginStart="12dp"
+                  android:layout_marginEnd="2dp"
+                  android:textSize="16sp"
+                  android:textColor="@color/black"
+                  android:text="@string/name"
+                  android:layout_gravity="center_vertical"
+        />
+        <TextView android:id="@+id/txtCACertName"
+                  android:layout_width="0dp"
+                  android:layout_height="wrap_content"
+                  android:layout_weight="0.8"
+                  android:layout_marginEnd="12dp"
+                  android:layout_marginStart="2dp"
+                  android:textSize="13sp"
+                  android:textColor="@color/black"
+                  android:text=""
+                  android:maxLines="1"
+                  android:layout_gravity="center_vertical"
+        />
+        <Button android:id="@+id/btnImportCACert"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="5dp"
+                android:text="@string/browse"
+                android:textAllCaps="false"
+                android:textColor="@color/black"
+                android:backgroundTint="#88999999"/>
+    </LinearLayout>
+
+    <TextView android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:padding="9dp"
+              android:textSize="20sp"
+              android:textColor="@color/black"
+              android:text="@string/client_certificate"
+              android:background="#221111ff"
+              android:layout_marginTop="6dp"
+    />
+    <LinearLayout android:layout_width="match_parent"
+                  android:layout_height="wrap_content"
+                  android:orientation="horizontal">
+        <TextView android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:layout_marginStart="12dp"
+                  android:layout_marginEnd="2dp"
+                  android:textSize="16sp"
+                  android:textColor="@color/black"
+                  android:text="@string/password"
+                  android:layout_gravity="center_vertical"
+                  android:labelFor="@+id/editCertPass"
+        />
+        <EditText android:id="@+id/editCertPass"
+                  android:layout_width="0dp"
+                  android:layout_height="wrap_content"
+                  android:layout_weight="0.8"
+                  android:layout_marginTop="4dp"
+                  android:layout_marginEnd="12dp"
+                  android:layout_marginStart="2dp"
+                  android:textSize="16sp"
+                  android:textColor="@color/black"
+                  android:text=""
+                  android:inputType="textPassword"
+                  android:maxLines="1"
+                  android:layout_gravity="center_vertical"
+                  android:autofillHints="Password of key file"/>
+    </LinearLayout>
+    <LinearLayout android:layout_width="match_parent"
+                  android:layout_height="wrap_content"
+                  android:orientation="horizontal">
+        <TextView android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:layout_marginStart="12dp"
+                  android:layout_marginEnd="2dp"
+                  android:textSize="16sp"
+                  android:textColor="@color/black"
+                  android:text="@string/name"
+                  android:layout_gravity="center_vertical"
+        />
+        <TextView android:id="@+id/txtCertName"
+                  android:layout_width="0dp"
+                  android:layout_height="wrap_content"
+                  android:layout_weight="0.8"
+                  android:layout_marginEnd="12dp"
+                  android:layout_marginStart="2dp"
+                  android:textSize="13sp"
+                  android:textColor="@color/black"
+                  android:text=""
+                  android:maxLines="1"
+                  android:layout_gravity="center_vertical"
+        />
+        <Button android:id="@+id/btnImportCert"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="5dp"
+                android:text="@string/browse"
+                android:textAllCaps="false"
+                android:textColor="@color/black"
+                android:backgroundTint="#88999999"/>
+    </LinearLayout>
     <LinearLayout android:layout_width="match_parent"
                   android:layout_height="0dp"
                   android:layout_weight="1"
-                  android:orientation="vertical"
-                  android:background="#11111111">
+                  android:layout_marginTop="6dp"
+                  android:orientation="vertical">
         <LinearLayout android:layout_width="match_parent"
                       android:layout_height="wrap_content"
                       android:orientation="horizontal"
-                      android:background="#111111ff">
+                      android:background="#221111ff">
             <TextView android:layout_width="0dp"
                       android:layout_height="wrap_content"
                       android:layout_weight="0.8"
@@ -39,7 +152,8 @@
                          android:contentDescription="@string/add"/>
         </LinearLayout>
         <ScrollView android:layout_width="match_parent"
-                    android:layout_height="match_parent">
+                    android:layout_height="match_parent"
+                    android:background="#0a111100">
             <LinearLayout android:id="@+id/trustedList"
                           android:layout_width="match_parent"
                           android:layout_height="wrap_content"

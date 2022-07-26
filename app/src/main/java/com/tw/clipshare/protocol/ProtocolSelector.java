@@ -12,18 +12,21 @@ public class ProtocolSelector {
     private static final byte PROTO_MIN = 1;
 
     public static Proto_v1 getProto_v1(ServerConnection connection, AndroidUtils utils, StatusNotifier notifier) {
+        if (connection == null) {
+            return null;
+        }
         byte[] protov = {1};
         if (!connection.send(protov)) {
             return null;
         }
-        if (!connection.receive(protov)) {
+        if (connection.receive(protov)) {
             return null;
         }
         if (protov[0] == ProtocolSelector.PROTOCOL_OBSOLETE) {
             return null;
         } else if (protov[0] == ProtocolSelector.PROTOCOL_UNKNOWN) {
             byte[] serverProto = new byte[1];
-            if (!connection.receive(serverProto)) {
+            if (connection.receive(serverProto)) {
                 return null;
             }
             if (serverProto[0] < PROTO_MIN) {

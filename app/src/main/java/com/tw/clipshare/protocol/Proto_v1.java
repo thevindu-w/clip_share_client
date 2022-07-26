@@ -17,6 +17,7 @@ public class Proto_v1 {
     private static final byte GET_FILE = 3;
     private static final byte SEND_FILE = 4;
     private static final byte GET_IMAGE = 5;
+    private static final byte INFO = 125;
 
     private static final byte STATUS_OK = 1;
     private static final int BUF_SZ = 65536;
@@ -32,7 +33,7 @@ public class Proto_v1 {
 
     private long readSize() {
         byte[] data = new byte[8];
-        if (!this.serverConnection.receive(data)) {
+        if (this.serverConnection.receive(data)) {
             return -1;
         }
         long size = 0;
@@ -48,20 +49,20 @@ public class Proto_v1 {
             data[i] = (byte) (size & 0xFF);
             size >>= 8;
         }
-        return this.serverConnection.send(data);
+        return !this.serverConnection.send(data);
     }
 
     private boolean methodInit(byte method) {
         byte[] methodArr = {method};
         if (!this.serverConnection.send(methodArr)) {
-            return false;
+            return true;
         }
         byte[] status = new byte[1];
-        return (this.serverConnection.receive(status) && status[0] == STATUS_OK);
+        return (this.serverConnection.receive(status) || status[0] != STATUS_OK);
     }
 
     public String getText() {
-        if (!methodInit(GET_TEXT)) {
+        if (methodInit(GET_TEXT)) {
             return null;
         }
         long len = readSize();
@@ -69,7 +70,7 @@ public class Proto_v1 {
             return null;
         }
         byte[] data = new byte[(int) len];
-        if (!this.serverConnection.receive(data)) {
+        if (this.serverConnection.receive(data)) {
             return null;
         }
         return new String(data, StandardCharsets.UTF_8);
@@ -85,11 +86,11 @@ public class Proto_v1 {
         if (len <= 0 || len > 16000000) {
             return false;
         }
-        if (!methodInit(SEND_TEXT)) {
+        if (methodInit(SEND_TEXT)) {
             return false;
         }
 
-        if (!sendSize(len)) {
+        if (sendSize(len)) {
             return false;
         }
         return this.serverConnection.send(data);
@@ -98,7 +99,7 @@ public class Proto_v1 {
     public boolean getFile() {
         if (!(this.utils instanceof FSUtils)) return false;
         FSUtils fsUtils = (FSUtils) this.utils;
-        if (!methodInit(GET_FILE)) {
+        if (methodInit(GET_FILE)) {
             return false;
         }
         long fileCnt = readSize();
@@ -108,7 +109,7 @@ public class Proto_v1 {
                 return false;
             }
             byte[] fileName_data = new byte[fileName_len];
-            if (!this.serverConnection.receive(fileName_data)) {
+            if (this.serverConnection.receive(fileName_data)) {
                 return false;
             }
             String fileName;
@@ -128,7 +129,7 @@ public class Proto_v1 {
             if (this.notifier != null) this.notifier.setName("Getting file " + fileName);
             while (file_size > 0) {
                 int read_sz = (int) Math.min(file_size, BUF_SZ);
-                if (!this.serverConnection.receive(buf, 0, read_sz)) {
+                if (this.serverConnection.receive(buf, 0, read_sz)) {
                     return false;
                 }
                 file_size -= read_sz;
@@ -167,17 +168,17 @@ public class Proto_v1 {
         if (inStream == null) {
             return false;
         }
-        if (!methodInit(SEND_FILE)) {
+        if (methodInit(SEND_FILE)) {
             return false;
         }
 
-        if (!sendSize(name_data.length)) {
+        if (sendSize(name_data.length)) {
             return false;
         }
         if (!this.serverConnection.send(name_data)) {
             return false;
         }
-        if (!sendSize(fileSize)) {
+        if (sendSize(fileSize)) {
             return false;
         }
         byte[] buf = new byte[BUF_SZ];
@@ -211,7 +212,7 @@ public class Proto_v1 {
     public boolean getImage() {
         if (!(this.utils instanceof FSUtils)) return false;
         FSUtils fsUtils = (FSUtils) this.utils;
-        if (!methodInit(GET_IMAGE)) {
+        if (methodInit(GET_IMAGE)) {
             return false;
         }
         long file_size = readSize();
@@ -225,7 +226,7 @@ public class Proto_v1 {
         byte[] buf = new byte[BUF_SZ];
         while (file_size > 0) {
             int read_sz = (int) Math.min(file_size, BUF_SZ);
-            if (!this.serverConnection.receive(buf, 0, read_sz)) {
+            if (this.serverConnection.receive(buf, 0, read_sz)) {
                 return false;
             }
             file_size -= read_sz;
@@ -241,5 +242,24 @@ public class Proto_v1 {
         } catch (IOException ignored) {
         }
         return true;
+    }
+
+    public String checkInfo() {
+        if (methodInit(INFO)) {
+            return null;
+        }
+        try {
+            long len = readSize();
+            if (len <= 0 || len > 256) {
+                return null;
+            }
+            byte[] data = new byte[(int) len];
+            if (this.serverConnection.receive(data)) {
+                return null;
+            }
+            return new String(data, StandardCharsets.UTF_8);
+        } catch (Exception ignored) {
+            return null;
+        }
     }
 }

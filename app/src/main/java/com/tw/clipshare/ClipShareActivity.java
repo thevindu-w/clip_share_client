@@ -44,7 +44,6 @@ import com.tw.clipshare.protocol.ProtocolSelector;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.*;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
@@ -56,13 +55,11 @@ class SubnetScanner {
     private final byte[] addressBytes;
     private final InetAddress myAddress;
     private final int hostCnt;
-    private final int port;
     private final Object lock;
     private volatile InetAddress serverAddress;
 
-    public SubnetScanner(InetAddress address, short subLen, int port) {
+    public SubnetScanner(InetAddress address, short subLen) {
         this.lock = new Object();
-        this.port = port;
         this.myAddress = address;
         this.addressBytes = address.getAddress();
         this.hostCnt = (1 << (32 - subLen)) - 2;
@@ -125,44 +122,16 @@ class SubnetScanner {
                 try {
                     InetAddress address = convertAddress(addressInt);
                     if (!address.equals(myAddress)) {
-                        Socket clientSocket = new Socket();
-                        clientSocket.connect(new InetSocketAddress(address, port), 200);
-                        OutputStream sockOut = clientSocket.getOutputStream();
-                        InputStream sockIn = clientSocket.getInputStream();
-                        sockOut.write("in".getBytes());
-                        byte[] len_bytes = new byte[4];
-                        if (sockIn.read(len_bytes) < 4) {
-                            sockOut.close();
-                            sockIn.close();
-                            clientSocket.close();
-                            continue;
-                        }
-                        int infoLen = 0;
-                        for (byte len_byte : len_bytes) {
-                            infoLen = (infoLen << 8) | (len_byte & 0xff);
-                        }
-                        if (0 < infoLen && infoLen < 1024) {
-                            byte[] info_bytes = new byte[infoLen];
-                            if (sockIn.read(info_bytes) < infoLen) {
-                                sockOut.close();
-                                sockIn.close();
-                                clientSocket.close();
-                                continue;
-                            }
-                            sockOut.close();
-                            sockIn.close();
-                            clientSocket.close();
-                            String info = new String(info_bytes);
-                            if (info.equals("clip_server")) {
+                        ServerConnection con = new PlainConnection(address);
+                        Proto_v1 pr = ProtocolSelector.getProto_v1(con, null, null);
+                        if (pr != null) {
+                            String serverName = pr.checkInfo();
+                            if ("clip_share".equals(serverName)) {
                                 synchronized (lock) {
                                     serverAddress = address;
                                     lock.notifyAll();
                                 }
                             }
-                        } else {
-                            sockOut.close();
-                            sockIn.close();
-                            clientSocket.close();
                         }
                     }
                 } catch (IOException ex) { // Do not catch Interrupted exception in loop
@@ -262,7 +231,7 @@ class ServerFinder implements Runnable {
                     if (address instanceof Inet4Address) {
                         short subLen = intAddress.getNetworkPrefixLength();
                         if (subLen < 22) subLen = 23;
-                        SubnetScanner subnetScanner = new SubnetScanner(address, subLen, ClipShareActivity.PORT);
+                        SubnetScanner subnetScanner = new SubnetScanner(address, subLen);
                         InetAddress server = subnetScanner.scan(subLen >= 24 ? 32 : 64);
                         if (server != null) {
                             serverAddress = server;
@@ -285,7 +254,9 @@ public class ClipShareActivity extends AppCompatActivity {
     public static final int PORT = 4337;
     public static final String CHANNEL_ID = "upload_channel";
     private static final Object fileGetCntLock = new Object();
+    private static final Object settingsLock = new Object();
     private static int fileGettingCount = 0;
+    private static boolean isSettingsLoaded = false;
     public TextView output;
     private ActivityResultLauncher<Intent> activityLauncherForResult;
     private EditText editAddress;
@@ -299,6 +270,20 @@ public class ClipShareActivity extends AppCompatActivity {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.action_bar, menu);
         this.menu = menu;
+        try {
+            synchronized (settingsLock) {
+                while (!isSettingsLoaded) {
+                    try {
+                        settingsLock.wait();
+                    } catch (InterruptedException ignored) {
+                    }
+                }
+            }
+            Settings st = Settings.getInstance(null);
+            int icon_id = st.getSecure() ? R.drawable.ic_secure : R.drawable.ic_insecure;
+            menu.getItem(0).setIcon(ContextCompat.getDrawable(ClipShareActivity.this, icon_id));
+        } catch (Exception ignored) {
+        }
         return true;
     }
 
@@ -336,9 +321,10 @@ public class ClipShareActivity extends AppCompatActivity {
                     this.fileURIs.add(intent.getParcelableExtra(Intent.EXTRA_STREAM));
                 } else if (Intent.ACTION_SEND_MULTIPLE.equals(action)) {
                     this.fileURIs = intent.getParcelableArrayListExtra(Intent.EXTRA_STREAM);
-                    if (this.fileURIs != null)
-                        output.setText(String.format(getString(R.string.filesSelectedTxt), this.fileURIs.size()));
-                    else output.setText(R.string.noFilesTxt);
+                    if (this.fileURIs != null) {
+                        int cnt = this.fileURIs.size();
+                        output.setText(context.getResources().getQuantityString(R.plurals.filesSelectedTxt, cnt, cnt));
+                    } else output.setText(R.string.noFilesTxt);
                 } else {
                     this.fileURIs = null;
                     output.setText(R.string.noFilesTxt);
@@ -349,6 +335,8 @@ public class ClipShareActivity extends AppCompatActivity {
         } else {
             this.fileURIs = null;
         }
+
+        SharedPreferences sharedPref = ClipShareActivity.this.getPreferences(Context.MODE_PRIVATE);
 
         this.activityLauncherForResult = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
@@ -361,9 +349,16 @@ public class ClipShareActivity extends AppCompatActivity {
                         return;
                     }
                     if (intent1.hasExtra("settingsResult")) {
-                        boolean sec = Settings.INSTANCE.getSecure();
+                        Settings st = Settings.getInstance(null);
+                        boolean sec = st.getSecure();
                         int icon_id = sec ? R.drawable.ic_secure : R.drawable.ic_insecure;
                         menu.getItem(0).setIcon(ContextCompat.getDrawable(ClipShareActivity.this, icon_id));
+                        SharedPreferences.Editor editor = sharedPref.edit();
+                        try {
+                            editor.putString("settings", Settings.toString(st));
+                            editor.apply();
+                        } catch (Exception ignored) {
+                        }
                     } else {
                         try {
                             ClipData clipData = intent1.getClipData();
@@ -396,8 +391,15 @@ public class ClipShareActivity extends AppCompatActivity {
         btnSendFile.setOnClickListener(view -> clkSendFile());
         Button btnScanHost = findViewById(R.id.btnScanHost);
         btnScanHost.setOnClickListener(view -> clkScanBtn());
-        SharedPreferences sharedPref = ClipShareActivity.this.getPreferences(Context.MODE_PRIVATE);
         editAddress.setText(sharedPref.getString("hostIP", ""));
+        try {
+            Settings.getInstance(sharedPref.getString("settings", null));
+        } catch (Exception ignored) {
+        }
+        isSettingsLoaded = true;
+        synchronized (settingsLock) {
+            settingsLock.notifyAll();
+        }
 
         this.fileSender = new FileSender(this, ClipShareActivity.this);
 
@@ -420,11 +422,16 @@ public class ClipShareActivity extends AppCompatActivity {
     ServerConnection getServerConnection(String addressStr) {
         ServerConnection connection = null;
         try {
-            if (Settings.INSTANCE.getSecure()) {
-                InputStream caCertIn = getResources().openRawResource(R.raw.ca);
-                InputStream clientCertKeyIn = getResources().openRawResource(R.raw.client);
-                String[] acceptedServers = Settings.INSTANCE.getTrustedList().toArray(new String[0]);
-                connection = new SecureConnection(Inet4Address.getByName(addressStr), caCertIn, clientCertKeyIn, "clipshareclient".toCharArray(), acceptedServers);
+            Settings st = Settings.getInstance(null);
+            if (st.getSecure()) {
+                InputStream caCertIn = st.getCACertInputStream();
+                InputStream clientCertKeyIn = st.getCertInputStream();
+                char[] clientPass = st.getPasswd();
+                if (clientCertKeyIn == null || clientPass == null) {
+                    return null;
+                }
+                String[] acceptedServers = st.getTrustedList().toArray(new String[0]);
+                connection = new SecureConnection(Inet4Address.getByName(addressStr), caCertIn, clientCertKeyIn, clientPass, acceptedServers);
             } else {
                 connection = new PlainConnection(Inet4Address.getByName(addressStr));
             }
@@ -447,9 +454,10 @@ public class ClipShareActivity extends AppCompatActivity {
                     this.fileURIs.add(intent.getParcelableExtra(Intent.EXTRA_STREAM));
                 } else if (Intent.ACTION_SEND_MULTIPLE.equals(action)) {
                     this.fileURIs = intent.getParcelableArrayListExtra(Intent.EXTRA_STREAM);
-                    if (this.fileURIs != null)
-                        output.setText(String.format(getString(R.string.filesSelectedTxt), this.fileURIs.size()));
-                    else output.setText(R.string.noFilesTxt);
+                    if (this.fileURIs != null) {
+                        int cnt = this.fileURIs.size();
+                        output.setText(context.getResources().getQuantityString(R.plurals.filesSelectedTxt, cnt, cnt));
+                    } else output.setText(R.string.noFilesTxt);
                 }
             } catch (Exception e) {
                 output.setText(e.getMessage());
@@ -503,7 +511,10 @@ public class ClipShareActivity extends AppCompatActivity {
                 if (clipDataString == null) return;
                 ServerConnection connection = getServerConnection(address);
                 Proto_v1 proto = ProtocolSelector.getProto_v1(connection, utils, null);
-                if (proto == null) return;
+                if (proto == null) {
+                    runOnUiThread(() -> output.setText(R.string.couldnt_connect));
+                    return;
+                }
                 boolean status = proto.sendText(clipDataString);
                 connection.close();
                 if (!status) return;
@@ -573,7 +584,10 @@ public class ClipShareActivity extends AppCompatActivity {
                 AndroidUtils utils = new AndroidUtils(context, ClipShareActivity.this);
                 ServerConnection connection = getServerConnection(address);
                 Proto_v1 proto = ProtocolSelector.getProto_v1(connection, utils, null);
-                if (proto == null) return;
+                if (proto == null) {
+                    runOnUiThread(() -> output.setText(R.string.couldnt_connect));
+                    return;
+                }
                 String text = proto.getText();
                 connection.close();
                 if (text == null) return;
@@ -596,7 +610,11 @@ public class ClipShareActivity extends AppCompatActivity {
                 FSUtils utils = new FSUtils(context, ClipShareActivity.this);
                 ServerConnection connection = getServerConnection(address);
                 Proto_v1 proto = ProtocolSelector.getProto_v1(connection, utils, null);
-                boolean status = proto != null && proto.getImage();
+                if (proto == null) {
+                    runOnUiThread(() -> output.setText(R.string.couldnt_connect));
+                    return;
+                }
+                boolean status = proto.getImage();
                 connection.close();
                 if (!status)
                     runOnUiThread(() -> Toast.makeText(ClipShareActivity.this, "Getting image failed", Toast.LENGTH_SHORT).show());
@@ -640,7 +658,11 @@ public class ClipShareActivity extends AppCompatActivity {
                 ServerConnection connection = getServerConnection(address);
                 StatusNotifier notifier = new AndroidStatusNotifier(ClipShareActivity.this, notificationManager, builder, notificationId);
                 Proto_v1 proto = ProtocolSelector.getProto_v1(connection, utils, notifier);
-                boolean status = proto != null && proto.getFile();
+                if (proto == null) {
+                    runOnUiThread(() -> output.setText(R.string.couldnt_connect));
+                    return;
+                }
+                boolean status = proto.getFile();
                 connection.close();
                 if (status) {
                     runOnUiThread(() -> {

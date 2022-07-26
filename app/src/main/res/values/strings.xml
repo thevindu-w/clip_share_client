@@ -12,7 +12,10 @@
     <string name="fileSelectedTxt">File selected. Press send file button.</string>
     <string name="channel_name">upload_notification</string>
     <string name="channel_description">File Upload</string>
-    <string name="filesSelectedTxt">%d file(s) selected. Press send file button.</string>
+    <plurals name="filesSelectedTxt">
+        <item quantity="one">%d file selected. Press send file button.</item>
+        <item quantity="other">%d files selected. Press send file button.</item>
+    </plurals>
     <string name="noFilesTxt">No files selected</string>
     <string name="recvAllFiles">Received all files</string>
     <string name="settings">Settings</string>
@@ -23,4 +26,10 @@
     <string name="trusted_servers">Trusted servers</string>
     <string name="server_name">Server name</string>
     <string name="enter_server_name">Enter server name</string>
+    <string name="couldnt_connect">Couldn\'t connect</string>
+    <string name="password">Password :</string>
+    <string name="client_certificate">Client Certificate</string>
+    <string name="name">Name :</string>
+    <string name="browse">Browse</string>
+    <string name="ca_certificate">CA Certificate</string>
 </resources>

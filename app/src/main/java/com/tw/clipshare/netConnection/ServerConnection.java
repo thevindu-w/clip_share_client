@@ -37,12 +37,12 @@ public abstract class ServerConnection {
                     offset += read;
                     remaining -= read;
                 } else if (read < 0) {
-                    return false;
+                    return true;
                 }
             }
-            return true;
-        } catch (RuntimeException | IOException ex) {
             return false;
+        } catch (RuntimeException | IOException ex) {
+            return true;
         }
     }
 
