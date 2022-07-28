@@ -9,9 +9,9 @@ public class PlainConnection extends ServerConnection {
 
     private static final int PORT = 4337;
 
-    public PlainConnection(InetAddress serverAddr) throws IOException {
+    public PlainConnection(InetAddress serverAddress) throws IOException {
         super(new Socket());
-        this.socket.connect(new InetSocketAddress(serverAddr, PORT), 500);
+        this.socket.connect(new InetSocketAddress(serverAddress, PORT), 500);
         this.inStream = this.socket.getInputStream();
         this.outStream = this.socket.getOutputStream();
     }

@@ -16,6 +16,7 @@ import android.widget.*;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
+import com.tw.clipshare.netConnection.SecureConnection;
 
 import java.io.InputStream;
 import java.util.List;
@@ -34,7 +35,7 @@ public class SettingsActivity extends AppCompatActivity {
     private TextView caCnTxt;
     private volatile byte certType;
 
-    private void addRowToTrusList(boolean addToList, String name) {
+    private void addRowToTrustList(boolean addToList, String name) {
         try {
             View trustServer = View.inflate(getApplicationContext(), R.layout.trusted_server, null);
             ImageButton delBtn = trustServer.findViewById(R.id.delBtn);
@@ -131,10 +132,10 @@ public class SettingsActivity extends AppCompatActivity {
         List<String> servers = st.getTrustedList();
 
         for (String server : servers) {
-            addRowToTrusList(false, server);
+            addRowToTrustList(false, server);
         }
 
-        addBtn.setOnClickListener(view -> addRowToTrusList(true, null));
+        addBtn.setOnClickListener(view -> addRowToTrustList(true, null));
 
         certType = 0;
         ActivityResultLauncher<Intent> activityLauncherForResult = registerForActivityResult(
@@ -165,6 +166,7 @@ public class SettingsActivity extends AppCompatActivity {
                             char[] passwd = editPass.getText().toString().toCharArray();
                             String cn = st.setCertPass(passwd, fileInputStream, size);
                             if (cn != null) {
+                                SecureConnection.resetSSLContext();
                                 cnTxt.setText(cn);
                             } else {
                                 Toast.makeText(SettingsActivity.this, "Invalid", Toast.LENGTH_SHORT).show();
@@ -183,6 +185,7 @@ public class SettingsActivity extends AppCompatActivity {
                             InputStream fileInputStream = getContentResolver().openInputStream(uri);
                             String caCn = st.setCACert(fileInputStream, size);
                             if (caCn != null) {
+                                SecureConnection.resetSSLContext();
                                 caCnTxt.setText(caCn);
                             } else {
                                 Toast.makeText(SettingsActivity.this, "Invalid", Toast.LENGTH_SHORT).show();

@@ -15,16 +15,16 @@ public class ProtocolSelector {
         if (connection == null) {
             return null;
         }
-        byte[] protov = {1};
-        if (!connection.send(protov)) {
+        byte[] proto_v = {1};
+        if (!connection.send(proto_v)) {
             return null;
         }
-        if (connection.receive(protov)) {
+        if (connection.receive(proto_v)) {
             return null;
         }
-        if (protov[0] == ProtocolSelector.PROTOCOL_OBSOLETE) {
+        if (proto_v[0] == ProtocolSelector.PROTOCOL_OBSOLETE) {
             return null;
-        } else if (protov[0] == ProtocolSelector.PROTOCOL_UNKNOWN) {
+        } else if (proto_v[0] == ProtocolSelector.PROTOCOL_UNKNOWN) {
             byte[] serverProto = new byte[1];
             if (connection.receive(serverProto)) {
                 return null;
@@ -36,7 +36,7 @@ public class ProtocolSelector {
             }
             // TODO: select appropriate protocol implementation
             return null;
-        } else if (protov[0] != ProtocolSelector.PROTOCOL_SUPPORTED) {
+        } else if (proto_v[0] != ProtocolSelector.PROTOCOL_SUPPORTED) {
             return null;
         }
         return new Proto_v1(connection, utils, notifier);

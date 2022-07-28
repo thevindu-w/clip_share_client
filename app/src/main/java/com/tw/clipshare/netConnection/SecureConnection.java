@@ -9,31 +9,42 @@ import java.net.InetAddress;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import java.security.cert.X509Certificate;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class SecureConnection extends ServerConnection {
 
     private static final int PORT = 4338;
+    private static final Object CTX_LOCK = new Object();
+    private static SSLContext ctxInstance = null;
 
-    public SecureConnection(InetAddress serverAddr, InputStream caCertInput, InputStream clientCertStoreInput, char[] certStorePassword, String[] acceptedCNs) throws IOException, GeneralSecurityException {
-        X509Certificate caCert = CertUtils.getX509fromInputStream(caCertInput);
-        TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-        KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
-        ks.load(null);
-        ks.setCertificateEntry("caCert", caCert);
-        tmf.init(ks);
+    public SecureConnection(InetAddress serverAddress, InputStream caCertInput, InputStream clientCertStoreInput, char[] certStorePassword, String[] acceptedCNs) throws IOException, GeneralSecurityException {
+        SSLContext ctx;
+        synchronized (SecureConnection.CTX_LOCK) {
+            if (SecureConnection.ctxInstance == null) {
+                X509Certificate caCert = CertUtils.getX509fromInputStream(caCertInput);
+                TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+                KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
+                ks.load(null);
+                ks.setCertificateEntry("caCert", caCert);
+                tmf.init(ks);
 
-        KeyStore keyStore = KeyStore.getInstance("PKCS12");
-        keyStore.load(clientCertStoreInput, certStorePassword);
-        KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-        kmf.init(keyStore, certStorePassword);
+                KeyStore keyStore = KeyStore.getInstance("PKCS12");
+                keyStore.load(clientCertStoreInput, certStorePassword);
+                KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+                kmf.init(keyStore, certStorePassword);
 
-        SSLContext ctx = SSLContext.getInstance("TLS");
-        ctx.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
-
+                ctx = SSLContext.getInstance("TLS");
+                ctx.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
+                SecureConnection.ctxInstance = ctx;
+            } else {
+                ctx = SecureConnection.ctxInstance;
+            }
+        }
         SSLSocketFactory sslsocketfactory = ctx.getSocketFactory();
-        SSLSocket sslsocket = (SSLSocket) sslsocketfactory.createSocket(serverAddr, PORT);
-        SSLSession sess = sslsocket.getSession();
-        X509Certificate serverCertificate = (X509Certificate) sess.getPeerCertificates()[0];
+        SSLSocket sslsocket = (SSLSocket) sslsocketfactory.createSocket(serverAddress, PORT);
+        SSLSession sslSession = sslsocket.getSession();
+        X509Certificate serverCertificate = (X509Certificate) sslSession.getPeerCertificates()[0];
         boolean accepted = false;
         try {
             String cn = CertUtils.getCertCN(serverCertificate);
@@ -53,5 +64,18 @@ public class SecureConnection extends ServerConnection {
         this.socket = sslsocket;
         this.inStream = this.socket.getInputStream();
         this.outStream = this.socket.getOutputStream();
+    }
+
+    public static void resetSSLContext() {
+        ExecutorService executorService = Executors.newSingleThreadExecutor();
+        Runnable resetCtx = () -> {
+            try {
+                synchronized (SecureConnection.CTX_LOCK) {
+                    SecureConnection.ctxInstance = null;
+                }
+            } catch (Exception ignored) {
+            }
+        };
+        executorService.submit(resetCtx);
     }
 }

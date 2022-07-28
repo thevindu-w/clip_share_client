@@ -77,10 +77,6 @@ public class Settings implements Serializable {
         return secure;
     }
 
-    public void setSecure(boolean secure) {
-        this.secure = secure;
-    }
-
     public InputStream getCACertInputStream() {
         return new ByteArrayInputStream(this.caCert);
     }
@@ -99,6 +95,10 @@ public class Settings implements Serializable {
 
     public String getCertCN() {
         return this.cn;
+    }
+
+    public void setSecure(boolean secure) {
+        this.secure = secure;
     }
 
     public String setCertPass(char[] passwd, InputStream certIn, int certLen) {

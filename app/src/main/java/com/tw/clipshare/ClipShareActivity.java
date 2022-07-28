@@ -512,7 +512,7 @@ public class ClipShareActivity extends AppCompatActivity {
                 ServerConnection connection = getServerConnection(address);
                 Proto_v1 proto = ProtocolSelector.getProto_v1(connection, utils, null);
                 if (proto == null) {
-                    runOnUiThread(() -> output.setText(R.string.couldnt_connect));
+                    runOnUiThread(() -> output.setText(R.string.couldNotConnect));
                     return;
                 }
                 boolean status = proto.sendText(clipDataString);
@@ -585,7 +585,7 @@ public class ClipShareActivity extends AppCompatActivity {
                 ServerConnection connection = getServerConnection(address);
                 Proto_v1 proto = ProtocolSelector.getProto_v1(connection, utils, null);
                 if (proto == null) {
-                    runOnUiThread(() -> output.setText(R.string.couldnt_connect));
+                    runOnUiThread(() -> output.setText(R.string.couldNotConnect));
                     return;
                 }
                 String text = proto.getText();
@@ -611,7 +611,7 @@ public class ClipShareActivity extends AppCompatActivity {
                 ServerConnection connection = getServerConnection(address);
                 Proto_v1 proto = ProtocolSelector.getProto_v1(connection, utils, null);
                 if (proto == null) {
-                    runOnUiThread(() -> output.setText(R.string.couldnt_connect));
+                    runOnUiThread(() -> output.setText(R.string.couldNotConnect));
                     return;
                 }
                 boolean status = proto.getImage();
@@ -659,7 +659,7 @@ public class ClipShareActivity extends AppCompatActivity {
                 StatusNotifier notifier = new AndroidStatusNotifier(ClipShareActivity.this, notificationManager, builder, notificationId);
                 Proto_v1 proto = ProtocolSelector.getProto_v1(connection, utils, notifier);
                 if (proto == null) {
-                    runOnUiThread(() -> output.setText(R.string.couldnt_connect));
+                    runOnUiThread(() -> output.setText(R.string.couldNotConnect));
                     return;
                 }
                 boolean status = proto.getFile();
@@ -667,7 +667,7 @@ public class ClipShareActivity extends AppCompatActivity {
                 if (status) {
                     runOnUiThread(() -> {
                         try {
-                            output.setText(R.string.recvAllFiles);
+                            output.setText(R.string.receiveAllFiles);
                         } catch (Exception ignored) {
                         }
                     });
