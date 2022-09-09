@@ -10,92 +10,38 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 
-public class Proto_v1 {
-
-    private static final byte GET_TEXT = 1;
-    private static final byte SEND_TEXT = 2;
-    private static final byte GET_FILE = 3;
-    private static final byte SEND_FILE = 4;
-    private static final byte GET_IMAGE = 5;
-    private static final byte INFO = 125;
-
-    private static final byte STATUS_OK = 1;
-    private static final int BUF_SZ = 65536;
-    private final ServerConnection serverConnection;
-    private final AndroidUtils utils;
-    private final StatusNotifier notifier;
+public class Proto_v1 extends Proto {
 
     Proto_v1(ServerConnection serverConnection, AndroidUtils utils, StatusNotifier notifier) {
-        this.serverConnection = serverConnection;
-        this.utils = utils;
-        this.notifier = notifier;
+        super(serverConnection, utils, notifier);
     }
 
-    private long readSize() {
-        byte[] data = new byte[8];
-        if (this.serverConnection.receive(data)) {
-            return -1;
-        }
-        long size = 0;
-        for (byte b : data) {
-            size = (size << 8) | (b & 0xFF);
-        }
-        return size;
-    }
-
-    private boolean sendSize(long size) {
-        byte[] data = new byte[8];
-        for (int i = data.length - 1; i >= 0; i--) {
-            data[i] = (byte) (size & 0xFF);
-            size >>= 8;
-        }
-        return !this.serverConnection.send(data);
-    }
-
-    private boolean methodInit(byte method) {
-        byte[] methodArr = {method};
-        if (!this.serverConnection.send(methodArr)) {
-            return true;
-        }
-        byte[] status = new byte[1];
-        return (this.serverConnection.receive(status) || status[0] != STATUS_OK);
-    }
-
+    @Override
     public String getText() {
         if (methodInit(GET_TEXT)) {
             return null;
         }
-        long len = readSize();
-        if (len <= 0 || len > 16000000) {
-            return null;
-        }
-        byte[] data = new byte[(int) len];
-        if (this.serverConnection.receive(data)) {
+        byte[] data = readData();
+        if (data == null) {
             return null;
         }
         return new String(data, StandardCharsets.UTF_8);
     }
 
+    @Override
     public boolean sendText(String text) {
         if (text == null) {
             return false;
         }
-        byte[] data;
-        data = text.getBytes(StandardCharsets.UTF_8);
-        int len = data.length;
-        if (len <= 0 || len > 16000000) {
-            return false;
-        }
+        byte[] data = text.getBytes(StandardCharsets.UTF_8);
         if (methodInit(SEND_TEXT)) {
             return false;
         }
 
-        if (sendSize(len)) {
-            return false;
-        }
-        return this.serverConnection.send(data);
+        return sendData(data);
     }
 
+    @Override
     public boolean getFile() {
         if (!(this.utils instanceof FSUtils)) return false;
         FSUtils fsUtils = (FSUtils) this.utils;
@@ -104,16 +50,11 @@ public class Proto_v1 {
         }
         long fileCnt = readSize();
         for (long fileNum = 0; fileNum < fileCnt; fileNum++) {
-            int fileName_len = (int) readSize();
-            if (fileName_len <= 0) {
+            byte[] fileName_data = readData();
+            if (fileName_data == null) {
                 return false;
             }
-            byte[] fileName_data = new byte[fileName_len];
-            if (this.serverConnection.receive(fileName_data)) {
-                return false;
-            }
-            String fileName;
-            fileName = new String(fileName_data, StandardCharsets.UTF_8);
+            String fileName = new String(fileName_data, StandardCharsets.UTF_8);
             long file_size = readSize();
             if (file_size <= 0) {
                 return false;
@@ -151,6 +92,7 @@ public class Proto_v1 {
         return true;
     }
 
+    @Override
     public boolean sendFile() {
         if (!(this.utils instanceof FSUtils)) return false;
         FSUtils fsUtils = (FSUtils) this.utils;
@@ -158,8 +100,7 @@ public class Proto_v1 {
         if (fileName == null) {
             return false;
         }
-        byte[] name_data;
-        name_data = fileName.getBytes(StandardCharsets.UTF_8);
+        byte[] name_data = fileName.getBytes(StandardCharsets.UTF_8);
         long fileSize = fsUtils.getFileSize();
         if (fileSize <= 0) {
             return false;
@@ -172,10 +113,7 @@ public class Proto_v1 {
             return false;
         }
 
-        if (sendSize(name_data.length)) {
-            return false;
-        }
-        if (!this.serverConnection.send(name_data)) {
+        if (!sendData(name_data)) {
             return false;
         }
         if (sendSize(fileSize)) {
@@ -209,6 +147,7 @@ public class Proto_v1 {
         return true;
     }
 
+    @Override
     public boolean getImage() {
         if (!(this.utils instanceof FSUtils)) return false;
         FSUtils fsUtils = (FSUtils) this.utils;
@@ -244,17 +183,14 @@ public class Proto_v1 {
         return true;
     }
 
+    @Override
     public String checkInfo() {
         if (methodInit(INFO)) {
             return null;
         }
         try {
-            long len = readSize();
-            if (len <= 0 || len > 256) {
-                return null;
-            }
-            byte[] data = new byte[(int) len];
-            if (this.serverConnection.receive(data)) {
+            byte[] data = readData();
+            if (data == null) {
                 return null;
             }
             return new String(data, StandardCharsets.UTF_8);

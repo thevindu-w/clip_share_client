@@ -39,7 +39,7 @@ import com.tw.clipshare.platformUtils.AndroidStatusNotifier;
 import com.tw.clipshare.platformUtils.AndroidUtils;
 import com.tw.clipshare.platformUtils.FSUtils;
 import com.tw.clipshare.platformUtils.StatusNotifier;
-import com.tw.clipshare.protocol.Proto_v1;
+import com.tw.clipshare.protocol.Proto;
 import com.tw.clipshare.protocol.ProtocolSelector;
 
 import java.io.IOException;
@@ -123,7 +123,7 @@ class SubnetScanner {
                     InetAddress address = convertAddress(addressInt);
                     if (!address.equals(myAddress)) {
                         ServerConnection con = new PlainConnection(address);
-                        Proto_v1 pr = ProtocolSelector.getProto_v1(con, null, null);
+                        Proto pr = ProtocolSelector.getProto(con, null, null);
                         if (pr != null) {
                             String serverName = pr.checkInfo();
                             if ("clip_share".equals(serverName)) {
@@ -510,7 +510,7 @@ public class ClipShareActivity extends AppCompatActivity {
                 String clipDataString = utils.getClipboardText();
                 if (clipDataString == null) return;
                 ServerConnection connection = getServerConnection(address);
-                Proto_v1 proto = ProtocolSelector.getProto_v1(connection, utils, null);
+                Proto proto = ProtocolSelector.getProto(connection, utils, null);
                 if (proto == null) {
                     runOnUiThread(() -> output.setText(R.string.couldNotConnect));
                     return;
@@ -583,7 +583,7 @@ public class ClipShareActivity extends AppCompatActivity {
             try {
                 AndroidUtils utils = new AndroidUtils(context, ClipShareActivity.this);
                 ServerConnection connection = getServerConnection(address);
-                Proto_v1 proto = ProtocolSelector.getProto_v1(connection, utils, null);
+                Proto proto = ProtocolSelector.getProto(connection, utils, null);
                 if (proto == null) {
                     runOnUiThread(() -> output.setText(R.string.couldNotConnect));
                     return;
@@ -609,7 +609,7 @@ public class ClipShareActivity extends AppCompatActivity {
             try {
                 FSUtils utils = new FSUtils(context, ClipShareActivity.this);
                 ServerConnection connection = getServerConnection(address);
-                Proto_v1 proto = ProtocolSelector.getProto_v1(connection, utils, null);
+                Proto proto = ProtocolSelector.getProto(connection, utils, null);
                 if (proto == null) {
                     runOnUiThread(() -> output.setText(R.string.couldNotConnect));
                     return;
@@ -657,7 +657,7 @@ public class ClipShareActivity extends AppCompatActivity {
                 FSUtils utils = new FSUtils(context, ClipShareActivity.this);
                 ServerConnection connection = getServerConnection(address);
                 StatusNotifier notifier = new AndroidStatusNotifier(ClipShareActivity.this, notificationManager, builder, notificationId);
-                Proto_v1 proto = ProtocolSelector.getProto_v1(connection, utils, notifier);
+                Proto proto = ProtocolSelector.getProto(connection, utils, notifier);
                 if (proto == null) {
                     runOnUiThread(() -> output.setText(R.string.couldNotConnect));
                     return;

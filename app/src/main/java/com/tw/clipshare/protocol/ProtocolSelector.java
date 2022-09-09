@@ -9,13 +9,13 @@ public class ProtocolSelector {
     static final byte PROTOCOL_SUPPORTED = 1;
     static final byte PROTOCOL_OBSOLETE = 2;
     static final byte PROTOCOL_UNKNOWN = 3;
-    private static final byte PROTO_MIN = 1;
+    private static final byte PROTO_MAX = 2;
 
-    public static Proto_v1 getProto_v1(ServerConnection connection, AndroidUtils utils, StatusNotifier notifier) {
+    public static Proto getProto(ServerConnection connection, AndroidUtils utils, StatusNotifier notifier) {
         if (connection == null) {
             return null;
         }
-        byte[] proto_v = {1};
+        byte[] proto_v = {PROTO_MAX};
         if (!connection.send(proto_v)) {
             return null;
         }
@@ -29,16 +29,15 @@ public class ProtocolSelector {
             if (connection.receive(serverProto)) {
                 return null;
             }
-            if (serverProto[0] < PROTO_MIN) {
-                serverProto[0] = 0;
-                connection.send(serverProto);
-                return null;
+            if (serverProto[0] == 1) {
+                return new Proto_v1(connection, utils, notifier);
             }
-            // TODO: select appropriate protocol implementation
+            serverProto[0] = 0;
+            connection.send(serverProto);
             return null;
         } else if (proto_v[0] != ProtocolSelector.PROTOCOL_SUPPORTED) {
             return null;
         }
-        return new Proto_v1(connection, utils, notifier);
+        return new Proto_v2(connection, utils, notifier);
     }
 }

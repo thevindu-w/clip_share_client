@@ -9,7 +9,7 @@ import com.tw.clipshare.netConnection.ServerConnection;
 import com.tw.clipshare.platformUtils.AndroidStatusNotifier;
 import com.tw.clipshare.platformUtils.FSUtils;
 import com.tw.clipshare.platformUtils.StatusNotifier;
-import com.tw.clipshare.protocol.Proto_v1;
+import com.tw.clipshare.protocol.Proto;
 import com.tw.clipshare.protocol.ProtocolSelector;
 
 import java.io.InputStream;
@@ -146,7 +146,7 @@ public class FileSender {
                 FSUtils utils = new FSUtils(context, parent, fileName, fileSize, fileInputStream);
                 ServerConnection connection = parent.getServerConnection(serverAddress);
                 StatusNotifier notifier = new AndroidStatusNotifier(parent, notificationManager, builder, notificationId);
-                Proto_v1 proto = ProtocolSelector.getProto_v1(connection, utils, notifier);
+                Proto proto = ProtocolSelector.getProto(connection, utils, notifier);
                 boolean status = proto != null && proto.sendFile();
                 if (status)
                     parent.runOnUiThread(() -> Toast.makeText(context, "Sending " + fileName + " completed", Toast.LENGTH_SHORT).show());
