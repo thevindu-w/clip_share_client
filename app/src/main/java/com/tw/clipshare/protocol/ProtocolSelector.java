@@ -29,7 +29,12 @@ public class ProtocolSelector {
             if (connection.receive(serverProto)) {
                 return null;
             }
-            if (serverProto[0] == 1) {
+            byte serverMaxProto = serverProto[0];
+            if (serverMaxProto == 1) {
+                proto_v[0] = serverMaxProto;
+                if (!connection.send(proto_v)) {
+                    return null;
+                }
                 return new Proto_v1(connection, utils, notifier);
             }
             serverProto[0] = 0;

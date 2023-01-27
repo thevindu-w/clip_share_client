@@ -250,6 +250,8 @@ class ServerFinder implements Runnable {
 public class ClipShareActivity extends AppCompatActivity {
     public static final int WRITE_IMAGE = 222;
     public static final int WRITE_FILE = 223;
+    public static final int GET_FILE_NOTIFICATION = 224;
+    public static final int SEND_FILE_NOTIFICATION = 225;
     public static final int CLIPBOARD_READ = 444;
     public static final int PORT = 4337;
     public static final String CHANNEL_ID = "upload_channel";
@@ -388,9 +390,9 @@ public class ClipShareActivity extends AppCompatActivity {
         Button btnGet = findViewById(R.id.btnGetTxt);
         btnGet.setOnClickListener(view -> clkGetTxt());
         Button btnImg = findViewById(R.id.btnGetImg);
-        btnImg.setOnClickListener(view -> checkPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, WRITE_IMAGE));
+        btnImg.setOnClickListener(view -> clkGetImg());
         Button btnGetFile = findViewById(R.id.btnGetFile);
-        btnGetFile.setOnClickListener(view -> checkPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, WRITE_FILE));
+        btnGetFile.setOnClickListener(view -> clkGetFile());
         Button btnSendTxt = findViewById(R.id.btnSendTxt);
         btnSendTxt.setOnClickListener(view -> clkSendTxt());
         Button btnSendFile = findViewById(R.id.btnSendFile);
@@ -662,8 +664,12 @@ public class ClipShareActivity extends AppCompatActivity {
     }
 
     private void clkGetImg() {
+        if (!checkPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, WRITE_IMAGE))
+            return;
+
         String address = this.getServerAddress();
         if (address == null) return;
+
         ExecutorService executorService = Executors.newSingleThreadExecutor();
         Runnable getImg = () -> {
             try {
@@ -686,6 +692,9 @@ public class ClipShareActivity extends AppCompatActivity {
     }
 
     private void clkGetFile() {
+        if (!checkPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, WRITE_FILE))
+            return;
+
         String address = this.getServerAddress();
         if (address == null) return;
 
@@ -756,17 +765,12 @@ public class ClipShareActivity extends AppCompatActivity {
         executorService.submit(getFile);
     }
 
-    public void checkPermission(String permission, int requestCode) {
+    public boolean checkPermission(String permission, int requestCode) {
         if (ContextCompat.checkSelfPermission(ClipShareActivity.this, permission) == PackageManager.PERMISSION_DENIED) {
             ActivityCompat.requestPermissions(ClipShareActivity.this, new String[]{permission}, requestCode);
+            return false;
         } else {
-            if (requestCode == WRITE_IMAGE) {
-                clkGetImg();
-            } else if (requestCode == WRITE_FILE) {
-                clkGetFile();
-            } else {
-                Toast.makeText(ClipShareActivity.this, "Not Implemented", Toast.LENGTH_SHORT).show();
-            }
+            return true;
         }
     }
 
@@ -774,10 +778,18 @@ public class ClipShareActivity extends AppCompatActivity {
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
-        if (requestCode == WRITE_IMAGE || requestCode == WRITE_FILE) {
+        if (requestCode == WRITE_IMAGE || requestCode == WRITE_FILE || requestCode == GET_FILE_NOTIFICATION || requestCode == SEND_FILE_NOTIFICATION) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                if (requestCode == WRITE_IMAGE) clkGetImg();
-                else clkGetFile();
+                switch (requestCode) {
+                    case WRITE_IMAGE:
+                        clkGetImg();
+                    case WRITE_FILE:
+                        clkGetFile();
+                    case GET_FILE_NOTIFICATION:
+                        clkGetFile();
+                    case SEND_FILE_NOTIFICATION:
+                        clkSendFile();
+                }
             } else {
                 Toast.makeText(ClipShareActivity.this, "Storage Permission Denied", Toast.LENGTH_SHORT).show();
             }

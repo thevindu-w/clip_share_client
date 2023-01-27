@@ -90,22 +90,18 @@ public class Proto_v2 extends Proto_v1 {
             for (int fileNum = 0; fileNum < fileCnt; fileNum++) {
                 fsUtils.prepareNextFile();
                 String fileName = fsUtils.getFileName();
-                int fileName_len = fileName.length();
-                if (fileName_len == 0) {
-                    return false;
-                }
-                byte[] name_data = fileName.getBytes(StandardCharsets.UTF_8);
                 long fileSize = fsUtils.getFileSize();
-                if (fileSize <= 0) {
+                InputStream inStream = fsUtils.getFileInStream();
+                if (fileName==null || fileName.length()==0) {
                     return false;
                 }
-                InputStream inStream = fsUtils.getFileInStream();
+                if (fileSize < 0) {
+                    return false;
+                }
                 if (inStream == null) {
                     return false;
                 }
-                if (sendSize(fileName_len)) {
-                    return false;
-                }
+                byte[] name_data = fileName.getBytes(StandardCharsets.UTF_8);
                 if (!sendData(name_data)) {
                     return false;
                 }
@@ -124,7 +120,7 @@ public class Proto_v2 extends Proto_v1 {
                         return false;
                     }
                     if (read_sz < 0) {
-                        return true;
+                        return false;
                     } else if (read_sz == 0) {
                         continue;
                     }
