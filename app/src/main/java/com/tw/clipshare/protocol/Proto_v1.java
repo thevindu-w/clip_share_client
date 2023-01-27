@@ -96,6 +96,7 @@ public class Proto_v1 extends Proto {
     public boolean sendFile() {
         if (!(this.utils instanceof FSUtils)) return false;
         FSUtils fsUtils = (FSUtils) this.utils;
+        if (!fsUtils.prepareNextFile()) return false;
         String fileName = fsUtils.getFileName();
         if (fileName == null) {
             return false;

@@ -18,6 +18,7 @@
     </plurals>
     <string name="noFilesTxt">No files selected</string>
     <string name="receiveAllFiles">Received all files</string>
+    <string name="sentAllFiles">Sent all files</string>
     <string name="settings">Settings</string>
     <string name="secure_mode">Secure mode</string>
     <string name="security">Security</string>

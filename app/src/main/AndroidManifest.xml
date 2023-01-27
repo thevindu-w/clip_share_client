@@ -14,7 +14,7 @@
             android:theme="@style/Theme.ClipShare"
             android:testOnly="false"
             android:requestLegacyExternalStorage="true">
-        <activity android:name="com.tw.clipshare.ClipShareActivity" android:launchMode="singleTask">
+        <activity android:name="com.tw.clipshare.ClipShareActivity" android:launchMode="singleTask" android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>

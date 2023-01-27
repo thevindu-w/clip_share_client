@@ -6,6 +6,7 @@ import com.tw.clipshare.platformUtils.FSUtils;
 import com.tw.clipshare.platformUtils.StatusNotifier;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 
@@ -75,6 +76,71 @@ public class Proto_v2 extends Proto_v1 {
 
     @Override
     public boolean sendFile() {
-        throw new UnsupportedOperationException("Not yet implemented");
+        if (!(this.utils instanceof FSUtils)) return false;
+        FSUtils fsUtils = (FSUtils) this.utils;
+        int fileCnt = fsUtils.getRemainingFileCount();
+        if (fileCnt <= 0) return false;
+        if (methodInit(SEND_FILE)) {
+            return false;
+        }
+        try {
+            if (sendSize(fileCnt)) {
+                return false;
+            }
+            for (int fileNum = 0; fileNum < fileCnt; fileNum++) {
+                fsUtils.prepareNextFile();
+                String fileName = fsUtils.getFileName();
+                int fileName_len = fileName.length();
+                if (fileName_len == 0) {
+                    return false;
+                }
+                byte[] name_data = fileName.getBytes(StandardCharsets.UTF_8);
+                long fileSize = fsUtils.getFileSize();
+                if (fileSize <= 0) {
+                    return false;
+                }
+                InputStream inStream = fsUtils.getFileInStream();
+                if (inStream == null) {
+                    return false;
+                }
+                if (sendSize(fileName_len)) {
+                    return false;
+                }
+                if (!sendData(name_data)) {
+                    return false;
+                }
+                if (sendSize(fileSize)) {
+                    return false;
+                }
+                byte[] buf = new byte[BUF_SZ];
+                long sent_sz = 0;
+                int progressCurrent;
+                if (this.notifier != null) this.notifier.setName("Sending file " + fileName);
+                while (fileSize > 0) {
+                    int read_sz = (int) Math.min(fileSize, BUF_SZ);
+                    try {
+                        read_sz = inStream.read(buf, 0, read_sz);
+                    } catch (IOException ex) {
+                        return false;
+                    }
+                    if (read_sz < 0) {
+                        return true;
+                    } else if (read_sz == 0) {
+                        continue;
+                    }
+                    fileSize -= read_sz;
+                    sent_sz += read_sz;
+                    if (!this.serverConnection.send(buf, 0, read_sz)) {
+                        return false;
+                    }
+                    progressCurrent = (int) ((sent_sz * 100) / (sent_sz + fileSize));
+                    if (this.notifier != null) this.notifier.setStatus(progressCurrent);
+                }
+            }
+        } catch (Exception ignored) {
+            return false;
+        }
+        if (this.notifier != null) this.notifier.finish();
+        return true;
     }
 }

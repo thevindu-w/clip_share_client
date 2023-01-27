@@ -1,5 +1,6 @@
 package com.tw.clipshare.platformUtils;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
@@ -32,6 +33,7 @@ public class AndroidStatusNotifier implements StatusNotifier {
         }
     }
 
+    @SuppressLint("MissingPermission")
     @Override
     public void setStatus(int value) {
         try {

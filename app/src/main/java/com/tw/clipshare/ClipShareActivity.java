@@ -254,15 +254,16 @@ public class ClipShareActivity extends AppCompatActivity {
     public static final int PORT = 4337;
     public static final String CHANNEL_ID = "upload_channel";
     private static final Object fileGetCntLock = new Object();
+    private static final Object fileSendCntLock = new Object();
     private static final Object settingsLock = new Object();
     private static int fileGettingCount = 0;
+    private static int fileSendingCount = 0;
     private static boolean isSettingsLoaded = false;
     public TextView output;
     private ActivityResultLauncher<Intent> activityLauncherForResult;
     private EditText editAddress;
     private Context context;
     private ArrayList<Uri> fileURIs;
-    private FileSender fileSender;
     private Menu menu;
 
     @Override
@@ -362,16 +363,21 @@ public class ClipShareActivity extends AppCompatActivity {
                     } else {
                         try {
                             ClipData clipData = intent1.getClipData();
+                            ArrayList<Uri> uris;
                             if (clipData != null) {
                                 int itemCount = clipData.getItemCount();
+                                uris = new ArrayList<>(itemCount);
                                 for (int cnt = 0; cnt < itemCount; cnt++) {
                                     Uri uri = clipData.getItemAt(cnt).getUri();
-                                    sendFromURI(uri);
+                                    uris.add(uri);
                                 }
                             } else {
                                 Uri uri = intent1.getData();
-                                sendFromURI(uri);
+                                uris = new ArrayList<>(1);
+                                uris.add(uri);
                             }
+                            this.fileURIs = uris;
+                            clkSendFile();
                         } catch (Exception e) {
                             output.setText(String.format("Error %s", e.getMessage()));
                         }
@@ -383,8 +389,8 @@ public class ClipShareActivity extends AppCompatActivity {
         btnGet.setOnClickListener(view -> clkGetTxt());
         Button btnImg = findViewById(R.id.btnGetImg);
         btnImg.setOnClickListener(view -> checkPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, WRITE_IMAGE));
-        Button btnFile = findViewById(R.id.btnGetFile);
-        btnFile.setOnClickListener(view -> checkPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, WRITE_FILE));
+        Button btnGetFile = findViewById(R.id.btnGetFile);
+        btnGetFile.setOnClickListener(view -> checkPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, WRITE_FILE));
         Button btnSendTxt = findViewById(R.id.btnSendTxt);
         btnSendTxt.setOnClickListener(view -> clkSendTxt());
         Button btnSendFile = findViewById(R.id.btnSendFile);
@@ -400,8 +406,6 @@ public class ClipShareActivity extends AppCompatActivity {
         synchronized (settingsLock) {
             settingsLock.notifyAll();
         }
-
-        this.fileSender = new FileSender(this, ClipShareActivity.this);
 
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -463,12 +467,6 @@ public class ClipShareActivity extends AppCompatActivity {
                 output.setText(e.getMessage());
             }
         }
-    }
-
-    @Override
-    public void onDestroy() {
-        fileSender.stop();
-        super.onDestroy();
     }
 
     private void clkScanBtn() {
@@ -539,39 +537,101 @@ public class ClipShareActivity extends AppCompatActivity {
             this.fileURIs = null;
             ExecutorService executorService = Executors.newSingleThreadExecutor();
             Runnable sendURIs = () -> {
-                try {
-                    for (Uri uri : tmp) {
-                        sendFromURI(uri);
-                    }
-                } catch (Exception ignored) {
-                }
+                sendFromURIs(tmp);
             };
             executorService.submit(sendURIs);
         }
-        this.fileSender.start();
     }
 
-    private void sendFromURI(Uri uri) {
+    private void sendFromURIs(ArrayList<Uri> uris) {
         try {
             String address = this.getServerAddress();
             if (address == null) return;
 
-            Cursor cursor = getContentResolver().query(uri, null, null, null, null);
-            if (cursor.getCount() <= 0) {
+            LinkedList<PendingFile> pendingFiles = new LinkedList<>();
+            for (Uri uri : uris) {
+                Cursor cursor = getContentResolver().query(uri, null, null, null, null);
+                if (cursor.getCount() <= 0) {
+                    cursor.close();
+                    continue;
+                }
+                cursor.moveToFirst();
+                String fileName = cursor.getString(cursor.getColumnIndexOrThrow(OpenableColumns.DISPLAY_NAME));
+                String fileSizeStr = cursor.getString(cursor.getColumnIndexOrThrow(OpenableColumns.SIZE));
                 cursor.close();
-                return;
+
+                InputStream fileInputStream = getContentResolver().openInputStream(uri);
+                long fileSize = Long.parseLong(fileSizeStr);
+                PendingFile pendingFile = new PendingFile(fileInputStream, fileName, fileSize, address);
+                pendingFiles.add(pendingFile);
             }
-            cursor.moveToFirst();
-            String fileName = cursor.getString(cursor.getColumnIndexOrThrow(OpenableColumns.DISPLAY_NAME));
-            String fileSizeStr = cursor.getString(cursor.getColumnIndexOrThrow(OpenableColumns.SIZE));
-            cursor.close();
+            FSUtils utils = new FSUtils(context, ClipShareActivity.this, pendingFiles);
 
-            InputStream fileInputStream = getContentResolver().openInputStream(uri);
-
-            PendingFile pendingFile = new PendingFile(fileInputStream, fileName, fileSizeStr, address);
-
-            this.fileSender.submit(pendingFile);
-        } catch (Exception ignored) {
+            int notificationId;
+            {
+                Random rnd = new Random();
+                notificationId = Math.abs(rnd.nextInt(Integer.MAX_VALUE - 1)) + 1;
+            }
+            NotificationManagerCompat notificationManager = null;
+            synchronized (fileSendCntLock) {
+                while (fileSendingCount > 1) {
+                    try {
+                        fileSendCntLock.wait();
+                    } catch (InterruptedException ignored) {
+                    }
+                }
+                fileSendingCount++;
+            }
+            try {
+                runOnUiThread(() -> output.setText("Sending files ..."));
+                notificationManager = NotificationManagerCompat.from(context);
+                NotificationCompat.Builder builder = new NotificationCompat.Builder(context, ClipShareActivity.CHANNEL_ID)
+                        .setSmallIcon(R.drawable.ic_upload_icon)
+                        .setContentTitle("Sending files")
+                        .setContentText("0%")
+                        .setPriority(NotificationCompat.PRIORITY_DEFAULT);
+                StatusNotifier notifier = new AndroidStatusNotifier(ClipShareActivity.this, notificationManager, builder, notificationId);
+                boolean status = true;
+                while (utils.getRemainingFileCount() > 0) {
+                    ServerConnection connection = this.getServerConnection(address);
+                    Proto proto = ProtocolSelector.getProto(connection, utils, notifier);
+                    if (proto == null) {
+                        runOnUiThread(() -> output.setText(R.string.couldNotConnect));
+                        return;
+                    }
+                    status &= proto.sendFile();
+                    connection.close();
+                }
+                if (status) {
+                    runOnUiThread(() -> {
+                        try {
+                            output.setText(R.string.sentAllFiles);
+                        } catch (Exception ignored) {
+                        }
+                    });
+                }
+            } catch (Exception e) {
+                runOnUiThread(() -> output.setText(String.format("Error %s", e.getMessage())));
+            } finally {
+                synchronized (fileSendCntLock) {
+                    fileSendingCount--;
+                    fileSendCntLock.notifyAll();
+                }
+                try {
+                    if (notificationManager != null) {
+                        NotificationManagerCompat finalNotificationManager = notificationManager;
+                        runOnUiThread(() -> {
+                            try {
+                                finalNotificationManager.cancel(notificationId);
+                            } catch (Exception ignored) {
+                            }
+                        });
+                    }
+                } catch (Exception ignored) {
+                }
+            }
+        } catch (Exception e) {
+            runOnUiThread(() -> output.setText(String.format("Error %s", e.getMessage())));
         }
     }
 

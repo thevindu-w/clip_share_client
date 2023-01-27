@@ -6,23 +6,24 @@ import android.media.MediaScannerConnection;
 import android.os.Build;
 import android.os.Environment;
 import android.widget.Toast;
+import com.tw.clipshare.PendingFile;
 
 import java.io.*;
+import java.util.LinkedList;
 import java.util.Random;
 
 public class FSUtils extends AndroidUtils {
-    private final long fileSize;
-    private final String inFileName;
-    private final InputStream inStream;
+    private long fileSize;
+    private String inFileName;
+    private InputStream inStream;
     private final String id;
     private String outFilePath;
     private String baseDirName;
+    private LinkedList<PendingFile> pendingFiles;
 
-    public FSUtils(Context context, Activity activity, String fileName, long fileSize, InputStream inStream) {
+    public FSUtils(Context context, Activity activity, LinkedList<PendingFile> pendingFiles) {
         super(context, activity);
-        this.fileSize = fileSize;
-        this.inFileName = fileName;
-        this.inStream = inStream;
+        this.pendingFiles = pendingFiles;
         Random rnd = new Random();
         long idNum = Math.abs(rnd.nextLong());
         String id;
@@ -38,7 +39,7 @@ public class FSUtils extends AndroidUtils {
     }
 
     public FSUtils(Context context, Activity activity) {
-        this(context, activity, null, 0, null);
+        this(context, activity, null);
     }
 
     private String getDocumentDir() {
@@ -191,5 +192,22 @@ public class FSUtils extends AndroidUtils {
 
     public InputStream getFileInStream() {
         return this.inStream;
+    }
+
+    public int getRemainingFileCount() {
+        if (this.pendingFiles == null) return -1;
+        return this.pendingFiles.size();
+    }
+
+    public boolean prepareNextFile() {
+        try {
+            PendingFile pendingFile = this.pendingFiles.pop();
+            this.inFileName = pendingFile.name;
+            this.fileSize = pendingFile.size;
+            this.inStream = pendingFile.inputStream;
+            return true;
+        } catch (Exception ignored) {
+            return false;
+        }
     }
 }

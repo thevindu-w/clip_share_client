@@ -1,4 +1,4 @@
-package com.tw.clipshare;
+/*package com.tw.clipshare;
 
 import android.content.Context;
 import android.widget.Toast;
@@ -89,6 +89,9 @@ public class FileSender {
         }
     }
 
+    public void submit(PendingFile[] files){
+
+    }
     @NonNull
     private PendingFile getNextFile() {
         PendingFile file = null;
@@ -175,3 +178,4 @@ public class FileSender {
         executorService.submit(sendFileFromURI);
     }
 }
+*/
