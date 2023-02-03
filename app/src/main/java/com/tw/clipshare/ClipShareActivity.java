@@ -16,13 +16,8 @@ import android.os.Bundle;
 import android.provider.OpenableColumns;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.TextView;
-import android.widget.Toast;
+import android.view.*;
+import android.widget.*;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
@@ -145,7 +140,7 @@ class SubnetScanner {
 
 class ServerFinder implements Runnable {
 
-    private static InetAddress serverAddress;
+    private static final HashMap<String, InetAddress> serverAddresses = new HashMap<>(2);
     private static ExecutorService executorStatic;
     private final NetworkInterface netIF;
     //private static int runningCnt = 0;
@@ -156,8 +151,8 @@ class ServerFinder implements Runnable {
         this.parent = parent;
     }
 
-    public static InetAddress find() {
-        serverAddress = null;
+    public static List<InetAddress> find() {
+        serverAddresses.clear();
         try {
             if (executorStatic != null) executorStatic.shutdownNow();
             Enumeration<NetworkInterface> netIFEnum = NetworkInterface.getNetworkInterfaces();
@@ -171,7 +166,7 @@ class ServerFinder implements Runnable {
                 executor.submit(task);
             }
             while (!executor.isTerminated()) {
-                if (serverAddress != null) {
+                if (!serverAddresses.isEmpty()) {
                     executor.shutdownNow();
                     break;
                 }
@@ -187,7 +182,9 @@ class ServerFinder implements Runnable {
         } catch (IOException | RuntimeException ignored) {
             if (executorStatic != null) executorStatic.shutdownNow();
         }
-        return serverAddress;
+        List<InetAddress> addresses = new ArrayList<>(serverAddresses.size());
+        addresses.addAll(serverAddresses.values());
+        return addresses;
     }
 
     private void scanUDP(InetAddress broadcastAddress) {
@@ -199,16 +196,27 @@ class ServerFinder implements Runnable {
                 socket.send(pkt);
                 buf = new byte[256];
                 pkt = new DatagramPacket(buf, buf.length);
-                socket.setSoTimeout(1000);
-                try {
-                    socket.receive(pkt);
-                } catch (SocketTimeoutException ignored) {
+                int timeout = 1000;
+                while (true) {
+                    socket.setSoTimeout(timeout);
+                    timeout = 200;
+                    try {
+                        socket.receive(pkt);
+                    } catch (SocketTimeoutException ignored) {
+                        break;
+                    }
+                    String received = new String(pkt.getData()).replace("\0", "");
+                    if ("clip_share".equals(received)) {
+                        InetAddress serverAddress = pkt.getAddress();
+                        String addressStr = serverAddress.getHostAddress();
+                        if (addressStr != null) {
+                            addressStr = addressStr.intern();
+                            serverAddresses.put(addressStr, serverAddress);
+                        }
+                    }
                 }
-                String received = new String(pkt.getData()).replace("\0", "");
-                if ("clip_share".equals(received)) {
-                    serverAddress = pkt.getAddress();
-                    parent.interrupt();
-                }
+                if (!serverAddresses.isEmpty()) parent.interrupt();
+                socket.close();
             } catch (IOException | RuntimeException ignored) {
             }
         }).start();
@@ -234,8 +242,12 @@ class ServerFinder implements Runnable {
                         SubnetScanner subnetScanner = new SubnetScanner(address, subLen);
                         InetAddress server = subnetScanner.scan(subLen >= 24 ? 32 : 64);
                         if (server != null) {
-                            serverAddress = server;
-                            parent.interrupt();
+                            String addressStr = server.getHostAddress();
+                            if (addressStr!=null) {
+                                addressStr = addressStr.intern();
+                                serverAddresses.put(addressStr, server);
+                            }
+//                            parent.interrupt();
                             break;
                         }
                     }
@@ -398,7 +410,7 @@ public class ClipShareActivity extends AppCompatActivity {
         Button btnSendFile = findViewById(R.id.btnSendFile);
         btnSendFile.setOnClickListener(view -> clkSendFile());
         Button btnScanHost = findViewById(R.id.btnScanHost);
-        btnScanHost.setOnClickListener(view -> clkScanBtn());
+        btnScanHost.setOnClickListener(view -> clkScanBtn(view));
         editAddress.setText(sharedPref.getString("hostIP", ""));
         try {
             Settings.getInstance(sharedPref.getString("settings", null));
@@ -471,11 +483,41 @@ public class ClipShareActivity extends AppCompatActivity {
         }
     }
 
-    private void clkScanBtn() {
+    private void clkScanBtn(View view) {
         new Thread(() -> {
-            InetAddress serverAddress = ServerFinder.find();
-            if (serverAddress != null) {
-                runOnUiThread(() -> editAddress.setText(serverAddress.getHostAddress()));
+            List<InetAddress> serverAddresses = ServerFinder.find();
+            if (!serverAddresses.isEmpty()) {
+                if (serverAddresses.size() == 1) {
+                    InetAddress serverAddress = serverAddresses.get(0);
+                    runOnUiThread(() -> editAddress.setText(serverAddress.getHostAddress()));
+                } else {
+                    LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
+                    View popupView = inflater.inflate(R.layout.popup, null);
+
+                    int width = LinearLayout.LayoutParams.MATCH_PARENT;
+                    int height = LinearLayout.LayoutParams.MATCH_PARENT;
+                    boolean focusable = true; // lets taps outside the popup also dismiss it
+                    final PopupWindow popupWindow = new PopupWindow(popupView, width, height, focusable);
+                    popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0);
+
+                    LinearLayout popupLayout = (LinearLayout) popupView.findViewById(R.id.popupLayout);
+                    if (popupLayout == null) return;
+                    View popupElemView;
+                    TextView txtView;
+                    for (InetAddress serverAddress : serverAddresses) {
+                        popupElemView = View.inflate(this, R.layout.popup_elem, null);
+                        txtView = popupElemView.findViewById(R.id.popElemTxt);
+                        txtView.setText(serverAddress.getHostAddress());
+                        txtView.setOnClickListener(view1 -> {
+                            runOnUiThread(() -> editAddress.setText(((TextView) view1).getText()));
+                            popupView.performClick();
+                        });
+                        popupLayout.addView(popupElemView);
+                    }
+                    popupView.setOnClickListener(v -> {
+                        popupWindow.dismiss();
+                    });
+                }
             } else {
                 runOnUiThread(() -> Toast.makeText(context, "Scan failed!", Toast.LENGTH_SHORT).show());
             }

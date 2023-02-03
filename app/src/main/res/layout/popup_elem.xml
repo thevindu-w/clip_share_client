@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/popupElem"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#0000">
+    <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/popElemTxt"
+            android:layout_margin="5dp"
+            android:padding="10dp"
+            android:textSize="18sp"
+            android:background="#dddddd"
+            android:text=""/>
+</LinearLayout>
