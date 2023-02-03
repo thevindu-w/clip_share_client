@@ -3,5 +3,7 @@
     <style name="Theme.ClipShare" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
         <item name="android:windowActionBar">false</item>
         <item name="android:windowNoTitle">true</item>
+        <item name="android:textColorPrimary">#FFFFFFFF</item>
+        <item name="android:textColorSecondary">#99FFFFFF</item>
     </style>
 </resources>

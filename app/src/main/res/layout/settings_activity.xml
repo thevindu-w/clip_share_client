@@ -18,7 +18,7 @@
               android:layout_height="wrap_content"
               android:padding="9dp"
               android:textSize="20sp"
-              android:textColor="@color/black"
+              android:textColor="?android:textColorPrimary"
               android:text="@string/ca_certificate"
               android:background="#221111ff"
     />
@@ -30,7 +30,7 @@
                   android:layout_marginStart="12dp"
                   android:layout_marginEnd="2dp"
                   android:textSize="16sp"
-                  android:textColor="@color/black"
+                  android:textColor="?android:textColorPrimary"
                   android:text="@string/name"
                   android:layout_gravity="center_vertical"
         />
@@ -41,7 +41,7 @@
                   android:layout_marginEnd="12dp"
                   android:layout_marginStart="2dp"
                   android:textSize="13sp"
-                  android:textColor="@color/black"
+                  android:textColor="?android:textColorPrimary"
                   android:text=""
                   android:maxLines="1"
                   android:layout_gravity="center_vertical"
@@ -52,7 +52,6 @@
                 android:layout_margin="5dp"
                 android:text="@string/browse"
                 android:textAllCaps="false"
-                android:textColor="@color/black"
                 android:backgroundTint="#88999999"/>
     </LinearLayout>
 
@@ -60,7 +59,7 @@
               android:layout_height="wrap_content"
               android:padding="9dp"
               android:textSize="20sp"
-              android:textColor="@color/black"
+              android:textColor="?android:textColorPrimary"
               android:text="@string/client_certificate"
               android:background="#221111ff"
               android:layout_marginTop="6dp"
@@ -73,7 +72,7 @@
                   android:layout_marginStart="12dp"
                   android:layout_marginEnd="2dp"
                   android:textSize="16sp"
-                  android:textColor="@color/black"
+                  android:textColor="?android:textColorPrimary"
                   android:text="@string/password"
                   android:layout_gravity="center_vertical"
                   android:labelFor="@+id/editCertPass"
@@ -86,7 +85,7 @@
                   android:layout_marginEnd="12dp"
                   android:layout_marginStart="2dp"
                   android:textSize="16sp"
-                  android:textColor="@color/black"
+                  android:textColor="?android:textColorPrimary"
                   android:text=""
                   android:inputType="textPassword"
                   android:maxLines="1"
@@ -101,7 +100,7 @@
                   android:layout_marginStart="12dp"
                   android:layout_marginEnd="2dp"
                   android:textSize="16sp"
-                  android:textColor="@color/black"
+                  android:textColor="?android:textColorPrimary"
                   android:text="@string/name"
                   android:layout_gravity="center_vertical"
         />
@@ -112,7 +111,7 @@
                   android:layout_marginEnd="12dp"
                   android:layout_marginStart="2dp"
                   android:textSize="13sp"
-                  android:textColor="@color/black"
+                  android:textColor="?android:textColorPrimary"
                   android:text=""
                   android:maxLines="1"
                   android:layout_gravity="center_vertical"
@@ -123,7 +122,6 @@
                 android:layout_margin="5dp"
                 android:text="@string/browse"
                 android:textAllCaps="false"
-                android:textColor="@color/black"
                 android:backgroundTint="#88999999"/>
     </LinearLayout>
     <LinearLayout android:layout_width="match_parent"
@@ -140,7 +138,7 @@
                       android:layout_weight="0.8"
                       android:layout_margin="12dp"
                       android:textSize="20sp"
-                      android:textColor="@color/black"
+                      android:textColor="?android:textColorPrimary"
                       android:text="@string/trusted_servers"
             />
             <ImageButton android:id="@+id/addServerBtn"
