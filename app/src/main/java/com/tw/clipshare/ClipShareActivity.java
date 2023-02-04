@@ -143,7 +143,6 @@ class ServerFinder implements Runnable {
     private static final HashMap<String, InetAddress> serverAddresses = new HashMap<>(2);
     private static ExecutorService executorStatic;
     private final NetworkInterface netIF;
-    //private static int runningCnt = 0;
     private final Thread parent;
 
     private ServerFinder(NetworkInterface netIF, Thread parent) {
@@ -152,8 +151,10 @@ class ServerFinder implements Runnable {
     }
 
     public static List<InetAddress> find() {
-        serverAddresses.clear();
         try {
+            synchronized (serverAddresses) {
+                serverAddresses.clear();
+            }
             if (executorStatic != null) executorStatic.shutdownNow();
             Enumeration<NetworkInterface> netIFEnum = NetworkInterface.getNetworkInterfaces();
             Object[] netIFList = Collections.list(netIFEnum).toArray();
@@ -182,8 +183,10 @@ class ServerFinder implements Runnable {
         } catch (IOException | RuntimeException ignored) {
             if (executorStatic != null) executorStatic.shutdownNow();
         }
-        List<InetAddress> addresses = new ArrayList<>(serverAddresses.size());
-        addresses.addAll(serverAddresses.values());
+        List<InetAddress> addresses;
+        synchronized (serverAddresses) {
+            addresses = new ArrayList<>(serverAddresses.values());
+        }
         return addresses;
     }
 
@@ -211,7 +214,9 @@ class ServerFinder implements Runnable {
                         String addressStr = serverAddress.getHostAddress();
                         if (addressStr != null) {
                             addressStr = addressStr.intern();
-                            serverAddresses.put(addressStr, serverAddress);
+                            synchronized (serverAddresses) {
+                                serverAddresses.put(addressStr, serverAddress);
+                            }
                         }
                     }
                 }
@@ -243,11 +248,12 @@ class ServerFinder implements Runnable {
                         InetAddress server = subnetScanner.scan(subLen >= 24 ? 32 : 64);
                         if (server != null) {
                             String addressStr = server.getHostAddress();
-                            if (addressStr!=null) {
+                            if (addressStr != null) {
                                 addressStr = addressStr.intern();
-                                serverAddresses.put(addressStr, server);
+                                synchronized (serverAddresses) {
+                                    serverAddresses.put(addressStr, server);
+                                }
                             }
-//                            parent.interrupt();
                             break;
                         }
                     }
@@ -262,8 +268,6 @@ class ServerFinder implements Runnable {
 public class ClipShareActivity extends AppCompatActivity {
     public static final int WRITE_IMAGE = 222;
     public static final int WRITE_FILE = 223;
-    public static final int GET_FILE_NOTIFICATION = 224;
-    public static final int SEND_FILE_NOTIFICATION = 225;
     public static final int CLIPBOARD_READ = 444;
     public static final int PORT = 4337;
     public static final String CHANNEL_ID = "upload_channel";
@@ -483,43 +487,49 @@ public class ClipShareActivity extends AppCompatActivity {
         }
     }
 
-    private void clkScanBtn(View view) {
+    private void clkScanBtn(View parent) {
         new Thread(() -> {
-            List<InetAddress> serverAddresses = ServerFinder.find();
-            if (!serverAddresses.isEmpty()) {
-                if (serverAddresses.size() == 1) {
-                    InetAddress serverAddress = serverAddresses.get(0);
-                    runOnUiThread(() -> editAddress.setText(serverAddress.getHostAddress()));
-                } else {
-                    LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
-                    View popupView = inflater.inflate(R.layout.popup, null);
-
-                    int width = LinearLayout.LayoutParams.MATCH_PARENT;
-                    int height = LinearLayout.LayoutParams.MATCH_PARENT;
-                    boolean focusable = true; // lets taps outside the popup also dismiss it
-                    final PopupWindow popupWindow = new PopupWindow(popupView, width, height, focusable);
-                    popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0);
-
-                    LinearLayout popupLayout = (LinearLayout) popupView.findViewById(R.id.popupLayout);
-                    if (popupLayout == null) return;
-                    View popupElemView;
-                    TextView txtView;
-                    for (InetAddress serverAddress : serverAddresses) {
-                        popupElemView = View.inflate(this, R.layout.popup_elem, null);
-                        txtView = popupElemView.findViewById(R.id.popElemTxt);
-                        txtView.setText(serverAddress.getHostAddress());
-                        txtView.setOnClickListener(view1 -> {
-                            runOnUiThread(() -> editAddress.setText(((TextView) view1).getText()));
+            try {
+                List<InetAddress> serverAddresses = ServerFinder.find();
+                if (!serverAddresses.isEmpty()) {
+                    if (serverAddresses.size() == 1) {
+                        InetAddress serverAddress = serverAddresses.get(0);
+                        runOnUiThread(() -> editAddress.setText(serverAddress.getHostAddress()));
+                    } else {
+                        LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
+                        View popupView = inflater.inflate(R.layout.popup, null);
+                        popupView.findViewById(R.id.popupLinearWrap).setOnClickListener(v -> {
                             popupView.performClick();
                         });
-                        popupLayout.addView(popupElemView);
+
+                        int width = LinearLayout.LayoutParams.MATCH_PARENT;
+                        int height = LinearLayout.LayoutParams.MATCH_PARENT;
+                        boolean focusable = true; // lets taps outside the popup also dismiss it
+                        final PopupWindow popupWindow = new PopupWindow(popupView, width, height, focusable);
+                        runOnUiThread(() -> popupWindow.showAtLocation(parent, Gravity.CENTER, 0, 0));
+
+                        LinearLayout popupLayout = (LinearLayout) popupView.findViewById(R.id.popupLayout);
+                        if (popupLayout == null) return;
+                        View popupElemView;
+                        TextView txtView;
+                        for (InetAddress serverAddress : serverAddresses) {
+                            popupElemView = View.inflate(this, R.layout.popup_elem, null);
+                            txtView = popupElemView.findViewById(R.id.popElemTxt);
+                            txtView.setText(serverAddress.getHostAddress());
+                            txtView.setOnClickListener(view -> {
+                                runOnUiThread(() -> editAddress.setText(((TextView) view).getText()));
+                                popupView.performClick();
+                            });
+                            popupLayout.addView(popupElemView);
+                        }
+                        popupView.setOnClickListener(v -> {
+                            popupWindow.dismiss();
+                        });
                     }
-                    popupView.setOnClickListener(v -> {
-                        popupWindow.dismiss();
-                    });
+                } else {
+                    runOnUiThread(() -> Toast.makeText(context, "No servers found!", Toast.LENGTH_SHORT).show());
                 }
-            } else {
-                runOnUiThread(() -> Toast.makeText(context, "Scan failed!", Toast.LENGTH_SHORT).show());
+            } catch (Exception ignored) {
             }
         }).start();
     }
@@ -627,7 +637,7 @@ public class ClipShareActivity extends AppCompatActivity {
                 fileSendingCount++;
             }
             try {
-                runOnUiThread(() -> output.setText("Sending files ..."));
+                runOnUiThread(() -> output.setText(R.string.sendingFiles));
                 notificationManager = NotificationManagerCompat.from(context);
                 NotificationCompat.Builder builder = new NotificationCompat.Builder(context, ClipShareActivity.CHANNEL_ID)
                         .setSmallIcon(R.drawable.ic_upload_icon)
@@ -820,17 +830,17 @@ public class ClipShareActivity extends AppCompatActivity {
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
-        if (requestCode == WRITE_IMAGE || requestCode == WRITE_FILE || requestCode == GET_FILE_NOTIFICATION || requestCode == SEND_FILE_NOTIFICATION) {
+        if (requestCode == WRITE_IMAGE || requestCode == WRITE_FILE) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 switch (requestCode) {
-                    case WRITE_IMAGE:
+                    case WRITE_IMAGE: {
                         clkGetImg();
-                    case WRITE_FILE:
+                        break;
+                    }
+                    case WRITE_FILE: {
                         clkGetFile();
-                    case GET_FILE_NOTIFICATION:
-                        clkGetFile();
-                    case SEND_FILE_NOTIFICATION:
-                        clkSendFile();
+                        break;
+                    }
                 }
             } else {
                 Toast.makeText(ClipShareActivity.this, "Storage Permission Denied", Toast.LENGTH_SHORT).show();
