@@ -21,11 +21,7 @@ public class Proto_v1 extends Proto {
         if (methodInit(GET_TEXT)) {
             return null;
         }
-        byte[] data = readData();
-        if (data == null) {
-            return null;
-        }
-        return new String(data, StandardCharsets.UTF_8);
+        return readString(4194304);
     }
 
     @Override
@@ -33,12 +29,10 @@ public class Proto_v1 extends Proto {
         if (text == null) {
             return false;
         }
-        byte[] data = text.getBytes(StandardCharsets.UTF_8);
         if (methodInit(SEND_TEXT)) {
             return false;
         }
-
-        return sendData(data);
+        return sendString(text);
     }
 
     @Override
@@ -50,13 +44,12 @@ public class Proto_v1 extends Proto {
         }
         long fileCnt = readSize();
         for (long fileNum = 0; fileNum < fileCnt; fileNum++) {
-            byte[] fileName_data = readData();
-            if (fileName_data == null) {
+            String fileName = readString(2048);
+            if (fileName == null || fileName.length() == 0 || fileName.contains("/")) {
                 return false;
             }
-            String fileName = new String(fileName_data, StandardCharsets.UTF_8);
             long file_size = readSize();
-            if (file_size <= 0) {
+            if (file_size < 0 || file_size > 17179869184L) { // limit the file size to 16 GiB
                 return false;
             }
             OutputStream out = fsUtils.getFileOutStream(fileName);
@@ -98,12 +91,11 @@ public class Proto_v1 extends Proto {
         FSUtils fsUtils = (FSUtils) this.utils;
         if (!fsUtils.prepareNextFile()) return false;
         String fileName = fsUtils.getFileName();
-        if (fileName == null) {
+        if (fileName == null || fileName.length() == 0) {
             return false;
         }
-        byte[] name_data = fileName.getBytes(StandardCharsets.UTF_8);
         long fileSize = fsUtils.getFileSize();
-        if (fileSize <= 0) {
+        if (fileSize < 0) {
             return false;
         }
         InputStream inStream = fsUtils.getFileInStream();
@@ -114,7 +106,7 @@ public class Proto_v1 extends Proto {
             return false;
         }
 
-        if (!sendData(name_data)) {
+        if (!sendString(fileName)) {
             return false;
         }
         if (sendSize(fileSize)) {
@@ -156,7 +148,7 @@ public class Proto_v1 extends Proto {
             return false;
         }
         long file_size = readSize();
-        if (file_size <= 0) {
+        if (file_size <= 0 || file_size > 268435456) { // limit the image size to 256 MiB
             return false;
         }
         OutputStream out = fsUtils.getImageOutStream();
@@ -190,11 +182,11 @@ public class Proto_v1 extends Proto {
             return null;
         }
         try {
-            byte[] data = readData();
-            if (data == null) {
+            String info = readString(2048);
+            if (info == null || info.length() == 0) {
                 return null;
             }
-            return new String(data, StandardCharsets.UTF_8);
+            return info;
         } catch (Exception ignored) {
             return null;
         }

@@ -25,17 +25,12 @@ public class Proto_v2 extends Proto_v1 {
         }
         long fileCnt = readSize();
         for (long fileNum = 0; fileNum < fileCnt; fileNum++) {
-            int fileName_len = (int) readSize();
-            if (fileName_len <= 0) {
+            String fileName = readString(2048);
+            if (fileName == null || fileName.length() == 0) {
                 return false;
             }
-            byte[] fileName_data = new byte[fileName_len];
-            if (this.serverConnection.receive(fileName_data)) {
-                return false;
-            }
-            String fileName = new String(fileName_data, StandardCharsets.UTF_8);
             long file_size = readSize();
-            if (file_size <= 0) {
+            if (file_size < 0 || file_size > 17179869184L) { // limit the file size to 16 GiB
                 return false;
             }
             int base_ind = fileName.lastIndexOf('/') + 1;
@@ -92,7 +87,7 @@ public class Proto_v2 extends Proto_v1 {
                 String fileName = fsUtils.getFileName();
                 long fileSize = fsUtils.getFileSize();
                 InputStream inStream = fsUtils.getFileInStream();
-                if (fileName==null || fileName.length()==0) {
+                if (fileName == null || fileName.length() == 0) {
                     return false;
                 }
                 if (fileSize < 0) {
@@ -101,8 +96,7 @@ public class Proto_v2 extends Proto_v1 {
                 if (inStream == null) {
                     return false;
                 }
-                byte[] name_data = fileName.getBytes(StandardCharsets.UTF_8);
-                if (!sendData(name_data)) {
+                if (!sendString(fileName)) {
                     return false;
                 }
                 if (sendSize(fileSize)) {

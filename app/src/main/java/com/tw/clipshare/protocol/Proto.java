@@ -4,6 +4,8 @@ import com.tw.clipshare.netConnection.ServerConnection;
 import com.tw.clipshare.platformUtils.AndroidUtils;
 import com.tw.clipshare.platformUtils.StatusNotifier;
 
+import java.nio.charset.StandardCharsets;
+
 public abstract class Proto {
     protected static final byte GET_TEXT = 1;
     protected static final byte SEND_TEXT = 2;
@@ -55,33 +57,41 @@ public abstract class Proto {
         return (this.serverConnection.receive(status) || status[0] != STATUS_OK);
     }
 
-    protected byte[] readData() {
+    /**
+     * Reads a String encoded with UTF-8 from server
+     *
+     * @param maxSize maximum size to read
+     * @return read string or null on error
+     */
+    protected String readString(int maxSize) {
         long size = this.readSize();
-        if (size < 0 || size >= 16777216) {
+        if (size < 0 || size > maxSize) {
             return null;
         }
         byte[] data = new byte[(int) size];
         if (this.serverConnection.receive(data)) {
             return null;
         }
-        return data;
+        return new String(data, StandardCharsets.UTF_8);
     }
 
     /**
-     * Sends a byte array to server
+     * Sends a String encoded with UTF-8 to server
      *
-     * @param data data to be sent
+     * @param data String to be sent
      * @return true on success or false on error
      */
-    protected boolean sendData(byte[] data) {
-        int len = data.length;
-        if (len <= 0 || len >= 16777216) {
+    protected boolean sendString(String data) {
+        if (data == null) return false;
+        final byte[] bytes = data.getBytes(StandardCharsets.UTF_8);
+        final int len = bytes.length;
+        if (len >= 16777216) {
             return false;
         }
         if (this.sendSize(len)) {
             return false;
         }
-        return this.serverConnection.send(data);
+        return this.serverConnection.send(bytes);
     }
 
     public abstract String getText();

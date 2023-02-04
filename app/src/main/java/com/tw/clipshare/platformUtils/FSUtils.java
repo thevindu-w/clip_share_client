@@ -171,7 +171,7 @@ public class FSUtils extends AndroidUtils {
         int dotIndex = outFilePath.lastIndexOf('.');
         if (dotIndex > 0) {
             String extension = outFilePath.substring(dotIndex + 1);
-            String[] mediaExtensions = {"png", "jpg", "jpeg", "gif", "bmp", "webp", "tif", "tiff", "mp4", "mkv", "mov", "webm", "wmv", "flv", "avi"};
+            String[] mediaExtensions = {"png", "jpg", "jpeg", "gif", "bmp", "webp", "heic", "tif", "tiff", "mp4", "mkv", "mov", "webm", "wmv", "flv", "avi"};
             for (String mediaExtension : mediaExtensions) {
                 if (mediaExtension.equalsIgnoreCase(extension)) {
                     MediaScannerConnection.scanFile(this.activity.getApplicationContext(),
