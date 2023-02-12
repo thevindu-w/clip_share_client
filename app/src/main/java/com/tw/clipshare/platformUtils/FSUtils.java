@@ -19,7 +19,7 @@ public class FSUtils extends AndroidUtils {
     private final String id;
     private String outFilePath;
     private String baseDirName;
-    private LinkedList<PendingFile> pendingFiles;
+    private final LinkedList<PendingFile> pendingFiles;
 
     public FSUtils(Context context, Activity activity, LinkedList<PendingFile> pendingFiles) {
         super(context, activity);

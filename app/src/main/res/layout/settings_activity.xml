@@ -6,7 +6,7 @@
               android:orientation="vertical"
               tools:context="com.tw.clipshare.ClipShareActivity">
 
-    <Switch android:id="@+id/secureSwitch"
+    <androidx.appcompat.widget.SwitchCompat android:id="@+id/secureSwitch"
             android:text="@string/secure_mode"
             android:layout_margin="12dp"
             android:textSize="20sp"

@@ -16,6 +16,7 @@ import android.widget.*;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SwitchCompat;
 import com.tw.clipshare.netConnection.SecureConnection;
 
 import java.io.InputStream;
@@ -26,7 +27,7 @@ public class SettingsActivity extends AppCompatActivity {
 
     private static final byte CLIENT = 10;
     private static final byte CA = 11;
-    private Switch secureSwitch;
+    private SwitchCompat secureSwitch;
     private Intent intent;
     private AtomicInteger id;
     private LinearLayout trustList;

@@ -15,7 +15,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.provider.OpenableColumns;
 import android.text.method.ScrollingMovementMethod;
-import android.util.Log;
 import android.view.*;
 import android.widget.*;
 import androidx.activity.result.ActivityResultLauncher;
@@ -457,8 +456,7 @@ public class ClipShareActivity extends AppCompatActivity {
             } else {
                 connection = new PlainConnection(Inet4Address.getByName(addressStr));
             }
-        } catch (Exception e) {
-            Log.d("ConnectionError", e.getMessage());
+        } catch (Exception ignored) {
         }
         return connection;
     }
@@ -498,9 +496,7 @@ public class ClipShareActivity extends AppCompatActivity {
                     } else {
                         LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
                         View popupView = inflater.inflate(R.layout.popup, null);
-                        popupView.findViewById(R.id.popupLinearWrap).setOnClickListener(v -> {
-                            popupView.performClick();
-                        });
+                        popupView.findViewById(R.id.popupLinearWrap).setOnClickListener(v -> popupView.performClick());
 
                         int width = LinearLayout.LayoutParams.MATCH_PARENT;
                         int height = LinearLayout.LayoutParams.MATCH_PARENT;
@@ -508,7 +504,7 @@ public class ClipShareActivity extends AppCompatActivity {
                         final PopupWindow popupWindow = new PopupWindow(popupView, width, height, focusable);
                         runOnUiThread(() -> popupWindow.showAtLocation(parent, Gravity.CENTER, 0, 0));
 
-                        LinearLayout popupLayout = (LinearLayout) popupView.findViewById(R.id.popupLayout);
+                        LinearLayout popupLayout = popupView.findViewById(R.id.popupLayout);
                         if (popupLayout == null) return;
                         View popupElemView;
                         TextView txtView;
@@ -522,9 +518,7 @@ public class ClipShareActivity extends AppCompatActivity {
                             });
                             popupLayout.addView(popupElemView);
                         }
-                        popupView.setOnClickListener(v -> {
-                            popupWindow.dismiss();
-                        });
+                        popupView.setOnClickListener(v -> popupWindow.dismiss());
                     }
                 } else {
                     runOnUiThread(() -> Toast.makeText(context, "No servers found!", Toast.LENGTH_SHORT).show());
@@ -590,9 +584,7 @@ public class ClipShareActivity extends AppCompatActivity {
             ArrayList<Uri> tmp = this.fileURIs;
             this.fileURIs = null;
             ExecutorService executorService = Executors.newSingleThreadExecutor();
-            Runnable sendURIs = () -> {
-                sendFromURIs(tmp);
-            };
+            Runnable sendURIs = () -> sendFromURIs(tmp);
             executorService.submit(sendURIs);
         }
     }
@@ -616,7 +608,7 @@ public class ClipShareActivity extends AppCompatActivity {
 
                 InputStream fileInputStream = getContentResolver().openInputStream(uri);
                 long fileSize = Long.parseLong(fileSizeStr);
-                PendingFile pendingFile = new PendingFile(fileInputStream, fileName, fileSize, address);
+                PendingFile pendingFile = new PendingFile(fileInputStream, fileName, fileSize);
                 pendingFiles.add(pendingFile);
             }
             FSUtils utils = new FSUtils(context, ClipShareActivity.this, pendingFiles);

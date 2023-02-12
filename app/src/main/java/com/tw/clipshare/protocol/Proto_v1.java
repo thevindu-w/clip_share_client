@@ -8,7 +8,6 @@ import com.tw.clipshare.platformUtils.StatusNotifier;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
 
 public class Proto_v1 extends Proto {
 

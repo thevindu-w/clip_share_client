@@ -1,4 +1,6 @@
 *.iml
+*.apk
+*.class
 .gradle
 local.properties
 .idea/

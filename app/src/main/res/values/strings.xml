@@ -33,5 +33,5 @@
     <string name="name">Name :</string>
     <string name="browse">Browse</string>
     <string name="ca_certificate">CA Certificate</string>
-    <string name="sendingFiles">Sending files ...</string>
+    <string name="sendingFiles">Sending files …</string>
 </resources>
