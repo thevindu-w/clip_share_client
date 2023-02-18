@@ -7,12 +7,12 @@
               tools:context="com.tw.clipshare.ClipShareActivity">
 
     <androidx.appcompat.widget.SwitchCompat android:id="@+id/secureSwitch"
-            android:text="@string/secure_mode"
-            android:layout_margin="12dp"
-            android:textSize="20sp"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:checked="false"/>
+                                            android:text="@string/secure_mode"
+                                            android:layout_margin="12dp"
+                                            android:textSize="20sp"
+                                            android:layout_width="match_parent"
+                                            android:layout_height="wrap_content"
+                                            android:checked="false"/>
 
     <TextView android:layout_width="match_parent"
               android:layout_height="wrap_content"

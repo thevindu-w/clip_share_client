@@ -3,6 +3,12 @@
       xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
+            android:id="@+id/action_tunnel_switch"
+            android:title=""
+            android:actionLayout="@layout/tunnel_switch"
+            app:showAsAction="always"/>
+
+    <item
             android:id="@+id/action_secure"
             android:icon="@drawable/ic_insecure"
             android:title="@string/security"

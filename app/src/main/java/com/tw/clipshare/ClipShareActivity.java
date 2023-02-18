@@ -22,13 +22,12 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SwitchCompat;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
-import com.tw.clipshare.netConnection.PlainConnection;
-import com.tw.clipshare.netConnection.SecureConnection;
-import com.tw.clipshare.netConnection.ServerConnection;
+import com.tw.clipshare.netConnection.*;
 import com.tw.clipshare.platformUtils.AndroidStatusNotifier;
 import com.tw.clipshare.platformUtils.AndroidUtils;
 import com.tw.clipshare.platformUtils.FSUtils;
@@ -282,6 +281,7 @@ public class ClipShareActivity extends AppCompatActivity {
     private Context context;
     private ArrayList<Uri> fileURIs;
     private Menu menu;
+    private SwitchCompat switchCompat = null;
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -299,7 +299,18 @@ public class ClipShareActivity extends AppCompatActivity {
             }
             Settings st = Settings.getInstance(null);
             int icon_id = st.getSecure() ? R.drawable.ic_secure : R.drawable.ic_insecure;
-            menu.getItem(0).setIcon(ContextCompat.getDrawable(ClipShareActivity.this, icon_id));
+            menu.findItem(R.id.action_secure).setIcon(ContextCompat.getDrawable(ClipShareActivity.this, icon_id));
+
+            MenuItem tunnelSwitch = menu.findItem(R.id.action_tunnel_switch);
+            tunnelSwitch.setActionView(R.layout.tunnel_switch);
+            switchCompat = tunnelSwitch.getActionView().findViewById(R.id.tunnelSwitch);
+            switchCompat.setOnCheckedChangeListener( (switchView, isChecked) -> {
+                if (isChecked) {
+                    TunnelManager.start();
+                }else{
+                    TunnelManager.stop();
+                }
+            });
         } catch (Exception ignored) {
         }
         return true;
@@ -314,6 +325,8 @@ public class ClipShareActivity extends AppCompatActivity {
             activityLauncherForResult.launch(settingsIntent);
         } else if (itemID == R.id.action_secure) {
             Toast.makeText(ClipShareActivity.this, "Change this in settings", Toast.LENGTH_SHORT).show();
+        } else if (itemID == R.id.tunnelSwitch) {
+
         }
 
         return true;
@@ -370,7 +383,7 @@ public class ClipShareActivity extends AppCompatActivity {
                         Settings st = Settings.getInstance(null);
                         boolean sec = st.getSecure();
                         int icon_id = sec ? R.drawable.ic_secure : R.drawable.ic_insecure;
-                        menu.getItem(0).setIcon(ContextCompat.getDrawable(ClipShareActivity.this, icon_id));
+                        menu.findItem(R.id.action_secure).setIcon(ContextCompat.getDrawable(ClipShareActivity.this, icon_id));
                         SharedPreferences.Editor editor = sharedPref.edit();
                         try {
                             editor.putString("settings", Settings.toString(st));
@@ -444,7 +457,9 @@ public class ClipShareActivity extends AppCompatActivity {
         ServerConnection connection = null;
         try {
             Settings st = Settings.getInstance(null);
-            if (st.getSecure()) {
+            if (switchCompat!=null && switchCompat.isChecked()){
+                connection = new TunnelConnection(addressStr);
+            }else if (st.getSecure()) {
                 InputStream caCertIn = st.getCACertInputStream();
                 InputStream clientCertKeyIn = st.getCertInputStream();
                 char[] clientPass = st.getPasswd();
@@ -532,7 +547,7 @@ public class ClipShareActivity extends AppCompatActivity {
     private String getServerAddress() {
         try {
             String address = editAddress.getText().toString();
-            if (!address.matches("^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(\\.|$)){4}")) {
+            if (!address.matches("^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(\\.|$)){4}$")) {
                 Toast.makeText(ClipShareActivity.this, "Invalid address", Toast.LENGTH_SHORT).show();
                 return null;
             }
