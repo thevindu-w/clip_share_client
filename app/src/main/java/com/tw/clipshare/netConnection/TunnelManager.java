@@ -51,7 +51,7 @@ public class TunnelManager {
         } catch (Exception ignored) {
         }
     }
-    
+
     private static synchronized void removeConnection(Socket connection) {
         String address = connection.getInetAddress().getHostAddress();
         if (tunnels.containsKey(address)) {
@@ -93,15 +93,24 @@ public class TunnelManager {
         } catch (Exception ignored) {
         }
     }
-    
-    public static void stop(){
+
+    public static void stop() {
         try {
             serverSocket.close();
         } catch (IOException ignored) {
         }
-        listenerExecutor.shutdownNow();
-        connectionExecutor.shutdown();
-        tunnels.clear();
+        try {
+            if (listenerExecutor != null) listenerExecutor.shutdownNow();
+            if (connectionExecutor != null) connectionExecutor.shutdown();
+            tunnels.forEach((ip, tunnel) -> {
+                try {
+                    tunnel.close();
+                } catch (Exception ignored) {
+                }
+            });
+            tunnels.clear();
+        } catch (Exception ignored) {
+        }
     }
 
     private static class Tunnel extends Thread {
@@ -128,7 +137,10 @@ public class TunnelManager {
                 int read = inputStream.read();
                 if (read != 4) {
                     socket.close();
-                    throw new SocketException("invalid client response");
+                    throw new SocketException("Invalid client response");
+                }
+                if (this.released) {
+                    throw new SocketException("Socket is already released");
                 }
                 this.released = true;
                 this.interrupt();
@@ -147,26 +159,21 @@ public class TunnelManager {
         @Override
         public void run() {
             try {
-                try {
-                    socket.setSoTimeout(1000);
-                    while (true) {
-                        synchronized (this) {
-                            if (this.released) {
-                                break;
-                            }
-                        }
-                        outputStream.write(1);
-                        int read = inputStream.read();
-                        if (read != 2) {
-                            removeConnection(socket);
+                socket.setSoTimeout(1000);
+                while (!Thread.interrupted()) {
+                    synchronized (this) {
+                        if (this.released) {
                             break;
                         }
-                        try {
-                            Thread.sleep(2000);
-                        } catch (InterruptedException ignored) {
-                        }
                     }
-                } catch (Exception ignored) {
+                    outputStream.write(1);
+                    int read = inputStream.read();
+                    if (read != 2) {
+                        removeConnection(socket);
+                        break;
+                    }
+                    if (Thread.interrupted()) break;
+                    Thread.sleep(2000);
                 }
             } catch (Exception ignored) {
             }

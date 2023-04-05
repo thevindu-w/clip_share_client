@@ -8,10 +8,10 @@ android {
 
     defaultConfig {
         applicationId "com.tw.clipshare"
-        minSdkVersion 21
+        minSdkVersion 24
         targetSdkVersion 31
         versionCode 1
-        versionName "2.2"
+        versionName "2.2.1"
         resConfigs "en"
         /*testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"*/
     }

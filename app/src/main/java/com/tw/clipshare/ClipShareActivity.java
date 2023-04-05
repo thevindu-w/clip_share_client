@@ -325,10 +325,7 @@ public class ClipShareActivity extends AppCompatActivity {
             activityLauncherForResult.launch(settingsIntent);
         } else if (itemID == R.id.action_secure) {
             Toast.makeText(ClipShareActivity.this, "Change this in settings", Toast.LENGTH_SHORT).show();
-        } else if (itemID == R.id.tunnelSwitch) {
-
         }
-
         return true;
     }
 
@@ -426,7 +423,7 @@ public class ClipShareActivity extends AppCompatActivity {
         Button btnSendFile = findViewById(R.id.btnSendFile);
         btnSendFile.setOnClickListener(view -> clkSendFile());
         Button btnScanHost = findViewById(R.id.btnScanHost);
-        btnScanHost.setOnClickListener(view -> clkScanBtn(view));
+        btnScanHost.setOnClickListener(this::clkScanBtn);
         editAddress.setText(sharedPref.getString("hostIP", ""));
         try {
             Settings.getInstance(sharedPref.getString("settings", null));
