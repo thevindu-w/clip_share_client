@@ -266,7 +266,6 @@ class ServerFinder implements Runnable {
 public class ClipShareActivity extends AppCompatActivity {
     public static final int WRITE_IMAGE = 222;
     public static final int WRITE_FILE = 223;
-    public static final int CLIPBOARD_READ = 444;
     public static final int PORT = 4337;
     public static final String CHANNEL_ID = "upload_channel";
     private static final Object fileGetCntLock = new Object();
@@ -304,10 +303,10 @@ public class ClipShareActivity extends AppCompatActivity {
             MenuItem tunnelSwitch = menu.findItem(R.id.action_tunnel_switch);
             tunnelSwitch.setActionView(R.layout.tunnel_switch);
             switchCompat = tunnelSwitch.getActionView().findViewById(R.id.tunnelSwitch);
-            switchCompat.setOnCheckedChangeListener( (switchView, isChecked) -> {
+            switchCompat.setOnCheckedChangeListener((switchView, isChecked) -> {
                 if (isChecked) {
                     TunnelManager.start();
-                }else{
+                } else {
                     TunnelManager.stop();
                 }
             });
@@ -454,9 +453,9 @@ public class ClipShareActivity extends AppCompatActivity {
         ServerConnection connection = null;
         try {
             Settings st = Settings.getInstance(null);
-            if (switchCompat!=null && switchCompat.isChecked()){
+            if (switchCompat != null && switchCompat.isChecked()) {
                 connection = new TunnelConnection(addressStr);
-            }else if (st.getSecure()) {
+            } else if (st.getSecure()) {
                 InputStream caCertIn = st.getCACertInputStream();
                 InputStream clientCertKeyIn = st.getCertInputStream();
                 char[] clientPass = st.getPasswd();
@@ -577,7 +576,8 @@ public class ClipShareActivity extends AppCompatActivity {
                 connection.close();
                 if (!status) return;
                 if (clipDataString.length() < 16384) runOnUiThread(() -> output.setText(clipDataString));
-                else runOnUiThread(() -> output.setText(R.string.ReadClipSuccess));
+                else
+                    runOnUiThread(() -> output.setText(getString(R.string.truncated, clipDataString.substring(0, 1024))));
             } catch (Exception e) {
                 runOnUiThread(() -> output.setText(String.format("Error %s", e.getMessage())));
             }
@@ -711,7 +711,7 @@ public class ClipShareActivity extends AppCompatActivity {
                 if (text == null) return;
                 utils.setClipboardText(text);
                 if (text.length() < 16384) runOnUiThread(() -> output.setText(text));
-                else runOnUiThread(() -> output.setText(R.string.WriteClipSuccess));
+                else runOnUiThread(() -> output.setText(getString(R.string.truncated, text.substring(0, 1024))));
             } catch (Exception e) {
                 runOnUiThread(() -> output.setText(String.format("Error %s", e.getMessage())));
             }
@@ -822,6 +822,7 @@ public class ClipShareActivity extends AppCompatActivity {
     }
 
     public boolean checkPermission(String permission, int requestCode) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) return true;
         if (ContextCompat.checkSelfPermission(ClipShareActivity.this, permission) == PackageManager.PERMISSION_DENIED) {
             ActivityCompat.requestPermissions(ClipShareActivity.this, new String[]{permission}, requestCode);
             return false;
@@ -848,12 +849,6 @@ public class ClipShareActivity extends AppCompatActivity {
                 }
             } else {
                 Toast.makeText(ClipShareActivity.this, "Storage Permission Denied", Toast.LENGTH_SHORT).show();
-            }
-        } else if (requestCode == CLIPBOARD_READ) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                Toast.makeText(ClipShareActivity.this, "Not Implemented", Toast.LENGTH_SHORT).show();
-            } else {
-                Toast.makeText(ClipShareActivity.this, "Clipboard read Permission Denied", Toast.LENGTH_SHORT).show();
             }
         }
     }

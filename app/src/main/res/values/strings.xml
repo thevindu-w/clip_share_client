@@ -5,8 +5,7 @@
     <string name="btnSendTxt" translatable="false">Send</string>
     <string name="addressLbl" translatable="false">Server :</string>
     <string name="addressHint" translatable="false">192.168.1.2</string>
-    <string name="ReadClipSuccess" translatable="false">Read data from clipboard</string>
-    <string name="WriteClipSuccess" translatable="false">Copied to clipboard</string>
+    <string name="truncated" translatable="false">%s ... (truncated)</string>
     <string name="btnFileTxt" translatable="false">File</string>
     <string name="scanBtnTxt" translatable="false">Scan</string>
     <string name="fileSelectedTxt" translatable="false">File selected. Press send file button.</string>

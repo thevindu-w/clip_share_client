@@ -3,7 +3,7 @@
           package="com.tw.clipshare">
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28"/>
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
     <application
             android:icon="@mipmap/ic_launcher"
@@ -13,7 +13,8 @@
             android:theme="@style/Theme.ClipShare"
             android:testOnly="false"
             android:requestLegacyExternalStorage="true">
-        <activity android:name="com.tw.clipshare.ClipShareActivity" android:launchMode="singleTask" android:exported="true">
+        <activity android:name="com.tw.clipshare.ClipShareActivity" android:launchMode="singleTask"
+                  android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>

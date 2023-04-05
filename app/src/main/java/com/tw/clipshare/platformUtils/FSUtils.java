@@ -43,7 +43,7 @@ public class FSUtils extends AndroidUtils {
     }
 
     private String getDocumentDir() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             baseDirName = String.valueOf(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS));
         } else {
             baseDirName = String.valueOf(Environment.getExternalStorageDirectory());
@@ -135,7 +135,7 @@ public class FSUtils extends AndroidUtils {
     }
 
     public OutputStream getImageOutStream() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             baseDirName = String.valueOf(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES));
         } else {
             baseDirName = String.valueOf(Environment.getExternalStorageDirectory());
