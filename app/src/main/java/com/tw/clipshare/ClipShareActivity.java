@@ -338,30 +338,7 @@ public class ClipShareActivity extends AppCompatActivity {
         this.context = getApplicationContext();
 
         Intent intent = getIntent();
-        String type = intent.getType();
-        if (type != null) {
-            try {
-                String action = intent.getAction();
-                if (Intent.ACTION_SEND.equals(action)) {
-                    output.setText(R.string.fileSelectedTxt);
-                    this.fileURIs = new ArrayList<>(1);
-                    this.fileURIs.add(intent.getParcelableExtra(Intent.EXTRA_STREAM));
-                } else if (Intent.ACTION_SEND_MULTIPLE.equals(action)) {
-                    this.fileURIs = intent.getParcelableArrayListExtra(Intent.EXTRA_STREAM);
-                    if (this.fileURIs != null) {
-                        int cnt = this.fileURIs.size();
-                        output.setText(context.getResources().getQuantityString(R.plurals.filesSelectedTxt, cnt, cnt));
-                    } else output.setText(R.string.noFilesTxt);
-                } else {
-                    this.fileURIs = null;
-                    output.setText(R.string.noFilesTxt);
-                }
-            } catch (Exception e) {
-                output.setText(e.getMessage());
-            }
-        } else {
-            this.fileURIs = null;
-        }
+        if (intent != null) extractIntent(intent);
 
         SharedPreferences sharedPref = ClipShareActivity.this.getPreferences(Context.MODE_PRIVATE);
 
@@ -449,6 +426,42 @@ public class ClipShareActivity extends AppCompatActivity {
         }
     }
 
+    private void extractIntent(Intent intent) {
+        String type = intent.getType();
+        if (type != null) {
+            try {
+                if ("application/octet-stream".equals(type)) {
+                    String action = intent.getAction();
+                    if (Intent.ACTION_SEND.equals(action)) {
+                        output.setText(R.string.fileSelectedTxt);
+                        this.fileURIs = new ArrayList<>(1);
+                        this.fileURIs.add(intent.getParcelableExtra(Intent.EXTRA_STREAM));
+                    } else if (Intent.ACTION_SEND_MULTIPLE.equals(action)) {
+                        this.fileURIs = intent.getParcelableArrayListExtra(Intent.EXTRA_STREAM);
+                        if (this.fileURIs != null) {
+                            int cnt = this.fileURIs.size();
+                            output.setText(context.getResources().getQuantityString(R.plurals.filesSelectedTxt, cnt, cnt));
+                        } else output.setText(R.string.noFilesTxt);
+                    } else {
+                        this.fileURIs = null;
+                        output.setText(R.string.noFilesTxt);
+                    }
+                } else if ("text/plain".equals(type)) {
+                    String text = intent.getStringExtra(Intent.EXTRA_TEXT);
+                    if (text!=null){
+                        AndroidUtils utils = new AndroidUtils(context, ClipShareActivity.this);
+                        utils.setClipboardText(text);
+                        output.setText(R.string.textSelected);
+                    }
+                }
+            } catch (Exception e) {
+                output.setText(e.getMessage());
+            }
+        } else {
+            this.fileURIs = null;
+        }
+    }
+
     ServerConnection getServerConnection(String addressStr) {
         ServerConnection connection = null;
         try {
@@ -475,25 +488,7 @@ public class ClipShareActivity extends AppCompatActivity {
     @Override
     public void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
-        String type = intent.getType();
-        if (type != null) {
-            try {
-                String action = intent.getAction();
-                if (Intent.ACTION_SEND.equals(action)) {
-                    output.setText(R.string.fileSelectedTxt);
-                    this.fileURIs = new ArrayList<>(1);
-                    this.fileURIs.add(intent.getParcelableExtra(Intent.EXTRA_STREAM));
-                } else if (Intent.ACTION_SEND_MULTIPLE.equals(action)) {
-                    this.fileURIs = intent.getParcelableArrayListExtra(Intent.EXTRA_STREAM);
-                    if (this.fileURIs != null) {
-                        int cnt = this.fileURIs.size();
-                        output.setText(context.getResources().getQuantityString(R.plurals.filesSelectedTxt, cnt, cnt));
-                    } else output.setText(R.string.noFilesTxt);
-                }
-            } catch (Exception e) {
-                output.setText(e.getMessage());
-            }
-        }
+        extractIntent(intent);
     }
 
     private void clkScanBtn(View parent) {
@@ -506,7 +501,7 @@ public class ClipShareActivity extends AppCompatActivity {
                         runOnUiThread(() -> editAddress.setText(serverAddress.getHostAddress()));
                     } else {
                         LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
-                        View popupView = inflater.inflate(R.layout.popup, null);
+                        View popupView = inflater.inflate(R.layout.popup, findViewById(R.id.main_layout), false);
                         popupView.findViewById(R.id.popupLinearWrap).setOnClickListener(v -> popupView.performClick());
 
                         int width = LinearLayout.LayoutParams.MATCH_PARENT;

@@ -11,6 +11,6 @@
             android:layout_margin="5dp"
             android:padding="10dp"
             android:textSize="18sp"
-            android:background="#dddddd"
+            android:background="@color/popupTextBackground"
             android:text=""/>
 </LinearLayout>

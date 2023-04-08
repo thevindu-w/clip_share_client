@@ -34,4 +34,5 @@
     <string name="ca_certificate" translatable="false">CA Certificate</string>
     <string name="sendingFiles" translatable="false">Sending files …</string>
     <string name="tunnel">Tunnel</string>
+    <string name="textSelected">Text is selected. Press the Send button.</string>
 </resources>

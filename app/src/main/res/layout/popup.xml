@@ -22,7 +22,7 @@
                     android:id="@+id/popupLayout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:background="#ffffff"
+                    android:background="@color/popupBackground"
                     android:orientation="vertical">
             </LinearLayout>
         </LinearLayout>
