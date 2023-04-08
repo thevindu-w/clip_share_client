@@ -4,27 +4,26 @@ plugins {
 
 android {
     compileSdkVersion = 33
-    buildToolsVersion "32.0.0"
+    buildToolsVersion = "32.0.0"
 
     defaultConfig {
-        applicationId "com.tw.clipshare"
+        applicationId = "com.tw.clipshare"
         minSdkVersion 24
         targetSdkVersion 31
-        versionCode 1
-        versionName "2.2.1"
+        versionCode = 1
+        versionName = "2.3"
         resConfigs "en"
-        /*testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"*/
     }
 
     buildTypes {
         release {
-            minifyEnabled true
-            shrinkResources true
+            minifyEnabled = true
+            shrinkResources = true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
         debug {
-            minifyEnabled false
-            shrinkResources false
+            minifyEnabled = false
+            shrinkResources = false
         }
     }
 

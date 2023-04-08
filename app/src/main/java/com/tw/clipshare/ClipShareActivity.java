@@ -720,7 +720,7 @@ public class ClipShareActivity extends AppCompatActivity {
     }
 
     private void clkGetImg() {
-        if (!checkPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, WRITE_IMAGE))
+        if (needsPermission(WRITE_IMAGE))
             return;
 
         String address = this.getServerAddress();
@@ -748,7 +748,7 @@ public class ClipShareActivity extends AppCompatActivity {
     }
 
     private void clkGetFile() {
-        if (!checkPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, WRITE_FILE))
+        if (needsPermission(WRITE_FILE))
             return;
 
         String address = this.getServerAddress();
@@ -821,13 +821,14 @@ public class ClipShareActivity extends AppCompatActivity {
         executorService.submit(getFile);
     }
 
-    public boolean checkPermission(String permission, int requestCode) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) return true;
+    private boolean needsPermission(int requestCode) {
+        String permission = Manifest.permission.WRITE_EXTERNAL_STORAGE;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) return false;
         if (ContextCompat.checkSelfPermission(ClipShareActivity.this, permission) == PackageManager.PERMISSION_DENIED) {
             ActivityCompat.requestPermissions(ClipShareActivity.this, new String[]{permission}, requestCode);
-            return false;
-        } else {
             return true;
+        } else {
+            return false;
         }
     }
 
