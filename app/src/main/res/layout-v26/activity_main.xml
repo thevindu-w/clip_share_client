@@ -13,18 +13,18 @@
             android:layout_marginBottom="4dp">
         <LinearLayout android:layout_width="0dp"
                       android:layout_height="match_parent"
-                      android:layout_weight="0.05" tools:ignore="UselessLeaf"/>
+                      android:layout_weight="0.04" tools:ignore="UselessLeaf"/>
         <TextView
                 android:text="@string/addressLbl"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_weight="0.2"
+                android:layout_weight="0.22"
                 android:id="@+id/textView"
-                android:textSize="24sp"
+                android:textSize="21sp"
                 android:gravity="end|center_vertical"/>
         <LinearLayout android:layout_width="0dp"
                       android:layout_height="match_parent"
-                      android:layout_weight="0.02" tools:ignore="UselessLeaf"/>
+                      android:layout_weight="0.01" tools:ignore="UselessLeaf"/>
         <EditText
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
@@ -32,7 +32,7 @@
                 android:ems="10"
                 android:id="@+id/hostTxt"
                 android:inputType="text"
-                android:layout_marginStart="5dp"
+                android:layout_marginStart="4dp"
                 android:layout_marginEnd="15dp"
                 android:gravity="start|center_vertical"
                 android:hint="@string/addressHint" android:importantForAutofill="no"/>

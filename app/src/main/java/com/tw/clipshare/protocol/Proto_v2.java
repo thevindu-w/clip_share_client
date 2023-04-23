@@ -42,8 +42,10 @@ public class Proto_v2 extends Proto_v1 {
             byte[] buf = new byte[BUF_SZ];
             int progressCurrent;
             long tot_sz = file_size;
-            if (this.notifier != null) this.notifier.reset();
-            if (this.notifier != null) this.notifier.setName("Getting file " + fileName);
+            if (this.notifier != null) {
+                this.notifier.reset();
+                this.notifier.setName("Getting file " + fileName);
+            }
             while (file_size > 0) {
                 int read_sz = (int) Math.min(file_size, BUF_SZ);
                 if (this.serverConnection.receive(buf, 0, read_sz)) {
@@ -104,7 +106,10 @@ public class Proto_v2 extends Proto_v1 {
                 byte[] buf = new byte[BUF_SZ];
                 long sent_sz = 0;
                 int progressCurrent;
-                if (this.notifier != null) this.notifier.setName("Sending file " + fileName);
+                if (this.notifier != null){
+                    this.notifier.reset();
+                    this.notifier.setName("Sending file " + fileName);
+                }
                 while (fileSize > 0) {
                     int read_sz = (int) Math.min(fileSize, BUF_SZ);
                     try {

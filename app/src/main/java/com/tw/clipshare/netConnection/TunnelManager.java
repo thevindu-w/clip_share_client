@@ -173,6 +173,7 @@ public class TunnelManager {
                         break;
                     }
                     if (Thread.interrupted()) break;
+                    //noinspection BusyWait
                     Thread.sleep(2000);
                 }
             } catch (Exception ignored) {

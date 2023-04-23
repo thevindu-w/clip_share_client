@@ -430,7 +430,14 @@ public class ClipShareActivity extends AppCompatActivity {
         String type = intent.getType();
         if (type != null) {
             try {
-                if ("application/octet-stream".equals(type)) {
+                if (type.startsWith("text/")) {
+                    String text = intent.getStringExtra(Intent.EXTRA_TEXT);
+                    if (text != null) {
+                        AndroidUtils utils = new AndroidUtils(context, ClipShareActivity.this);
+                        utils.setClipboardText(text);
+                        output.setText(R.string.textSelected);
+                    }
+                } else {
                     String action = intent.getAction();
                     if (Intent.ACTION_SEND.equals(action)) {
                         output.setText(R.string.fileSelectedTxt);
@@ -445,13 +452,6 @@ public class ClipShareActivity extends AppCompatActivity {
                     } else {
                         this.fileURIs = null;
                         output.setText(R.string.noFilesTxt);
-                    }
-                } else if ("text/plain".equals(type)) {
-                    String text = intent.getStringExtra(Intent.EXTRA_TEXT);
-                    if (text!=null){
-                        AndroidUtils utils = new AndroidUtils(context, ClipShareActivity.this);
-                        utils.setClipboardText(text);
-                        output.setText(R.string.textSelected);
                     }
                 }
             } catch (Exception e) {
