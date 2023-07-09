@@ -430,6 +430,24 @@ public class ClipShareActivity extends AppCompatActivity {
         String type = intent.getType();
         if (type != null) {
             try {
+                String action = intent.getAction();
+                if (Intent.ACTION_SEND.equals(action)) {
+                    Uri extra = intent.getParcelableExtra(Intent.EXTRA_STREAM);
+                    if (extra != null) {
+                        this.fileURIs = new ArrayList<>(1);
+                        this.fileURIs.add(extra);
+                        output.setText(R.string.fileSelectedTxt);
+                        return;
+                    }
+                } else if (Intent.ACTION_SEND_MULTIPLE.equals(action)) {
+                    ArrayList<Uri> uris = intent.getParcelableArrayListExtra(Intent.EXTRA_STREAM);
+                    if (uris != null && uris.size() > 0) {
+                        this.fileURIs = uris;
+                        int cnt = this.fileURIs.size();
+                        output.setText(context.getResources().getQuantityString(R.plurals.filesSelectedTxt, cnt, cnt));
+                        return;
+                    }
+                }
                 if (type.startsWith("text/")) {
                     String text = intent.getStringExtra(Intent.EXTRA_TEXT);
                     if (text != null) {
@@ -438,21 +456,8 @@ public class ClipShareActivity extends AppCompatActivity {
                         output.setText(R.string.textSelected);
                     }
                 } else {
-                    String action = intent.getAction();
-                    if (Intent.ACTION_SEND.equals(action)) {
-                        output.setText(R.string.fileSelectedTxt);
-                        this.fileURIs = new ArrayList<>(1);
-                        this.fileURIs.add(intent.getParcelableExtra(Intent.EXTRA_STREAM));
-                    } else if (Intent.ACTION_SEND_MULTIPLE.equals(action)) {
-                        this.fileURIs = intent.getParcelableArrayListExtra(Intent.EXTRA_STREAM);
-                        if (this.fileURIs != null) {
-                            int cnt = this.fileURIs.size();
-                            output.setText(context.getResources().getQuantityString(R.plurals.filesSelectedTxt, cnt, cnt));
-                        } else output.setText(R.string.noFilesTxt);
-                    } else {
-                        this.fileURIs = null;
-                        output.setText(R.string.noFilesTxt);
-                    }
+                    this.fileURIs = null;
+                    output.setText(R.string.noFilesTxt);
                 }
             } catch (Exception e) {
                 output.setText(e.getMessage());
@@ -614,7 +619,7 @@ public class ClipShareActivity extends AppCompatActivity {
                 cursor.close();
 
                 InputStream fileInputStream = getContentResolver().openInputStream(uri);
-                long fileSize = Long.parseLong(fileSizeStr);
+                long fileSize = fileSizeStr != null ? Long.parseLong(fileSizeStr) : -1;
                 PendingFile pendingFile = new PendingFile(fileInputStream, fileName, fileSize);
                 pendingFiles.add(pendingFile);
             }

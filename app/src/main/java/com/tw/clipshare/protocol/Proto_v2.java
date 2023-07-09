@@ -5,9 +5,12 @@ import com.tw.clipshare.platformUtils.AndroidUtils;
 import com.tw.clipshare.platformUtils.FSUtils;
 import com.tw.clipshare.platformUtils.StatusNotifier;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Proto_v2 extends Proto_v1 {
 
@@ -88,6 +91,26 @@ public class Proto_v2 extends Proto_v1 {
                 String fileName = fsUtils.getFileName();
                 long fileSize = fsUtils.getFileSize();
                 InputStream inStream = fsUtils.getFileInStream();
+                if (fileSize == -1) {
+                    ArrayList<Byte> tmpList = new ArrayList<>(8192);
+                    byte[] tmpArray = new byte[8192];
+                    while (true) {
+                        int read = inStream.read(tmpArray);
+                        if (read < 0) break;
+                        List<Byte> boxed = new ArrayList<>(read);
+                        for (int i = 0; i < read; i++) {
+                            boxed.add(tmpArray[i]);
+                        }
+                        tmpList.addAll(boxed);
+                        if (tmpList.size() > 16777216) throw new Exception("Cannot determine file size");
+                    }
+                    byte[] bytes = new byte[tmpList.size()];
+                    for (int i = 0; i < bytes.length; i++) {
+                        bytes[i] = tmpList.get(i);
+                    }
+                    fileSize = bytes.length;
+                    inStream = new ByteArrayInputStream(bytes);
+                }
                 if (fileName == null || fileName.length() == 0) {
                     return false;
                 }
@@ -106,7 +129,7 @@ public class Proto_v2 extends Proto_v1 {
                 byte[] buf = new byte[BUF_SZ];
                 long sent_sz = 0;
                 int progressCurrent;
-                if (this.notifier != null){
+                if (this.notifier != null) {
                     this.notifier.reset();
                     this.notifier.setName("Sending file " + fileName);
                 }
