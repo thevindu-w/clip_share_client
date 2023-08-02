@@ -68,6 +68,11 @@ public class AndroidUtils {
         }
     }
 
+    /**
+     * Get the text copied to the clipboard.
+     *
+     * @return text copied to the clipboard as a String or null on error.
+     */
     public String getClipboardText() {
         try {
             ClipboardManager clipboard = this.getClipboardManager();
@@ -85,6 +90,11 @@ public class AndroidUtils {
         }
     }
 
+    /**
+     * Copy the text to the clipboard.
+     *
+     * @param text
+     */
     public void setClipboardText(String text) {
         try {
             ClipboardManager clipboard = this.getClipboardManager();

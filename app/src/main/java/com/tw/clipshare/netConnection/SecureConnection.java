@@ -42,6 +42,17 @@ public class SecureConnection extends ServerConnection {
     private static final Object CTX_LOCK = new Object();
     private static SSLContext ctxInstance = null;
 
+    /**
+     * TLS encrypted connection to the server.
+     *
+     * @param serverAddress        address of the server
+     * @param caCertInput          input stream to get the CA's certificate
+     * @param clientCertStoreInput input stream to get the client key certificate store
+     * @param certStorePassword    input stream to get the client key certificate store password
+     * @param acceptedCNs          array of accepted servers (common names)
+     * @throws IOException
+     * @throws GeneralSecurityException
+     */
     public SecureConnection(InetAddress serverAddress, InputStream caCertInput, InputStream clientCertStoreInput, char[] certStorePassword, String[] acceptedCNs) throws IOException, GeneralSecurityException {
         SSLContext ctx;
         synchronized (SecureConnection.CTX_LOCK) {
@@ -90,6 +101,9 @@ public class SecureConnection extends ServerConnection {
         this.outStream = this.socket.getOutputStream();
     }
 
+    /**
+     * Reset the SSLContext instance to null
+     */
     public static void resetSSLContext() {
         ExecutorService executorService = Executors.newSingleThreadExecutor();
         Runnable resetCtx = () -> {

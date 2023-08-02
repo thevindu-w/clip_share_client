@@ -33,6 +33,12 @@ public class PlainConnection extends ServerConnection {
 
     private static final int PORT = 4337;
 
+    /**
+     * Unencrypted TCP connection to the server.
+     *
+     * @param serverAddress address of the server
+     * @throws IOException
+     */
     public PlainConnection(InetAddress serverAddress) throws IOException {
         super(new Socket());
         this.socket.connect(new InetSocketAddress(serverAddress, PORT), 500);

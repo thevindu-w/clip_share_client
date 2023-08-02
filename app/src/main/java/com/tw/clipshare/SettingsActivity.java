@@ -210,10 +210,10 @@ public class SettingsActivity extends AppCompatActivity {
                             int size = Integer.parseInt(fileSizeStr);
                             cursor.close();
                             InputStream fileInputStream = getContentResolver().openInputStream(uri);
-                            String caCn = st.setCACert(fileInputStream, size);
-                            if (caCn != null) {
+                            String CA_CN = st.setCACert(fileInputStream, size);
+                            if (CA_CN != null) {
                                 SecureConnection.resetSSLContext();
-                                caCnTxt.setText(caCn);
+                                caCnTxt.setText(CA_CN);
                             } else {
                                 Toast.makeText(SettingsActivity.this, "Invalid", Toast.LENGTH_SHORT).show();
                             }

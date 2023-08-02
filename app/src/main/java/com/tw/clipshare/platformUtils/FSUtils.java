@@ -36,6 +36,9 @@ import java.io.*;
 import java.util.LinkedList;
 import java.util.Random;
 
+/**
+ * Utility to access files
+ */
 public class FSUtils extends AndroidUtils {
     private long fileSize;
     private String inFileName;

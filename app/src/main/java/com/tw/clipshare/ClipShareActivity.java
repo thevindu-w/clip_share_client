@@ -176,8 +176,8 @@ public class ClipShareActivity extends AppCompatActivity {
                             if (clipData != null) {
                                 int itemCount = clipData.getItemCount();
                                 uris = new ArrayList<>(itemCount);
-                                for (int cnt = 0; cnt < itemCount; cnt++) {
-                                    Uri uri = clipData.getItemAt(cnt).getUri();
+                                for (int count = 0; count < itemCount; count++) {
+                                    Uri uri = clipData.getItemAt(count).getUri();
                                     uris.add(uri);
                                 }
                             } else {
@@ -206,7 +206,7 @@ public class ClipShareActivity extends AppCompatActivity {
         btnSendFile.setOnClickListener(view -> clkSendFile());
         Button btnScanHost = findViewById(R.id.btnScanHost);
         btnScanHost.setOnClickListener(this::clkScanBtn);
-        editAddress.setText(sharedPref.getString("hostIP", ""));
+        editAddress.setText(sharedPref.getString("serverIP", ""));
         try {
             Settings.getInstance(sharedPref.getString("settings", null));
         } catch (Exception ignored) {
@@ -232,6 +232,11 @@ public class ClipShareActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Extract the file URIs or shared text from an intent.
+     *
+     * @param intent
+     */
     private void extractIntent(Intent intent) {
         String type = intent.getType();
         if (type != null) {
@@ -249,8 +254,8 @@ public class ClipShareActivity extends AppCompatActivity {
                     ArrayList<Uri> uris = intent.getParcelableArrayListExtra(Intent.EXTRA_STREAM);
                     if (uris != null && uris.size() > 0) {
                         this.fileURIs = uris;
-                        int cnt = this.fileURIs.size();
-                        output.setText(context.getResources().getQuantityString(R.plurals.filesSelectedTxt, cnt, cnt));
+                        int count = this.fileURIs.size();
+                        output.setText(context.getResources().getQuantityString(R.plurals.filesSelectedTxt, count, count));
                         return;
                     }
                 }
@@ -273,20 +278,27 @@ public class ClipShareActivity extends AppCompatActivity {
         }
     }
 
-    ServerConnection getServerConnection(String addressStr) {
+    /**
+     * Opens a ServerConnection. Returns null on error.
+     *
+     * @param addressStr IPv4 address of the server as a String in dotted decimal notation.
+     * @return opened ServerConnection or null
+     */
+    @Nullable
+    ServerConnection getServerConnection(@NonNull String addressStr) {
         ServerConnection connection = null;
         try {
-            Settings st = Settings.getInstance(null);
+            Settings settings = Settings.getInstance(null);
             if (switchCompat != null && switchCompat.isChecked()) {
                 connection = new TunnelConnection(addressStr);
-            } else if (st.getSecure()) {
-                InputStream caCertIn = st.getCACertInputStream();
-                InputStream clientCertKeyIn = st.getCertInputStream();
-                char[] clientPass = st.getPasswd();
+            } else if (settings.getSecure()) {
+                InputStream caCertIn = settings.getCACertInputStream();
+                InputStream clientCertKeyIn = settings.getCertInputStream();
+                char[] clientPass = settings.getPasswd();
                 if (clientCertKeyIn == null || clientPass == null) {
                     return null;
                 }
-                String[] acceptedServers = st.getTrustedList().toArray(new String[0]);
+                String[] acceptedServers = settings.getTrustedList().toArray(new String[0]);
                 connection = new SecureConnection(Inet4Address.getByName(addressStr), caCertIn, clientCertKeyIn, clientPass, acceptedServers);
             } else {
                 connection = new PlainConnection(Inet4Address.getByName(addressStr));
@@ -345,17 +357,22 @@ public class ClipShareActivity extends AppCompatActivity {
         }).start();
     }
 
+    /**
+     * Gets the server's IPv4 address from the address input box
+     *
+     * @return IPv4 address of the server in dotted decimal notation as a String, or null
+     */
     @Nullable
     private String getServerAddress() {
         try {
             String address = editAddress.getText().toString();
-            if (!address.matches("^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(\\.|$)){4}$")) {
+            if (!address.matches("^((25[0-5]|(2[0-4]|1\\d|[1-9]|)\\d)(\\.(?!$)|$)){4}$")) {
                 Toast.makeText(ClipShareActivity.this, "Invalid address", Toast.LENGTH_SHORT).show();
                 return null;
             }
             SharedPreferences sharedPref = ClipShareActivity.this.getPreferences(Context.MODE_PRIVATE);
             SharedPreferences.Editor editor = sharedPref.edit();
-            editor.putString("hostIP", address);
+            editor.putString("serverIP", address);
             editor.apply();
             return address;
         } catch (Exception ignored) {
@@ -407,6 +424,11 @@ public class ClipShareActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Sends files from a list of Uris
+     *
+     * @param uris
+     */
     private void sendFromURIs(ArrayList<Uri> uris) {
         try {
             String address = this.getServerAddress();
@@ -627,6 +649,14 @@ public class ClipShareActivity extends AppCompatActivity {
         executorService.submit(getFile);
     }
 
+    /**
+     * Checks if the app needs permission to write a file to storage.
+     * If the permission is not already granted, this will request the
+     * permission from the user.
+     *
+     * @param requestCode
+     * @return
+     */
     private boolean needsPermission(int requestCode) {
         String permission = Manifest.permission.WRITE_EXTERNAL_STORAGE;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) return false;
