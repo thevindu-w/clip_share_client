@@ -6,10 +6,10 @@ Share the clipboard between your phone and desktop. Share files and screenshots 
 This is a lightweight, cross-platform app to share copied text, files, and screenshots
 between an Android phone and a desktop.
 
-![Get it on IzzyOnDroid](https://gitlab.com/IzzyOnDroid/repo/-/raw/master/assets/IzzyOnDroid.png)
+[![Get it on IzzyOnDroid](https://gitlab.com/IzzyOnDroid/repo/-/raw/master/assets/IzzyOnDroid.png)](https://apt.izzysoft.de/fdroid/index/apk/com.tw.clipshare)
 <br>
 
-Download the app from [Fdroid apt.izzysoft.de/fdroid/index/apk/com.tw.clipshare](https://apt.izzysoft.de/fdroid/index/apk/com.tw.clipshare/).
+Download the app from [apt.izzysoft.de/fdroid/index/apk/com.tw.clipshare](https://apt.izzysoft.de/fdroid/index/apk/com.tw.clipshare).
 
 <br>
 
