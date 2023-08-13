@@ -72,7 +72,6 @@ import java.util.concurrent.Executors;
 public class ClipShareActivity extends AppCompatActivity {
     public static final int WRITE_IMAGE = 222;
     public static final int WRITE_FILE = 223;
-    public static final int PORT = 4337;
     public static final String CHANNEL_ID = "upload_channel";
     private static final Object fileGetCntLock = new Object();
     private static final Object fileSendCntLock = new Object();
@@ -86,7 +85,7 @@ public class ClipShareActivity extends AppCompatActivity {
     private Context context;
     private ArrayList<Uri> fileURIs;
     private Menu menu;
-    private SwitchCompat switchCompat = null;
+    private SwitchCompat tunnelSwitch = null;
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -108,8 +107,8 @@ public class ClipShareActivity extends AppCompatActivity {
 
             MenuItem tunnelSwitch = menu.findItem(R.id.action_tunnel_switch);
             tunnelSwitch.setActionView(R.layout.tunnel_switch);
-            switchCompat = tunnelSwitch.getActionView().findViewById(R.id.tunnelSwitch);
-            switchCompat.setOnCheckedChangeListener((switchView, isChecked) -> {
+            this.tunnelSwitch = tunnelSwitch.getActionView().findViewById(R.id.tunnelSwitch);
+            this.tunnelSwitch.setOnCheckedChangeListener((switchView, isChecked) -> {
                 if (isChecked) {
                     TunnelManager.start();
                 } else {
@@ -235,7 +234,7 @@ public class ClipShareActivity extends AppCompatActivity {
     /**
      * Extract the file URIs or shared text from an intent.
      *
-     * @param intent
+     * @param intent to extract data from
      */
     private void extractIntent(Intent intent) {
         String type = intent.getType();
@@ -289,7 +288,7 @@ public class ClipShareActivity extends AppCompatActivity {
         ServerConnection connection = null;
         try {
             Settings settings = Settings.getInstance(null);
-            if (switchCompat != null && switchCompat.isChecked()) {
+            if (tunnelSwitch != null && tunnelSwitch.isChecked()) {
                 connection = new TunnelConnection(addressStr);
             } else if (settings.getSecure()) {
                 InputStream caCertIn = settings.getCACertInputStream();
@@ -298,10 +297,12 @@ public class ClipShareActivity extends AppCompatActivity {
                 if (clientCertKeyIn == null || clientPass == null) {
                     return null;
                 }
+                int port = settings.getPortSecure();
                 String[] acceptedServers = settings.getTrustedList().toArray(new String[0]);
-                connection = new SecureConnection(Inet4Address.getByName(addressStr), caCertIn, clientCertKeyIn, clientPass, acceptedServers);
+                connection = new SecureConnection(Inet4Address.getByName(addressStr), port, caCertIn, clientCertKeyIn, clientPass, acceptedServers);
             } else {
-                connection = new PlainConnection(Inet4Address.getByName(addressStr));
+                int port = settings.getPort();
+                connection = new PlainConnection(Inet4Address.getByName(addressStr), port);
             }
         } catch (Exception ignored) {
         }
@@ -317,7 +318,8 @@ public class ClipShareActivity extends AppCompatActivity {
     private void clkScanBtn(View parent) {
         new Thread(() -> {
             try {
-                List<InetAddress> serverAddresses = ServerFinder.find();
+                Settings settings = Settings.getInstance(null);
+                List<InetAddress> serverAddresses = ServerFinder.find(settings.getPort());
                 if (!serverAddresses.isEmpty()) {
                     if (serverAddresses.size() == 1) {
                         InetAddress serverAddress = serverAddresses.get(0);
@@ -427,7 +429,7 @@ public class ClipShareActivity extends AppCompatActivity {
     /**
      * Sends files from a list of Uris
      *
-     * @param uris
+     * @param uris of files
      */
     private void sendFromURIs(ArrayList<Uri> uris) {
         try {
@@ -654,8 +656,8 @@ public class ClipShareActivity extends AppCompatActivity {
      * If the permission is not already granted, this will request the
      * permission from the user.
      *
-     * @param requestCode
-     * @return
+     * @param requestCode to check if permission is needed
+     * @return true if permission is required or false otherwise
      */
     private boolean needsPermission(int requestCode) {
         String permission = Manifest.permission.WRITE_EXTERNAL_STORAGE;

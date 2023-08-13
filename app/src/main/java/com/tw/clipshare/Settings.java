@@ -41,6 +41,8 @@ public class Settings implements Serializable {
     private char[] passwd;
     private String caCn;
     private String cn;
+    private int port;
+    private int portSecure;
 
     private Settings() {
         this.secure = false;
@@ -49,6 +51,8 @@ public class Settings implements Serializable {
         this.cert = null;
         this.passwd = null;
         this.cn = null;
+        this.port = 4337;
+        this.portSecure = 4338;
     }
 
     private static Settings fromString(String s) throws IOException, ClassNotFoundException {
@@ -87,6 +91,8 @@ public class Settings implements Serializable {
                 thisList.clear();
                 thisList.addAll(strSet.trustedList);
                 INSTANCE.secure = strSet.secure;
+                INSTANCE.port = strSet.port;
+                INSTANCE.portSecure = strSet.portSecure;
             } catch (Exception ignored) {
             }
         }
@@ -119,6 +125,14 @@ public class Settings implements Serializable {
 
     public String getCertCN() {
         return this.cn;
+    }
+
+    public int getPort() {
+        return port;
+    }
+
+    public int getPortSecure() {
+        return portSecure;
     }
 
     public void setSecure(boolean secure) {
@@ -166,5 +180,13 @@ public class Settings implements Serializable {
         } catch (Exception ignored) {
             return null;
         }
+    }
+
+    public void setPort(int port) {
+        this.port = port;
+    }
+
+    public void setPortSecure(int port) {
+        this.portSecure = port;
     }
 }

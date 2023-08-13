@@ -1,3 +1,27 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2022-2023 H. Thevindu J. Wijesekera
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 package com.tw.clipshare;
 
 import com.tw.clipshare.netConnection.PlainConnection;
@@ -17,11 +41,13 @@ class SubnetScanner {
     private final InetAddress myAddress;
     private final int hostCnt;
     private final Object lock;
+    private final int port;
     private volatile InetAddress serverAddress;
 
-    public SubnetScanner(InetAddress address, short subLen) {
+    public SubnetScanner(InetAddress address, int port, short subLen) {
         this.lock = new Object();
         this.myAddress = address;
+        this.port = port;
         this.addressBytes = address.getAddress();
         this.hostCnt = (1 << (32 - subLen)) - 2;
         short hostLen = (short) (32 - subLen);
@@ -49,7 +75,7 @@ class SubnetScanner {
         addressInt++;
         int endAddress = addressInt + hostCnt;
         for (int i = 0; i < threadCnt; i++) {
-            executor.submit(new IPScanner(addressInt++, endAddress, threadCnt));
+            executor.submit(new IPScanner(addressInt++, endAddress, port, threadCnt));
         }
         while (this.serverAddress == null && !executor.isTerminated() && !Thread.interrupted()) {
             synchronized (this.lock) {
@@ -70,11 +96,13 @@ class SubnetScanner {
         private final int addressEnd;
         private final int step;
         private int addressInt;
+        private final int port;
 
-        IPScanner(int startAddress, int endAddress, int step) {
+        IPScanner(int startAddress, int endAddress, int port, int step) {
             this.step = step;
             this.addressInt = startAddress;
             this.addressEnd = endAddress;
+            this.port = port;
         }
 
         @Override
@@ -83,7 +111,7 @@ class SubnetScanner {
                 try {
                     InetAddress address = convertAddress(addressInt);
                     if (!address.equals(myAddress)) {
-                        ServerConnection con = new PlainConnection(address);
+                        ServerConnection con = new PlainConnection(address, port);
                         Proto pr = ProtocolSelector.getProto(con, null, null);
                         if (pr != null) {
                             String serverName = pr.checkInfo();

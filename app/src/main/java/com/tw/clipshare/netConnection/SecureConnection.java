@@ -38,7 +38,6 @@ import java.util.concurrent.Executors;
 
 public class SecureConnection extends ServerConnection {
 
-    private static final int PORT = 4338;
     private static final Object CTX_LOCK = new Object();
     private static SSLContext ctxInstance = null;
 
@@ -46,14 +45,15 @@ public class SecureConnection extends ServerConnection {
      * TLS encrypted connection to the server.
      *
      * @param serverAddress        address of the server
+     * @param port                 port on which the server is listening
      * @param caCertInput          input stream to get the CA's certificate
      * @param clientCertStoreInput input stream to get the client key certificate store
      * @param certStorePassword    input stream to get the client key certificate store password
      * @param acceptedCNs          array of accepted servers (common names)
-     * @throws IOException
-     * @throws GeneralSecurityException
+     * @throws IOException              on connection error
+     * @throws GeneralSecurityException on security related errors
      */
-    public SecureConnection(InetAddress serverAddress, InputStream caCertInput, InputStream clientCertStoreInput, char[] certStorePassword, String[] acceptedCNs) throws IOException, GeneralSecurityException {
+    public SecureConnection(InetAddress serverAddress, int port, InputStream caCertInput, InputStream clientCertStoreInput, char[] certStorePassword, String[] acceptedCNs) throws IOException, GeneralSecurityException {
         SSLContext ctx;
         synchronized (SecureConnection.CTX_LOCK) {
             if (SecureConnection.ctxInstance == null) {
@@ -77,7 +77,7 @@ public class SecureConnection extends ServerConnection {
             }
         }
         SSLSocketFactory sslsocketfactory = ctx.getSocketFactory();
-        SSLSocket sslsocket = (SSLSocket) sslsocketfactory.createSocket(serverAddress, PORT);
+        SSLSocket sslsocket = (SSLSocket) sslsocketfactory.createSocket(serverAddress, port);
         SSLSession sslSession = sslsocket.getSession();
         X509Certificate serverCertificate = (X509Certificate) sslSession.getPeerCertificates()[0];
         boolean accepted = false;

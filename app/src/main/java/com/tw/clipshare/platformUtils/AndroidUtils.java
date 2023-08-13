@@ -93,7 +93,7 @@ public class AndroidUtils {
     /**
      * Copy the text to the clipboard.
      *
-     * @param text
+     * @param text to be copied to the clipboard
      */
     public void setClipboardText(String text) {
         try {

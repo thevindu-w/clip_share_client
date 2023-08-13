@@ -31,17 +31,16 @@ import java.net.Socket;
 
 public class PlainConnection extends ServerConnection {
 
-    private static final int PORT = 4337;
-
     /**
      * Unencrypted TCP connection to the server.
      *
      * @param serverAddress address of the server
-     * @throws IOException
+     * @param port          port on which the server is listening
+     * @throws IOException  on socket connection error
      */
-    public PlainConnection(InetAddress serverAddress) throws IOException {
+    public PlainConnection(InetAddress serverAddress, int port) throws IOException {
         super(new Socket());
-        this.socket.connect(new InetSocketAddress(serverAddress, PORT), 500);
+        this.socket.connect(new InetSocketAddress(serverAddress, port), 500);
         this.inStream = this.socket.getInputStream();
         this.outStream = this.socket.getOutputStream();
     }

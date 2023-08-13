@@ -35,4 +35,9 @@
     <string name="sendingFiles" translatable="false">Sending files …</string>
     <string name="tunnel">Tunnel</string>
     <string name="textSelected">Text is selected. Press the Send button.</string>
+    <string name="ports">Ports</string>
+    <string name="port">Port</string>
+    <string name="secure_port">Secure Port</string>
+    <string name="port_number">4337</string>
+    <string name="secure_port_number">4338</string>
 </resources>
