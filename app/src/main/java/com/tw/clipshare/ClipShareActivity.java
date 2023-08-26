@@ -285,28 +285,53 @@ public class ClipShareActivity extends AppCompatActivity {
      */
     @Nullable
     ServerConnection getServerConnection(@NonNull String addressStr) {
-        ServerConnection connection = null;
-        try {
-            Settings settings = Settings.getInstance(null);
-            if (tunnelSwitch != null && tunnelSwitch.isChecked()) {
-                connection = new TunnelConnection(addressStr);
-            } else if (settings.getSecure()) {
-                InputStream caCertIn = settings.getCACertInputStream();
-                InputStream clientCertKeyIn = settings.getCertInputStream();
-                char[] clientPass = settings.getPasswd();
-                if (clientCertKeyIn == null || clientPass == null) {
-                    return null;
+        int retries = 2;
+        do {
+            try {
+                Settings settings = Settings.getInstance(null);
+                if (tunnelSwitch != null && tunnelSwitch.isChecked()) {
+                    return new TunnelConnection(addressStr);
+                } else if (settings.getSecure()) {
+                    InputStream caCertIn = settings.getCACertInputStream();
+                    InputStream clientCertKeyIn = settings.getCertInputStream();
+                    char[] clientPass = settings.getPasswd();
+                    if (clientCertKeyIn == null || clientPass == null) {
+                        return null;
+                    }
+                    String[] acceptedServers = settings.getTrustedList().toArray(new String[0]);
+                    return new SecureConnection(Inet4Address.getByName(addressStr), settings.getPortSecure(), caCertIn, clientCertKeyIn, clientPass, acceptedServers);
+                } else {
+                    return new PlainConnection(Inet4Address.getByName(addressStr), settings.getPort());
                 }
-                int port = settings.getPortSecure();
-                String[] acceptedServers = settings.getTrustedList().toArray(new String[0]);
-                connection = new SecureConnection(Inet4Address.getByName(addressStr), port, caCertIn, clientCertKeyIn, clientPass, acceptedServers);
-            } else {
-                int port = settings.getPort();
-                connection = new PlainConnection(Inet4Address.getByName(addressStr), port);
+            } catch (Exception ignored) {
             }
-        } catch (Exception ignored) {
-        }
-        return connection;
+        } while (retries-- > 0);
+        return null;
+    }
+
+    /**
+     * Wrapper to get connection and protocol selector
+     *
+     * @param address  of the server
+     * @param utils    object or null
+     * @param notifier object or null
+     * @return a Proto object if success, or null otherwise
+     */
+    @Nullable
+    private Proto getProtoWrapper(@NonNull String address, AndroidUtils utils, StatusNotifier notifier) {
+        int retries = 1;
+        do {
+            try {
+                ServerConnection connection = getServerConnection(address);
+                if (connection == null) continue;
+                Proto proto = ProtocolSelector.getProto(connection, utils, notifier);
+                if (proto != null) return proto;
+                connection.close();
+            } catch (Exception ignored) {
+            }
+        } while (retries-- > 0);
+        runOnUiThread(() -> output.setText(R.string.couldNotConnect));
+        return null;
     }
 
     @Override
@@ -391,14 +416,10 @@ public class ClipShareActivity extends AppCompatActivity {
                 AndroidUtils utils = new AndroidUtils(context, ClipShareActivity.this);
                 String clipDataString = utils.getClipboardText();
                 if (clipDataString == null) return;
-                ServerConnection connection = getServerConnection(address);
-                Proto proto = ProtocolSelector.getProto(connection, utils, null);
-                if (proto == null) {
-                    runOnUiThread(() -> output.setText(R.string.couldNotConnect));
-                    return;
-                }
+                Proto proto = getProtoWrapper(address, utils, null);
+                if (proto == null) return;
                 boolean status = proto.sendText(clipDataString);
-                connection.close();
+                proto.close();
                 if (!status) return;
                 if (clipDataString.length() < 16384) runOnUiThread(() -> output.setText(clipDataString));
                 else
@@ -481,14 +502,10 @@ public class ClipShareActivity extends AppCompatActivity {
                 StatusNotifier notifier = new AndroidStatusNotifier(ClipShareActivity.this, notificationManager, builder, notificationId);
                 boolean status = true;
                 while (utils.getRemainingFileCount() > 0) {
-                    ServerConnection connection = this.getServerConnection(address);
-                    Proto proto = ProtocolSelector.getProto(connection, utils, notifier);
-                    if (proto == null) {
-                        runOnUiThread(() -> output.setText(R.string.couldNotConnect));
-                        return;
-                    }
+                    Proto proto = getProtoWrapper(address, utils, notifier);
+                    if (proto == null) return;
                     status &= proto.sendFile();
-                    connection.close();
+                    proto.close();
                 }
                 if (status) {
                     runOnUiThread(() -> {
@@ -530,14 +547,10 @@ public class ClipShareActivity extends AppCompatActivity {
         Runnable getClip = () -> {
             try {
                 AndroidUtils utils = new AndroidUtils(context, ClipShareActivity.this);
-                ServerConnection connection = getServerConnection(address);
-                Proto proto = ProtocolSelector.getProto(connection, utils, null);
-                if (proto == null) {
-                    runOnUiThread(() -> output.setText(R.string.couldNotConnect));
-                    return;
-                }
+                Proto proto = getProtoWrapper(address, utils, null);
+                if (proto == null) return;
                 String text = proto.getText();
-                connection.close();
+                proto.close();
                 if (text == null) return;
                 utils.setClipboardText(text);
                 if (text.length() < 16384) runOnUiThread(() -> output.setText(text));
@@ -560,14 +573,10 @@ public class ClipShareActivity extends AppCompatActivity {
         Runnable getImg = () -> {
             try {
                 FSUtils utils = new FSUtils(context, ClipShareActivity.this);
-                ServerConnection connection = getServerConnection(address);
-                Proto proto = ProtocolSelector.getProto(connection, utils, null);
-                if (proto == null) {
-                    runOnUiThread(() -> output.setText(R.string.couldNotConnect));
-                    return;
-                }
+                Proto proto = getProtoWrapper(address, utils, null);
+                if (proto == null) return;
                 boolean status = proto.getImage();
-                connection.close();
+                proto.close();
                 if (!status)
                     runOnUiThread(() -> Toast.makeText(ClipShareActivity.this, "Getting image failed", Toast.LENGTH_SHORT).show());
             } catch (Exception e) {
@@ -610,15 +619,11 @@ public class ClipShareActivity extends AppCompatActivity {
                         .setPriority(NotificationCompat.PRIORITY_DEFAULT);
 
                 FSUtils utils = new FSUtils(context, ClipShareActivity.this);
-                ServerConnection connection = getServerConnection(address);
                 StatusNotifier notifier = new AndroidStatusNotifier(ClipShareActivity.this, notificationManager, builder, notificationId);
-                Proto proto = ProtocolSelector.getProto(connection, utils, notifier);
-                if (proto == null) {
-                    runOnUiThread(() -> output.setText(R.string.couldNotConnect));
-                    return;
-                }
+                Proto proto = getProtoWrapper(address, utils, notifier);
+                if (proto == null) return;
                 boolean status = proto.getFile();
-                connection.close();
+                proto.close();
                 if (status) {
                     runOnUiThread(() -> {
                         try {

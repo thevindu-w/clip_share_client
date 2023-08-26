@@ -118,6 +118,16 @@ public abstract class Proto {
         return this.serverConnection.send(bytes);
     }
 
+    /**
+     * Close the connection used for communicating with the server
+     */
+    public void close() {
+        try {
+            if (this.serverConnection != null) this.serverConnection.close();
+        } catch (Exception ignored) {
+        }
+    }
+
     public abstract String getText();
 
     public abstract boolean sendText(String text);
