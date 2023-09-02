@@ -62,6 +62,7 @@ import com.tw.clipshare.protocol.ProtocolSelector;
 import java.io.InputStream;
 import java.net.Inet4Address;
 import java.net.InetAddress;
+import java.net.ProtocolException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -327,6 +328,9 @@ public class ClipShareActivity extends AppCompatActivity {
                 Proto proto = ProtocolSelector.getProto(connection, utils, notifier);
                 if (proto != null) return proto;
                 connection.close();
+            } catch (ProtocolException ex) {
+                runOnUiThread(() -> output.setText(ex.getMessage()));
+                return null;
             } catch (Exception ignored) {
             }
         } while (retries-- > 0);
