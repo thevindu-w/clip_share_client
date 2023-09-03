@@ -85,7 +85,7 @@ class ServerFinder implements Runnable {
         return addresses;
     }
 
-    private void scanUDP(InetAddress broadcastAddress) {
+    private void scanUDP(Inet4Address broadcastAddress, Inet4Address myAddress) {
         new Thread(() -> {
             try {
                 DatagramSocket socket = new DatagramSocket();
@@ -103,9 +103,10 @@ class ServerFinder implements Runnable {
                     } catch (SocketTimeoutException ignored) {
                         break;
                     }
+                    InetAddress serverAddress = pkt.getAddress();
+                    if (myAddress.equals(serverAddress)) continue;
                     String received = new String(pkt.getData()).replace("\0", "");
                     if ("clip_share".equals(received)) {
-                        InetAddress serverAddress = pkt.getAddress();
                         String addressStr = serverAddress.getHostAddress();
                         if (addressStr != null) {
                             addressStr = addressStr.intern();
@@ -131,12 +132,12 @@ class ServerFinder implements Runnable {
             List<InterfaceAddress> addresses = netIF.getInterfaceAddresses();
             for (InterfaceAddress intAddress : addresses) {
                 try {
-                    InetAddress broadcastAddress = intAddress.getBroadcast();
-                    if (broadcastAddress != null) {
-                        scanUDP(broadcastAddress);
-                    }
                     InetAddress address = intAddress.getAddress();
                     if (address instanceof Inet4Address) {
+                        InetAddress broadcastAddress = intAddress.getBroadcast();
+                        if (broadcastAddress instanceof Inet4Address) {
+                            scanUDP((Inet4Address) broadcastAddress, (Inet4Address) address);
+                        }
                         short subLen = intAddress.getNetworkPrefixLength();
                         if (subLen < 22) subLen = 23;
                         SubnetScanner subnetScanner = new SubnetScanner(address, port, subLen);
