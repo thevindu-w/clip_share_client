@@ -1,2 +1,2 @@
-rootProject.name = "Clip Share"
+rootProject.name = "ClipShare"
 include ':app'

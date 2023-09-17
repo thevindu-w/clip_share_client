@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name" translatable="false">Clip Share</string>
+    <string name="app_name" translatable="false">ClipShare</string>
     <string name="btnImgTxt" translatable="false">Image</string>
     <string name="btnGetTxt" translatable="false">Get</string>
     <string name="btnSendTxt" translatable="false">Send</string>
