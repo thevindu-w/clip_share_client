@@ -124,6 +124,7 @@ public class SettingsActivity extends AppCompatActivity {
         this.cnTxt = findViewById(R.id.txtCertName);
         EditText editPort = findViewById(R.id.editPort);
         EditText editPortSecure = findViewById(R.id.editPortSecure);
+        EditText editPortUDP = findViewById(R.id.editPortUDP);
         this.secureSwitch.setOnClickListener(view -> {
             if (!SettingsActivity.this.secureSwitch.isChecked()) {
                 st.setSecure(secureSwitch.isChecked());
@@ -178,9 +179,25 @@ public class SettingsActivity extends AppCompatActivity {
                 Toast.makeText(SettingsActivity.this, "Error occurred", Toast.LENGTH_SHORT).show();
             }
         });
+        editPortUDP.setOnFocusChangeListener((view, focus) -> {
+            try {
+                if (focus) return;
+                String portStr = ((EditText) view).getText().toString();
+                int port = Integer.parseInt(portStr);
+                if (port <= 0 || 65536 <= port) {
+                    ((EditText) view).setText(st.getPort());
+                    Toast.makeText(SettingsActivity.this, "Invalid port", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                st.setPortUDP(port);
+            } catch (Exception ignored) {
+                Toast.makeText(SettingsActivity.this, "Error occurred", Toast.LENGTH_SHORT).show();
+            }
+        });
 
         editPort.setText(String.valueOf(st.getPort()));
         editPortSecure.setText(String.valueOf(st.getPortSecure()));
+        editPortUDP.setText(String.valueOf(st.getPortUDP()));
         this.caCnTxt.setMovementMethod(new ScrollingMovementMethod());
         this.caCnTxt.setHorizontallyScrolling(true);
         String caCertCN = st.getCACertCN();

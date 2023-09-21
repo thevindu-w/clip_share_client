@@ -43,6 +43,7 @@ public class Settings implements Serializable {
     private String cn;
     private int port;
     private int portSecure;
+    private int portUDP;
 
     private Settings() {
         this.secure = false;
@@ -53,6 +54,7 @@ public class Settings implements Serializable {
         this.cn = null;
         this.port = 4337;
         this.portSecure = 4338;
+        this.portUDP = 4337;
     }
 
     private static Settings fromString(String s) throws IOException, ClassNotFoundException {
@@ -135,6 +137,10 @@ public class Settings implements Serializable {
         return portSecure;
     }
 
+    public int getPortUDP() {
+        return portUDP;
+    }
+
     public void setSecure(boolean secure) {
         this.secure = secure;
     }
@@ -184,6 +190,10 @@ public class Settings implements Serializable {
 
     public void setPort(int port) {
         this.port = port;
+    }
+
+    public void setPortUDP(int port) {
+        this.portUDP = port;
     }
 
     public void setPortSecure(int port) {

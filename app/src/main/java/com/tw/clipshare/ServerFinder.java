@@ -38,14 +38,16 @@ class ServerFinder implements Runnable {
     private final NetworkInterface netIF;
     private final Thread parent;
     private final int port;
+    private final int portUDP;
 
-    private ServerFinder(NetworkInterface netIF, int port, Thread parent) {
+    private ServerFinder(NetworkInterface netIF, int port, int portUDP, Thread parent) {
         this.netIF = netIF;
         this.parent = parent;
         this.port = port;
+        this.portUDP = portUDP;
     }
 
-    public static List<InetAddress> find(int port) {
+    public static List<InetAddress> find(int port, int portUDP) {
         try {
             synchronized (serverAddresses) {
                 serverAddresses.clear();
@@ -58,7 +60,7 @@ class ServerFinder implements Runnable {
             Thread curThread = Thread.currentThread();
             for (Object netIFList1 : netIFList) {
                 NetworkInterface ni = (NetworkInterface) netIFList1;
-                Runnable task = new ServerFinder(ni, port, curThread);
+                Runnable task = new ServerFinder(ni, port, portUDP, curThread);
                 executor.submit(task);
             }
             while (!executor.isTerminated()) {
@@ -90,7 +92,7 @@ class ServerFinder implements Runnable {
             try {
                 DatagramSocket socket = new DatagramSocket();
                 byte[] buf = "in".getBytes();
-                DatagramPacket pkt = new DatagramPacket(buf, buf.length, broadcastAddress, port);
+                DatagramPacket pkt = new DatagramPacket(buf, buf.length, broadcastAddress, portUDP);
                 socket.send(pkt);
                 buf = new byte[256];
                 pkt = new DatagramPacket(buf, buf.length);

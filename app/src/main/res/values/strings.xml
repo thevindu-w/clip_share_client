@@ -38,6 +38,7 @@
     <string name="ports">Ports</string>
     <string name="port">Port</string>
     <string name="secure_port">Secure Port</string>
+    <string name="UDP_port">UDP Port</string>
     <string name="port_number">4337</string>
     <string name="secure_port_number">4338</string>
 </resources>

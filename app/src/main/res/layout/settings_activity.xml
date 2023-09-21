@@ -43,7 +43,7 @@
                       android:inputType="number"
                       android:maxLines="1"
                       android:layout_gravity="center_vertical"
-                      android:autofillHints="Password of key file"/>
+                      android:autofillHints="App port (TCP)"/>
         </LinearLayout>
         <LinearLayout android:layout_width="match_parent"
                       android:layout_height="wrap_content"
@@ -73,7 +73,37 @@
                       android:inputType="number"
                       android:maxLines="1"
                       android:layout_gravity="center_vertical"
-                      android:autofillHints="Password of key file"/>
+                      android:autofillHints="Secure port for SSL/TLS"/>
+        </LinearLayout>
+        <LinearLayout android:layout_width="match_parent"
+                      android:layout_height="wrap_content"
+                      android:orientation="horizontal">
+            <TextView android:layout_width="0dp"
+                      android:layout_height="wrap_content"
+                      android:layout_weight="0.5"
+                      android:layout_marginStart="12dp"
+                      android:layout_marginEnd="2dp"
+                      android:layout_marginVertical="10dp"
+                      android:textSize="18sp"
+                      android:textColor="?android:textColorPrimary"
+                      android:text="@string/UDP_port"
+                      android:layout_gravity="center_vertical"
+                      android:labelFor="@+id/editPort"
+            />
+            <EditText android:id="@+id/editPortUDP"
+                      android:layout_width="0dp"
+                      android:layout_height="wrap_content"
+                      android:layout_weight="0.5"
+                      android:layout_marginTop="4dp"
+                      android:layout_marginEnd="12dp"
+                      android:layout_marginStart="2dp"
+                      android:textSize="16sp"
+                      android:textColor="?android:textColorPrimary"
+                      android:text="@string/port_number"
+                      android:inputType="number"
+                      android:maxLines="1"
+                      android:layout_gravity="center_vertical"
+                      android:autofillHints="Scan port (UDP)"/>
         </LinearLayout>
         <LinearLayout android:layout_width="match_parent"
                       android:layout_height="1dp"

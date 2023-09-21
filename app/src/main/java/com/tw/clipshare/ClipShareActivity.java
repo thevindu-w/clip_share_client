@@ -348,7 +348,7 @@ public class ClipShareActivity extends AppCompatActivity {
         new Thread(() -> {
             try {
                 Settings settings = Settings.getInstance(null);
-                List<InetAddress> serverAddresses = ServerFinder.find(settings.getPort());
+                List<InetAddress> serverAddresses = ServerFinder.find(settings.getPort(), settings.getPortUDP());
                 if (!serverAddresses.isEmpty()) {
                     if (serverAddresses.size() == 1) {
                         InetAddress serverAddress = serverAddresses.get(0);
