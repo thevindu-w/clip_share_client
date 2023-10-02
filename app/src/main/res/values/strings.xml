@@ -5,7 +5,6 @@
     <string name="btnSendTxt" translatable="false">Send</string>
     <string name="addressLbl" translatable="false">Server :</string>
     <string name="addressHint" translatable="false">192.168.1.2</string>
-    <string name="truncated" translatable="false">%s ... (truncated)</string>
     <string name="btnFileTxt" translatable="false">File</string>
     <string name="scanBtnTxt" translatable="false">Scan</string>
     <string name="fileSelectedTxt" translatable="false">File selected. Press send file button.</string>
@@ -26,7 +25,6 @@
     <string name="trusted_servers" translatable="false">Trusted servers</string>
     <string name="server_name" translatable="false">Server name</string>
     <string name="enter_server_name" translatable="false">Enter server name</string>
-    <string name="couldNotConnect" translatable="false">"Couldn't connect"</string>
     <string name="password" translatable="false">Password :</string>
     <string name="client_certificate" translatable="false">Client Certificate</string>
     <string name="name" translatable="false">Name :</string>

@@ -188,7 +188,7 @@ public class ClipShareActivity extends AppCompatActivity {
                             this.fileURIs = uris;
                             clkSendFile();
                         } catch (Exception e) {
-                            output.setText(String.format("Error %s", e.getMessage()));
+                            outputAppend("Error " + e.getMessage());
                         }
                     }
                 });
@@ -329,12 +329,12 @@ public class ClipShareActivity extends AppCompatActivity {
                 if (proto != null) return proto;
                 connection.close();
             } catch (ProtocolException ex) {
-                runOnUiThread(() -> output.setText(ex.getMessage()));
+                outputAppend(ex.getMessage());
                 return null;
             } catch (Exception ignored) {
             }
         } while (retries-- > 0);
-        runOnUiThread(() -> output.setText(R.string.couldNotConnect));
+        outputAppend("Couldn't connect");
         return null;
     }
 
@@ -412,27 +412,32 @@ public class ClipShareActivity extends AppCompatActivity {
     }
 
     private void clkSendTxt() {
-        String address = this.getServerAddress();
-        if (address == null) return;
-        ExecutorService executorService = Executors.newSingleThreadExecutor();
-        Runnable sendClip = () -> {
-            try {
-                AndroidUtils utils = new AndroidUtils(context, ClipShareActivity.this);
-                String clipDataString = utils.getClipboardText();
-                if (clipDataString == null) return;
-                Proto proto = getProtoWrapper(address, utils, null);
-                if (proto == null) return;
-                boolean status = proto.sendText(clipDataString);
-                proto.close();
-                if (!status) return;
-                if (clipDataString.length() < 16384) runOnUiThread(() -> output.setText(clipDataString));
-                else
-                    runOnUiThread(() -> output.setText(getString(R.string.truncated, clipDataString.substring(0, 1024))));
-            } catch (Exception e) {
-                runOnUiThread(() -> output.setText(String.format("Error %s", e.getMessage())));
-            }
-        };
-        executorService.submit(sendClip);
+        try {
+            runOnUiThread(() -> output.setText(""));
+            String address = this.getServerAddress();
+            if (address == null) return;
+            ExecutorService executorService = Executors.newSingleThreadExecutor();
+            Runnable sendClip = () -> {
+                try {
+                    AndroidUtils utils = new AndroidUtils(context, ClipShareActivity.this);
+                    String clipDataString = utils.getClipboardText();
+                    if (clipDataString == null) return;
+                    Proto proto = getProtoWrapper(address, utils, null);
+                    if (proto == null) return;
+                    boolean status = proto.sendText(clipDataString);
+                    proto.close();
+                    if (!status) return;
+                    if (clipDataString.length() < 16384) outputAppend("Text: " + clipDataString);
+                    else
+                        outputAppend("Text: " + clipDataString.substring(0, 1024) + " ... (truncated)");
+                } catch (Exception e) {
+                    outputAppend("Error " + e.getMessage());
+                }
+            };
+            executorService.submit(sendClip);
+        } catch (Exception e) {
+            outputAppend("Error " + e.getMessage());
+        }
     }
 
     private void clkSendFile() {
@@ -458,6 +463,7 @@ public class ClipShareActivity extends AppCompatActivity {
      */
     private void sendFromURIs(ArrayList<Uri> uris) {
         try {
+            runOnUiThread(() -> output.setText(""));
             String address = this.getServerAddress();
             if (address == null) return;
 
@@ -520,7 +526,7 @@ public class ClipShareActivity extends AppCompatActivity {
                     });
                 }
             } catch (Exception e) {
-                runOnUiThread(() -> output.setText(String.format("Error %s", e.getMessage())));
+                outputAppend("Error " + e.getMessage());
             } finally {
                 synchronized (fileSendCntLock) {
                     fileSendingCount--;
@@ -540,124 +546,139 @@ public class ClipShareActivity extends AppCompatActivity {
                 }
             }
         } catch (Exception e) {
-            runOnUiThread(() -> output.setText(String.format("Error %s", e.getMessage())));
+            outputAppend("Error " + e.getMessage());
         }
     }
 
     private void clkGetTxt() {
-        String address = this.getServerAddress();
-        if (address == null) return;
-        ExecutorService executorService = Executors.newSingleThreadExecutor();
-        Runnable getClip = () -> {
-            try {
-                AndroidUtils utils = new AndroidUtils(context, ClipShareActivity.this);
-                Proto proto = getProtoWrapper(address, utils, null);
-                if (proto == null) return;
-                String text = proto.getText();
-                proto.close();
-                if (text == null) return;
-                utils.setClipboardText(text);
-                if (text.length() < 16384) runOnUiThread(() -> output.setText(text));
-                else runOnUiThread(() -> output.setText(getString(R.string.truncated, text.substring(0, 1024))));
-            } catch (Exception e) {
-                runOnUiThread(() -> output.setText(String.format("Error %s", e.getMessage())));
-            }
-        };
-        executorService.submit(getClip);
+        try {
+            runOnUiThread(() -> output.setText(""));
+            String address = this.getServerAddress();
+            if (address == null) return;
+            ExecutorService executorService = Executors.newSingleThreadExecutor();
+            Runnable getClip = () -> {
+                try {
+                    AndroidUtils utils = new AndroidUtils(context, ClipShareActivity.this);
+                    Proto proto = getProtoWrapper(address, utils, null);
+                    if (proto == null) return;
+                    String text = proto.getText();
+                    proto.close();
+                    if (text == null) return;
+                    utils.setClipboardText(text);
+                    if (text.length() < 16384) outputAppend("Text: " + text);
+                    else outputAppend("Text: " + text.substring(0, 1024) + " ... (truncated)");
+                } catch (Exception e) {
+                    outputAppend("Error " + e.getMessage());
+                }
+            };
+            executorService.submit(getClip);
+        } catch (Exception e) {
+            outputAppend("Error " + e.getMessage());
+        }
     }
 
     private void clkGetImg() {
-        if (needsPermission(WRITE_IMAGE))
-            return;
+        try {
+            if (needsPermission(WRITE_IMAGE))
+                return;
 
-        String address = this.getServerAddress();
-        if (address == null) return;
+            runOnUiThread(() -> output.setText(""));
+            String address = this.getServerAddress();
+            if (address == null) return;
 
-        ExecutorService executorService = Executors.newSingleThreadExecutor();
-        Runnable getImg = () -> {
-            try {
-                FSUtils utils = new FSUtils(context, ClipShareActivity.this);
-                Proto proto = getProtoWrapper(address, utils, null);
-                if (proto == null) return;
-                boolean status = proto.getImage();
-                proto.close();
-                if (!status)
-                    runOnUiThread(() -> Toast.makeText(ClipShareActivity.this, "Getting image failed", Toast.LENGTH_SHORT).show());
-            } catch (Exception e) {
-                runOnUiThread(() -> output.setText(String.format("Error %s", e.getMessage())));
-            }
-        };
-        executorService.submit(getImg);
+            ExecutorService executorService = Executors.newSingleThreadExecutor();
+            Runnable getImg = () -> {
+                try {
+                    FSUtils utils = new FSUtils(context, ClipShareActivity.this);
+                    Proto proto = getProtoWrapper(address, utils, null);
+                    if (proto == null) return;
+                    boolean status = proto.getImage();
+                    proto.close();
+                    if (!status)
+                        runOnUiThread(() -> Toast.makeText(ClipShareActivity.this, "Getting image failed", Toast.LENGTH_SHORT).show());
+                } catch (Exception e) {
+                    outputAppend("Error " + e.getMessage());
+                }
+            };
+            executorService.submit(getImg);
+        } catch (Exception e) {
+            outputAppend("Error " + e.getMessage());
+        }
     }
 
     private void clkGetFile() {
-        if (needsPermission(WRITE_FILE))
-            return;
+        try {
+            if (needsPermission(WRITE_FILE))
+                return;
 
-        String address = this.getServerAddress();
-        if (address == null) return;
+            runOnUiThread(() -> output.setText(""));
+            String address = this.getServerAddress();
+            if (address == null) return;
 
-        ExecutorService executorService = Executors.newSingleThreadExecutor();
-        Runnable getFile = () -> {
-            int notificationId;
-            {
-                Random rnd = new Random();
-                notificationId = Math.abs(rnd.nextInt(Integer.MAX_VALUE - 1)) + 1;
-            }
-            NotificationManagerCompat notificationManager = null;
-            synchronized (fileGetCntLock) {
-                while (fileGettingCount > 1) {
-                    try {
-                        fileGetCntLock.wait();
-                    } catch (InterruptedException ignored) {
-                    }
+            ExecutorService executorService = Executors.newSingleThreadExecutor();
+            Runnable getFile = () -> {
+                int notificationId;
+                {
+                    Random rnd = new Random();
+                    notificationId = Math.abs(rnd.nextInt(Integer.MAX_VALUE - 1)) + 1;
                 }
-                fileGettingCount++;
-            }
-            try {
-                notificationManager = NotificationManagerCompat.from(context);
-                NotificationCompat.Builder builder = new NotificationCompat.Builder(context, ClipShareActivity.CHANNEL_ID)
-                        .setSmallIcon(R.drawable.ic_download_icon)
-                        .setContentTitle("Getting file")
-                        .setContentText("0%")
-                        .setPriority(NotificationCompat.PRIORITY_DEFAULT);
-
-                FSUtils utils = new FSUtils(context, ClipShareActivity.this);
-                StatusNotifier notifier = new AndroidStatusNotifier(ClipShareActivity.this, notificationManager, builder, notificationId);
-                Proto proto = getProtoWrapper(address, utils, notifier);
-                if (proto == null) return;
-                boolean status = proto.getFile();
-                proto.close();
-                if (status) {
-                    runOnUiThread(() -> {
-                        try {
-                            output.setText(R.string.receiveAllFiles);
-                        } catch (Exception ignored) {
-                        }
-                    });
-                }
-            } catch (Exception e) {
-                runOnUiThread(() -> output.setText(String.format("Error %s", e.getMessage())));
-            } finally {
+                NotificationManagerCompat notificationManager = null;
                 synchronized (fileGetCntLock) {
-                    fileGettingCount--;
-                    fileGetCntLock.notifyAll();
+                    while (fileGettingCount > 1) {
+                        try {
+                            fileGetCntLock.wait();
+                        } catch (InterruptedException ignored) {
+                        }
+                    }
+                    fileGettingCount++;
                 }
                 try {
-                    if (notificationManager != null) {
-                        NotificationManagerCompat finalNotificationManager = notificationManager;
+                    notificationManager = NotificationManagerCompat.from(context);
+                    NotificationCompat.Builder builder = new NotificationCompat.Builder(context, ClipShareActivity.CHANNEL_ID)
+                            .setSmallIcon(R.drawable.ic_download_icon)
+                            .setContentTitle("Getting file")
+                            .setContentText("0%")
+                            .setPriority(NotificationCompat.PRIORITY_DEFAULT);
+
+                    FSUtils utils = new FSUtils(context, ClipShareActivity.this);
+                    StatusNotifier notifier = new AndroidStatusNotifier(ClipShareActivity.this, notificationManager, builder, notificationId);
+                    Proto proto = getProtoWrapper(address, utils, notifier);
+                    if (proto == null) return;
+                    boolean status = proto.getFile();
+                    proto.close();
+                    if (status) {
                         runOnUiThread(() -> {
                             try {
-                                finalNotificationManager.cancel(notificationId);
+                                output.setText(R.string.receiveAllFiles);
                             } catch (Exception ignored) {
                             }
                         });
                     }
-                } catch (Exception ignored) {
+                } catch (Exception e) {
+                    outputAppend("Error " + e.getMessage());
+                } finally {
+                    synchronized (fileGetCntLock) {
+                        fileGettingCount--;
+                        fileGetCntLock.notifyAll();
+                    }
+                    try {
+                        if (notificationManager != null) {
+                            NotificationManagerCompat finalNotificationManager = notificationManager;
+                            runOnUiThread(() -> {
+                                try {
+                                    finalNotificationManager.cancel(notificationId);
+                                } catch (Exception ignored) {
+                                }
+                            });
+                        }
+                    } catch (Exception ignored) {
+                    }
                 }
-            }
-        };
-        executorService.submit(getFile);
+            };
+            executorService.submit(getFile);
+        } catch (Exception e) {
+            outputAppend("Error " + e.getMessage());
+        }
     }
 
     /**
@@ -699,5 +720,12 @@ public class ClipShareActivity extends AppCompatActivity {
                 Toast.makeText(ClipShareActivity.this, "Storage Permission Denied", Toast.LENGTH_SHORT).show();
             }
         }
+    }
+
+    private void outputAppend(CharSequence text) {
+        runOnUiThread(() -> {
+            String newText = output.getText().toString() + text;
+            output.setText(newText);
+        });
     }
 }
