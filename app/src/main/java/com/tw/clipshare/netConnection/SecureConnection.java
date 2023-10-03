@@ -25,8 +25,6 @@
 package com.tw.clipshare.netConnection;
 
 import com.tw.clipshare.CertUtils;
-
-import javax.net.ssl.*;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
@@ -35,85 +33,94 @@ import java.security.KeyStore;
 import java.security.cert.X509Certificate;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import javax.net.ssl.*;
 
 public class SecureConnection extends ServerConnection {
 
-    private static final Object CTX_LOCK = new Object();
-    private static SSLContext ctxInstance = null;
+  private static final Object CTX_LOCK = new Object();
+  private static SSLContext ctxInstance = null;
 
-    /**
-     * TLS encrypted connection to the server.
-     *
-     * @param serverAddress        address of the server
-     * @param port                 port on which the server is listening
-     * @param caCertInput          input stream to get the CA's certificate
-     * @param clientCertStoreInput input stream to get the client key certificate store
-     * @param certStorePassword    input stream to get the client key certificate store password
-     * @param acceptedCNs          array of accepted servers (common names)
-     * @throws IOException              on connection error
-     * @throws GeneralSecurityException on security related errors
-     */
-    public SecureConnection(InetAddress serverAddress, int port, InputStream caCertInput, InputStream clientCertStoreInput, char[] certStorePassword, String[] acceptedCNs) throws IOException, GeneralSecurityException {
-        SSLContext ctx;
-        synchronized (SecureConnection.CTX_LOCK) {
-            if (SecureConnection.ctxInstance == null) {
-                X509Certificate caCert = CertUtils.getX509fromInputStream(caCertInput);
-                TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-                KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
-                ks.load(null);
-                ks.setCertificateEntry("caCert", caCert);
-                tmf.init(ks);
+  /**
+   * TLS encrypted connection to the server.
+   *
+   * @param serverAddress address of the server
+   * @param port port on which the server is listening
+   * @param caCertInput input stream to get the CA's certificate
+   * @param clientCertStoreInput input stream to get the client key certificate store
+   * @param certStorePassword input stream to get the client key certificate store password
+   * @param acceptedCNs array of accepted servers (common names)
+   * @throws IOException on connection error
+   * @throws GeneralSecurityException on security related errors
+   */
+  public SecureConnection(
+      InetAddress serverAddress,
+      int port,
+      InputStream caCertInput,
+      InputStream clientCertStoreInput,
+      char[] certStorePassword,
+      String[] acceptedCNs)
+      throws IOException, GeneralSecurityException {
+    SSLContext ctx;
+    synchronized (SecureConnection.CTX_LOCK) {
+      if (SecureConnection.ctxInstance == null) {
+        X509Certificate caCert = CertUtils.getX509fromInputStream(caCertInput);
+        TrustManagerFactory tmf =
+            TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+        KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
+        ks.load(null);
+        ks.setCertificateEntry("caCert", caCert);
+        tmf.init(ks);
 
-                KeyStore keyStore = KeyStore.getInstance("PKCS12");
-                keyStore.load(clientCertStoreInput, certStorePassword);
-                KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-                kmf.init(keyStore, certStorePassword);
+        KeyStore keyStore = KeyStore.getInstance("PKCS12");
+        keyStore.load(clientCertStoreInput, certStorePassword);
+        KeyManagerFactory kmf =
+            KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+        kmf.init(keyStore, certStorePassword);
 
-                ctx = SSLContext.getInstance("TLS");
-                ctx.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
-                SecureConnection.ctxInstance = ctx;
-            } else {
-                ctx = SecureConnection.ctxInstance;
-            }
-        }
-        SSLSocketFactory sslsocketfactory = ctx.getSocketFactory();
-        SSLSocket sslsocket = (SSLSocket) sslsocketfactory.createSocket(serverAddress, port);
-        SSLSession sslSession = sslsocket.getSession();
-        X509Certificate serverCertificate = (X509Certificate) sslSession.getPeerCertificates()[0];
-        boolean accepted = false;
-        try {
-            String cn = CertUtils.getCertCN(serverCertificate);
-            if (cn != null) {
-                for (String acceptedCN : acceptedCNs) {
-                    if (acceptedCN.equals(cn)) {
-                        accepted = true;
-                        break;
-                    }
-                }
-            }
-        } catch (Exception ignored) {
-        }
-        if (!accepted) {
-            throw new SecurityException("Untrusted Server");
-        }
-        this.socket = sslsocket;
-        this.inStream = this.socket.getInputStream();
-        this.outStream = this.socket.getOutputStream();
+        ctx = SSLContext.getInstance("TLS");
+        ctx.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
+        SecureConnection.ctxInstance = ctx;
+      } else {
+        ctx = SecureConnection.ctxInstance;
+      }
     }
+    SSLSocketFactory sslsocketfactory = ctx.getSocketFactory();
+    SSLSocket sslsocket = (SSLSocket) sslsocketfactory.createSocket(serverAddress, port);
+    SSLSession sslSession = sslsocket.getSession();
+    X509Certificate serverCertificate = (X509Certificate) sslSession.getPeerCertificates()[0];
+    boolean accepted = false;
+    try {
+      String cn = CertUtils.getCertCN(serverCertificate);
+      if (cn != null) {
+        for (String acceptedCN : acceptedCNs) {
+          if (acceptedCN.equals(cn)) {
+            accepted = true;
+            break;
+          }
+        }
+      }
+    } catch (Exception ignored) {
+    }
+    if (!accepted) {
+      throw new SecurityException("Untrusted Server");
+    }
+    this.socket = sslsocket;
+    this.inStream = this.socket.getInputStream();
+    this.outStream = this.socket.getOutputStream();
+  }
 
-    /**
-     * Reset the SSLContext instance to null
-     */
-    public static void resetSSLContext() {
-        ExecutorService executorService = Executors.newSingleThreadExecutor();
-        Runnable resetCtx = () -> {
-            try {
-                synchronized (SecureConnection.CTX_LOCK) {
-                    SecureConnection.ctxInstance = null;
-                }
-            } catch (Exception ignored) {
+  /** Reset the SSLContext instance to null */
+  public static void resetSSLContext() {
+    ExecutorService executorService = Executors.newSingleThreadExecutor();
+    Runnable resetCtx =
+        () -> {
+          try {
+            synchronized (SecureConnection.CTX_LOCK) {
+              SecureConnection.ctxInstance = null;
             }
+          } catch (Exception ignored) {
+          }
         };
-        executorService.submit(resetCtx);
-    }
+    executorService.submit(resetCtx);
+  }
 }

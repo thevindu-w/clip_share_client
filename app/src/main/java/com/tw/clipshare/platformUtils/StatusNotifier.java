@@ -25,11 +25,11 @@
 package com.tw.clipshare.platformUtils;
 
 public interface StatusNotifier {
-    void setName(String name);
+  void setName(String name);
 
-    void setStatus(int value);
+  void setStatus(int value);
 
-    void reset();
+  void reset();
 
-    void finish();
+  void finish();
 }

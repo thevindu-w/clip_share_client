@@ -42,279 +42,298 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SwitchCompat;
 import com.tw.clipshare.netConnection.SecureConnection;
-
 import java.io.InputStream;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class SettingsActivity extends AppCompatActivity {
 
-    private static final byte CLIENT = 10;
-    private static final byte CA = 11;
-    private SwitchCompat secureSwitch;
-    private Intent intent;
-    private AtomicInteger id;
-    private LinearLayout trustList;
-    private EditText editPass;
-    private TextView cnTxt;
-    private TextView caCnTxt;
-    private volatile byte certType;
+  private static final byte CLIENT = 10;
+  private static final byte CA = 11;
+  private SwitchCompat secureSwitch;
+  private Intent intent;
+  private AtomicInteger id;
+  private LinearLayout trustList;
+  private EditText editPass;
+  private TextView cnTxt;
+  private TextView caCnTxt;
+  private volatile byte certType;
 
-    private void addRowToTrustList(boolean addToList, String name) {
-        try {
-            View trustServer = View.inflate(getApplicationContext(), R.layout.trusted_server, null);
-            ImageButton delBtn = trustServer.findViewById(R.id.delBtn);
-            TextView cnTxt = trustServer.findViewById(R.id.cnTxt);
-            EditText cnEdit = trustServer.findViewById(R.id.cnEdit);
-            trustServer.setId(id.getAndIncrement());
-            Settings st = Settings.getInstance(null);
-            List<String> servers = st.getTrustedList();
-            if (name != null) cnTxt.setText(name);
-            if (addToList) servers.add(cnTxt.getText().toString());
-            trustList.addView(trustServer);
-            cnTxt.setTextColor(caCnTxt.getTextColors());
-            cnEdit.setTextColor(caCnTxt.getTextColors());
-            delBtn.setOnClickListener(view1 -> {
-                try {
-                    if (servers.remove(cnTxt.getText().toString())) {
-                        trustList.removeView(trustServer);
-                        if (servers.isEmpty()) {
-                            st.setSecure(false);
-                            SettingsActivity.this.secureSwitch.setChecked(false);
-                        }
-                    }
-                } catch (Exception ignored) {
+  private void addRowToTrustList(boolean addToList, String name) {
+    try {
+      View trustServer = View.inflate(getApplicationContext(), R.layout.trusted_server, null);
+      ImageButton delBtn = trustServer.findViewById(R.id.delBtn);
+      TextView cnTxt = trustServer.findViewById(R.id.cnTxt);
+      EditText cnEdit = trustServer.findViewById(R.id.cnEdit);
+      trustServer.setId(id.getAndIncrement());
+      Settings st = Settings.getInstance(null);
+      List<String> servers = st.getTrustedList();
+      if (name != null) cnTxt.setText(name);
+      if (addToList) servers.add(cnTxt.getText().toString());
+      trustList.addView(trustServer);
+      cnTxt.setTextColor(caCnTxt.getTextColors());
+      cnEdit.setTextColor(caCnTxt.getTextColors());
+      delBtn.setOnClickListener(
+          view1 -> {
+            try {
+              if (servers.remove(cnTxt.getText().toString())) {
+                trustList.removeView(trustServer);
+                if (servers.isEmpty()) {
+                  st.setSecure(false);
+                  SettingsActivity.this.secureSwitch.setChecked(false);
                 }
-            });
-            cnTxt.setOnClickListener(view1 -> {
-                cnEdit.setText(cnTxt.getText());
-                cnTxt.setVisibility(View.GONE);
-                cnEdit.setVisibility(View.VISIBLE);
-                cnEdit.requestFocus();
-            });
-            cnEdit.setOnFocusChangeListener((view1, hasFocus) -> {
-                if (!hasFocus) {
-                    CharSequence oldText = cnTxt.getText();
-                    CharSequence newText = cnEdit.getText();
-                    if (newText.length() > 0) cnTxt.setText(newText);
-                    cnEdit.setVisibility(View.GONE);
-                    cnTxt.setVisibility(View.VISIBLE);
-                    if (newText.length() > 0 && servers.remove(oldText.toString()))
-                        servers.add(newText.toString());
-                }
-            });
-        } catch (Exception ignored) {
-        }
+              }
+            } catch (Exception ignored) {
+            }
+          });
+      cnTxt.setOnClickListener(
+          view1 -> {
+            cnEdit.setText(cnTxt.getText());
+            cnTxt.setVisibility(View.GONE);
+            cnEdit.setVisibility(View.VISIBLE);
+            cnEdit.requestFocus();
+          });
+      cnEdit.setOnFocusChangeListener(
+          (view1, hasFocus) -> {
+            if (!hasFocus) {
+              CharSequence oldText = cnTxt.getText();
+              CharSequence newText = cnEdit.getText();
+              if (newText.length() > 0) cnTxt.setText(newText);
+              cnEdit.setVisibility(View.GONE);
+              cnTxt.setVisibility(View.VISIBLE);
+              if (newText.length() > 0 && servers.remove(oldText.toString()))
+                servers.add(newText.toString());
+            }
+          });
+    } catch (Exception ignored) {
     }
+  }
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.settings_activity);
-        Settings st = Settings.getInstance(null);
-        this.intent = getIntent();
-        this.id = new AtomicInteger();
-        this.trustList = findViewById(R.id.trustedList);
-        ImageButton addBtn = findViewById(R.id.addServerBtn);
-        Button browseBtn = findViewById(R.id.btnImportCert);
-        Button caBrowseBtn = findViewById(R.id.btnImportCACert);
-        this.secureSwitch = findViewById(R.id.secureSwitch);
-        this.editPass = findViewById(R.id.editCertPass);
-        this.caCnTxt = findViewById(R.id.txtCACertName);
-        this.cnTxt = findViewById(R.id.txtCertName);
-        EditText editPort = findViewById(R.id.editPort);
-        EditText editPortSecure = findViewById(R.id.editPortSecure);
-        EditText editPortUDP = findViewById(R.id.editPortUDP);
-        this.secureSwitch.setOnClickListener(view -> {
-            if (!SettingsActivity.this.secureSwitch.isChecked()) {
-                st.setSecure(secureSwitch.isChecked());
-                return;
-            }
-            if (st.getCACertCN() == null) {
-                Toast.makeText(SettingsActivity.this, "No CA certificate", Toast.LENGTH_SHORT).show();
-                SettingsActivity.this.secureSwitch.setChecked(false);
-                return;
-            }
-            if (st.getCertCN() == null) {
-                Toast.makeText(SettingsActivity.this, "No client key and certificate", Toast.LENGTH_SHORT).show();
-                SettingsActivity.this.secureSwitch.setChecked(false);
-                return;
-            }
-            if (st.getTrustedList().isEmpty()) {
-                Toast.makeText(SettingsActivity.this, "No trusted servers", Toast.LENGTH_SHORT).show();
-                SettingsActivity.this.secureSwitch.setChecked(false);
-                return;
-            }
+  @Override
+  protected void onCreate(Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+    setContentView(R.layout.settings_activity);
+    Settings st = Settings.getInstance(null);
+    this.intent = getIntent();
+    this.id = new AtomicInteger();
+    this.trustList = findViewById(R.id.trustedList);
+    ImageButton addBtn = findViewById(R.id.addServerBtn);
+    Button browseBtn = findViewById(R.id.btnImportCert);
+    Button caBrowseBtn = findViewById(R.id.btnImportCACert);
+    this.secureSwitch = findViewById(R.id.secureSwitch);
+    this.editPass = findViewById(R.id.editCertPass);
+    this.caCnTxt = findViewById(R.id.txtCACertName);
+    this.cnTxt = findViewById(R.id.txtCertName);
+    EditText editPort = findViewById(R.id.editPort);
+    EditText editPortSecure = findViewById(R.id.editPortSecure);
+    EditText editPortUDP = findViewById(R.id.editPortUDP);
+    this.secureSwitch.setOnClickListener(
+        view -> {
+          if (!SettingsActivity.this.secureSwitch.isChecked()) {
             st.setSecure(secureSwitch.isChecked());
+            return;
+          }
+          if (st.getCACertCN() == null) {
+            Toast.makeText(SettingsActivity.this, "No CA certificate", Toast.LENGTH_SHORT).show();
+            SettingsActivity.this.secureSwitch.setChecked(false);
+            return;
+          }
+          if (st.getCertCN() == null) {
+            Toast.makeText(
+                    SettingsActivity.this, "No client key and certificate", Toast.LENGTH_SHORT)
+                .show();
+            SettingsActivity.this.secureSwitch.setChecked(false);
+            return;
+          }
+          if (st.getTrustedList().isEmpty()) {
+            Toast.makeText(SettingsActivity.this, "No trusted servers", Toast.LENGTH_SHORT).show();
+            SettingsActivity.this.secureSwitch.setChecked(false);
+            return;
+          }
+          st.setSecure(secureSwitch.isChecked());
         });
-        this.secureSwitch.setChecked(st.getSecure());
+    this.secureSwitch.setChecked(st.getSecure());
 
-        editPort.setOnFocusChangeListener((view, focus) -> {
-            try {
-                if (focus) return;
-                String portStr = ((EditText) view).getText().toString();
-                int port = Integer.parseInt(portStr);
-                if (port <= 0 || 65536 <= port) {
-                    ((EditText) view).setText(st.getPort());
-                    Toast.makeText(SettingsActivity.this, "Invalid port", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-                st.setPort(port);
-            } catch (Exception ignored) {
-                Toast.makeText(SettingsActivity.this, "Error occurred", Toast.LENGTH_SHORT).show();
+    editPort.setOnFocusChangeListener(
+        (view, focus) -> {
+          try {
+            if (focus) return;
+            String portStr = ((EditText) view).getText().toString();
+            int port = Integer.parseInt(portStr);
+            if (port <= 0 || 65536 <= port) {
+              ((EditText) view).setText(st.getPort());
+              Toast.makeText(SettingsActivity.this, "Invalid port", Toast.LENGTH_SHORT).show();
+              return;
             }
+            st.setPort(port);
+          } catch (Exception ignored) {
+            Toast.makeText(SettingsActivity.this, "Error occurred", Toast.LENGTH_SHORT).show();
+          }
         });
-        editPortSecure.setOnFocusChangeListener((view, focus) -> {
-            try {
-                if (focus) return;
-                String portStr = ((EditText) view).getText().toString();
-                int port = Integer.parseInt(portStr);
-                if (port <= 0 || 65536 <= port) {
-                    ((EditText) view).setText(st.getPortSecure());
-                    Toast.makeText(SettingsActivity.this, "Invalid port", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-                st.setPortSecure(port);
-            } catch (Exception ignored) {
-                Toast.makeText(SettingsActivity.this, "Error occurred", Toast.LENGTH_SHORT).show();
+    editPortSecure.setOnFocusChangeListener(
+        (view, focus) -> {
+          try {
+            if (focus) return;
+            String portStr = ((EditText) view).getText().toString();
+            int port = Integer.parseInt(portStr);
+            if (port <= 0 || 65536 <= port) {
+              ((EditText) view).setText(st.getPortSecure());
+              Toast.makeText(SettingsActivity.this, "Invalid port", Toast.LENGTH_SHORT).show();
+              return;
             }
+            st.setPortSecure(port);
+          } catch (Exception ignored) {
+            Toast.makeText(SettingsActivity.this, "Error occurred", Toast.LENGTH_SHORT).show();
+          }
         });
-        editPortUDP.setOnFocusChangeListener((view, focus) -> {
-            try {
-                if (focus) return;
-                String portStr = ((EditText) view).getText().toString();
-                int port = Integer.parseInt(portStr);
-                if (port <= 0 || 65536 <= port) {
-                    ((EditText) view).setText(st.getPort());
-                    Toast.makeText(SettingsActivity.this, "Invalid port", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-                st.setPortUDP(port);
-            } catch (Exception ignored) {
-                Toast.makeText(SettingsActivity.this, "Error occurred", Toast.LENGTH_SHORT).show();
+    editPortUDP.setOnFocusChangeListener(
+        (view, focus) -> {
+          try {
+            if (focus) return;
+            String portStr = ((EditText) view).getText().toString();
+            int port = Integer.parseInt(portStr);
+            if (port <= 0 || 65536 <= port) {
+              ((EditText) view).setText(st.getPort());
+              Toast.makeText(SettingsActivity.this, "Invalid port", Toast.LENGTH_SHORT).show();
+              return;
             }
+            st.setPortUDP(port);
+          } catch (Exception ignored) {
+            Toast.makeText(SettingsActivity.this, "Error occurred", Toast.LENGTH_SHORT).show();
+          }
         });
 
-        editPort.setText(String.valueOf(st.getPort()));
-        editPortSecure.setText(String.valueOf(st.getPortSecure()));
-        editPortUDP.setText(String.valueOf(st.getPortUDP()));
-        this.caCnTxt.setMovementMethod(new ScrollingMovementMethod());
-        this.caCnTxt.setHorizontallyScrolling(true);
-        String caCertCN = st.getCACertCN();
-        if (caCertCN != null) this.caCnTxt.setText(caCertCN);
+    editPort.setText(String.valueOf(st.getPort()));
+    editPortSecure.setText(String.valueOf(st.getPortSecure()));
+    editPortUDP.setText(String.valueOf(st.getPortUDP()));
+    this.caCnTxt.setMovementMethod(new ScrollingMovementMethod());
+    this.caCnTxt.setHorizontallyScrolling(true);
+    String caCertCN = st.getCACertCN();
+    if (caCertCN != null) this.caCnTxt.setText(caCertCN);
 
-        this.cnTxt.setMovementMethod(new ScrollingMovementMethod());
-        this.cnTxt.setHorizontallyScrolling(true);
-        String certCN = st.getCertCN();
-        if (certCN != null) this.cnTxt.setText(certCN);
+    this.cnTxt.setMovementMethod(new ScrollingMovementMethod());
+    this.cnTxt.setHorizontallyScrolling(true);
+    String certCN = st.getCertCN();
+    if (certCN != null) this.cnTxt.setText(certCN);
 
-        List<String> servers = st.getTrustedList();
+    List<String> servers = st.getTrustedList();
 
-        for (String server : servers) {
-            addRowToTrustList(false, server);
-        }
-
-        addBtn.setOnClickListener(view -> addRowToTrustList(true, null));
-
-        certType = 0;
-        ActivityResultLauncher<Intent> activityLauncherForResult = registerForActivityResult(
-                new ActivityResultContracts.StartActivityForResult(),
-                result -> {
-                    if (result.getResultCode() != Activity.RESULT_OK) {
-                        return;
-                    }
-                    Intent intent1 = result.getData();
-                    if (intent1 == null) {
-                        return;
-                    }
-                    try {
-                        byte type = SettingsActivity.this.certType;
-                        SettingsActivity.this.certType = 0;
-                        if (type == CLIENT) {
-                            Uri uri = intent1.getData();
-                            Cursor cursor = getContentResolver().query(uri, null, null, null, null);
-                            if (cursor.getCount() <= 0) {
-                                cursor.close();
-                                return;
-                            }
-                            cursor.moveToFirst();
-                            String fileSizeStr = cursor.getString(cursor.getColumnIndexOrThrow(OpenableColumns.SIZE));
-                            int size = Integer.parseInt(fileSizeStr);
-                            cursor.close();
-                            InputStream fileInputStream = getContentResolver().openInputStream(uri);
-                            char[] passwd = editPass.getText().toString().toCharArray();
-                            String cn = st.setCertPass(passwd, fileInputStream, size);
-                            if (cn != null) {
-                                SecureConnection.resetSSLContext();
-                                cnTxt.setText(cn);
-                            } else {
-                                Toast.makeText(SettingsActivity.this, "Invalid", Toast.LENGTH_SHORT).show();
-                            }
-                        } else if (type == CA) {
-                            Uri uri = intent1.getData();
-                            Cursor cursor = getContentResolver().query(uri, null, null, null, null);
-                            if (cursor.getCount() <= 0) {
-                                cursor.close();
-                                return;
-                            }
-                            cursor.moveToFirst();
-                            String fileSizeStr = cursor.getString(cursor.getColumnIndexOrThrow(OpenableColumns.SIZE));
-                            int size = Integer.parseInt(fileSizeStr);
-                            cursor.close();
-                            InputStream fileInputStream = getContentResolver().openInputStream(uri);
-                            String CA_CN = st.setCACert(fileInputStream, size);
-                            if (CA_CN != null) {
-                                SecureConnection.resetSSLContext();
-                                caCnTxt.setText(CA_CN);
-                            } else {
-                                Toast.makeText(SettingsActivity.this, "Invalid", Toast.LENGTH_SHORT).show();
-                            }
-                        }
-                    } catch (Exception ignored) {
-                    }
-                });
-
-        caBrowseBtn.setOnClickListener(view -> {
-            Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-            intent.setType("*/*");
-            String[] mimeTypes = {"application/x-x509-ca-cert", "application/x-pem-file", "application/pkix-cert+pem", "application/pkix-cert"};
-            intent.putExtra(Intent.EXTRA_MIME_TYPES, mimeTypes);
-            intent.addCategory(Intent.CATEGORY_OPENABLE);
-            SettingsActivity.this.certType = CA;
-            activityLauncherForResult.launch(intent);
-        });
-
-        browseBtn.setOnClickListener(view -> {
-            Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-            intent.setType("application/x-pkcs12");
-            intent.addCategory(Intent.CATEGORY_OPENABLE);
-            SettingsActivity.this.certType = CLIENT;
-            activityLauncherForResult.launch(intent);
-        });
+    for (String server : servers) {
+      addRowToTrustList(false, server);
     }
 
-    @Override
-    public boolean dispatchTouchEvent(MotionEvent event) {
-        if (event.getAction() == MotionEvent.ACTION_DOWN) {
-            View v = getCurrentFocus();
-            if (v instanceof EditText) {
-                Rect outRect = new Rect();
-                v.getGlobalVisibleRect(outRect);
-                if (!outRect.contains((int) event.getRawX(), (int) event.getRawY())) {
-                    v.clearFocus();
-                    InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-                    imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
-                }
-            }
-        }
-        return super.dispatchTouchEvent(event);
-    }
+    addBtn.setOnClickListener(view -> addRowToTrustList(true, null));
 
-    @Override
-    public void onBackPressed() {
-        if (this.intent != null) {
-            this.setResult(Activity.RESULT_OK, intent);
+    certType = 0;
+    ActivityResultLauncher<Intent> activityLauncherForResult =
+        registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+              if (result.getResultCode() != Activity.RESULT_OK) {
+                return;
+              }
+              Intent intent1 = result.getData();
+              if (intent1 == null) {
+                return;
+              }
+              try {
+                byte type = SettingsActivity.this.certType;
+                SettingsActivity.this.certType = 0;
+                if (type == CLIENT) {
+                  Uri uri = intent1.getData();
+                  Cursor cursor = getContentResolver().query(uri, null, null, null, null);
+                  if (cursor.getCount() <= 0) {
+                    cursor.close();
+                    return;
+                  }
+                  cursor.moveToFirst();
+                  String fileSizeStr =
+                      cursor.getString(cursor.getColumnIndexOrThrow(OpenableColumns.SIZE));
+                  int size = Integer.parseInt(fileSizeStr);
+                  cursor.close();
+                  InputStream fileInputStream = getContentResolver().openInputStream(uri);
+                  char[] passwd = editPass.getText().toString().toCharArray();
+                  String cn = st.setCertPass(passwd, fileInputStream, size);
+                  if (cn != null) {
+                    SecureConnection.resetSSLContext();
+                    cnTxt.setText(cn);
+                  } else {
+                    Toast.makeText(SettingsActivity.this, "Invalid", Toast.LENGTH_SHORT).show();
+                  }
+                } else if (type == CA) {
+                  Uri uri = intent1.getData();
+                  Cursor cursor = getContentResolver().query(uri, null, null, null, null);
+                  if (cursor.getCount() <= 0) {
+                    cursor.close();
+                    return;
+                  }
+                  cursor.moveToFirst();
+                  String fileSizeStr =
+                      cursor.getString(cursor.getColumnIndexOrThrow(OpenableColumns.SIZE));
+                  int size = Integer.parseInt(fileSizeStr);
+                  cursor.close();
+                  InputStream fileInputStream = getContentResolver().openInputStream(uri);
+                  String CA_CN = st.setCACert(fileInputStream, size);
+                  if (CA_CN != null) {
+                    SecureConnection.resetSSLContext();
+                    caCnTxt.setText(CA_CN);
+                  } else {
+                    Toast.makeText(SettingsActivity.this, "Invalid", Toast.LENGTH_SHORT).show();
+                  }
+                }
+              } catch (Exception ignored) {
+              }
+            });
+
+    caBrowseBtn.setOnClickListener(
+        view -> {
+          Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+          intent.setType("*/*");
+          String[] mimeTypes = {
+            "application/x-x509-ca-cert",
+            "application/x-pem-file",
+            "application/pkix-cert+pem",
+            "application/pkix-cert"
+          };
+          intent.putExtra(Intent.EXTRA_MIME_TYPES, mimeTypes);
+          intent.addCategory(Intent.CATEGORY_OPENABLE);
+          SettingsActivity.this.certType = CA;
+          activityLauncherForResult.launch(intent);
+        });
+
+    browseBtn.setOnClickListener(
+        view -> {
+          Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+          intent.setType("application/x-pkcs12");
+          intent.addCategory(Intent.CATEGORY_OPENABLE);
+          SettingsActivity.this.certType = CLIENT;
+          activityLauncherForResult.launch(intent);
+        });
+  }
+
+  @Override
+  public boolean dispatchTouchEvent(MotionEvent event) {
+    if (event.getAction() == MotionEvent.ACTION_DOWN) {
+      View v = getCurrentFocus();
+      if (v instanceof EditText) {
+        Rect outRect = new Rect();
+        v.getGlobalVisibleRect(outRect);
+        if (!outRect.contains((int) event.getRawX(), (int) event.getRawY())) {
+          v.clearFocus();
+          InputMethodManager imm =
+              (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+          imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
         }
-        this.finish();
+      }
     }
+    return super.dispatchTouchEvent(event);
+  }
+
+  @Override
+  public void onBackPressed() {
+    if (this.intent != null) {
+      this.setResult(Activity.RESULT_OK, intent);
+    }
+    this.finish();
+  }
 }

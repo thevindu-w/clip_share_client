@@ -31,17 +31,17 @@ import java.net.Socket;
 
 public class PlainConnection extends ServerConnection {
 
-    /**
-     * Unencrypted TCP connection to the server.
-     *
-     * @param serverAddress address of the server
-     * @param port          port on which the server is listening
-     * @throws IOException  on socket connection error
-     */
-    public PlainConnection(InetAddress serverAddress, int port) throws IOException {
-        super(new Socket());
-        this.socket.connect(new InetSocketAddress(serverAddress, port), 500);
-        this.inStream = this.socket.getInputStream();
-        this.outStream = this.socket.getOutputStream();
-    }
+  /**
+   * Unencrypted TCP connection to the server.
+   *
+   * @param serverAddress address of the server
+   * @param port port on which the server is listening
+   * @throws IOException on socket connection error
+   */
+  public PlainConnection(InetAddress serverAddress, int port) throws IOException {
+    super(new Socket());
+    this.socket.connect(new InetSocketAddress(serverAddress, port), 500);
+    this.inStream = this.socket.getInputStream();
+    this.outStream = this.socket.getOutputStream();
+  }
 }
