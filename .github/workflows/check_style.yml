@@ -1,5 +1,5 @@
-name: Build
-run-name: Build on ${{ github.sha }}
+name: Check Style
+run-name: Style check on ${{ github.sha }}
 
 on:
   push:
@@ -10,7 +10,7 @@ on:
       - master
 
 jobs:
-  Build:
+  Style-Check:
     runs-on: ubuntu-latest
     steps:
     - name: Check out repository code
@@ -27,5 +27,5 @@ jobs:
         cache: gradle
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
-    - name: Build with Gradle
-      run: ./gradlew build
+    - name: Verify Google Java format
+      run: ./gradlew verifyGoogleJavaFormat
