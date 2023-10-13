@@ -11,8 +11,8 @@ android {
         applicationId = "com.tw.clipshare"
         minSdkVersion 24
         targetSdkVersion 31
-        versionCode = 20701
-        versionName = "2.7.1"
+        versionCode = 20702
+        versionName = "2.7.2"
         resConfigs "en"
     }
 

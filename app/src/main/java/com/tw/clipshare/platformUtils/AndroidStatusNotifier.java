@@ -46,7 +46,13 @@ public class AndroidStatusNotifier implements StatusNotifier {
       int notificationId) {
     this.activity = activity;
     this.notificationManager = notificationManager;
-    this.builder = builder;
+    this.builder =
+        builder
+            .setContentText("0%")
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setOnlyAlertOnce(true)
+            .setVibrate(new long[] {0L})
+            .setSilent(true);
     this.notificationId = notificationId;
     this.prev = -1;
     this.prevTime = 0;
@@ -71,6 +77,7 @@ public class AndroidStatusNotifier implements StatusNotifier {
       this.prevTime = curTime;
       NotificationCompat.Builder finalBuilder = builder;
       NotificationManagerCompat finalNotificationManager = notificationManager;
+      builder.setSilent(true);
       this.activity.runOnUiThread(
           () -> {
             try {

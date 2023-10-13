@@ -530,9 +530,7 @@ public class ClipShareActivity extends AppCompatActivity {
         NotificationCompat.Builder builder =
             new NotificationCompat.Builder(context, ClipShareActivity.CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_upload_icon)
-                .setContentTitle("Sending files")
-                .setContentText("0%")
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT);
+                .setContentTitle("Sending files");
         StatusNotifier notifier =
             new AndroidStatusNotifier(
                 ClipShareActivity.this, notificationManager, builder, notificationId);
@@ -670,9 +668,7 @@ public class ClipShareActivity extends AppCompatActivity {
               NotificationCompat.Builder builder =
                   new NotificationCompat.Builder(context, ClipShareActivity.CHANNEL_ID)
                       .setSmallIcon(R.drawable.ic_download_icon)
-                      .setContentTitle("Getting file")
-                      .setContentText("0%")
-                      .setPriority(NotificationCompat.PRIORITY_DEFAULT);
+                      .setContentTitle("Getting file");
 
               FSUtils utils = new FSUtils(context, ClipShareActivity.this);
               StatusNotifier notifier =
