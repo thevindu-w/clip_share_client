@@ -6,13 +6,14 @@ plugins {
 android {
     compileSdkVersion = 33
     buildToolsVersion = "32.0.0"
+    namespace "com.tw.clipshare"
 
     defaultConfig {
         applicationId = "com.tw.clipshare"
         minSdkVersion 24
         targetSdkVersion 31
-        versionCode = 20702
-        versionName = "2.7.2"
+        versionCode = 20703
+        versionName = "2.7.3"
         resConfigs "en"
     }
 
