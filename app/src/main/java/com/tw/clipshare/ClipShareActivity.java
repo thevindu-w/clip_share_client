@@ -246,7 +246,12 @@ public class ClipShareActivity extends AppCompatActivity {
       try {
         String action = intent.getAction();
         if (Intent.ACTION_SEND.equals(action)) {
-          Uri extra = intent.getParcelableExtra(Intent.EXTRA_STREAM);
+          Uri extra;
+          if (Build.VERSION.SDK_INT > Build.VERSION_CODES.TIRAMISU) {
+            extra = intent.getParcelableExtra(Intent.EXTRA_STREAM, Uri.class);
+          } else {
+            extra = intent.getParcelableExtra(Intent.EXTRA_STREAM);
+          }
           if (extra != null) {
             this.fileURIs = new ArrayList<>(1);
             this.fileURIs.add(extra);
@@ -254,7 +259,12 @@ public class ClipShareActivity extends AppCompatActivity {
             return;
           }
         } else if (Intent.ACTION_SEND_MULTIPLE.equals(action)) {
-          ArrayList<Uri> uris = intent.getParcelableArrayListExtra(Intent.EXTRA_STREAM);
+          ArrayList<Uri> uris;
+          if (Build.VERSION.SDK_INT > Build.VERSION_CODES.TIRAMISU) {
+            uris = intent.getParcelableArrayListExtra(Intent.EXTRA_STREAM, Uri.class);
+          } else {
+            uris = intent.getParcelableArrayListExtra(Intent.EXTRA_STREAM);
+          }
           if (uris != null && uris.size() > 0) {
             this.fileURIs = uris;
             int count = this.fileURIs.size();
