@@ -8,8 +8,8 @@
     <string name="btnFileTxt" translatable="false">File</string>
     <string name="scanBtnTxt" translatable="false">Scan</string>
     <string name="fileSelectedTxt" translatable="false">File selected. Press send file button.</string>
-    <string name="channel_name" translatable="false">upload_notification</string>
-    <string name="channel_description" translatable="false">File Upload</string>
+    <string name="channel_name" translatable="false">File transfer progress</string>
+    <string name="channel_description" translatable="false">File upload/download progress</string>
     <plurals name="filesSelectedTxt" translatable="false">
         <item quantity="one">%d file selected. Press send file button.</item>
         <item quantity="other">%d files selected. Press send file button.</item>

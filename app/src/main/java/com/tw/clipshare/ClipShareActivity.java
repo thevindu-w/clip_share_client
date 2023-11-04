@@ -72,7 +72,7 @@ import java.util.concurrent.Executors;
 public class ClipShareActivity extends AppCompatActivity {
   public static final int WRITE_IMAGE = 222;
   public static final int WRITE_FILE = 223;
-  public static final String CHANNEL_ID = "upload_channel";
+  public static final String CHANNEL_ID = "notification_channel";
   private static final Object fileGetCntLock = new Object();
   private static final Object fileSendCntLock = new Object();
   private static final Object settingsLock = new Object();
