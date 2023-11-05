@@ -101,7 +101,7 @@ public class ClipShareActivity extends AppCompatActivity {
           }
         }
       }
-      Settings st = Settings.getInstance(null);
+      Settings st = Settings.getInstance();
       int icon_id = st.getSecure() ? R.drawable.ic_secure : R.drawable.ic_insecure;
       menu.findItem(R.id.action_secure)
           .setIcon(ContextCompat.getDrawable(ClipShareActivity.this, icon_id));
@@ -161,7 +161,7 @@ public class ClipShareActivity extends AppCompatActivity {
                 return;
               }
               if (intent1.hasExtra("settingsResult")) {
-                Settings st = Settings.getInstance(null);
+                Settings st = Settings.getInstance();
                 boolean sec = st.getSecure();
                 int icon_id = sec ? R.drawable.ic_secure : R.drawable.ic_insecure;
                 menu.findItem(R.id.action_secure)
@@ -170,6 +170,8 @@ public class ClipShareActivity extends AppCompatActivity {
                 try {
                   editor.putString("settings", Settings.toString(st));
                   editor.apply();
+                  runOnUiThread(
+                      () -> Toast.makeText(context, "Saved settings", Toast.LENGTH_SHORT).show());
                 } catch (Exception ignored) {
                 }
               } else {
@@ -235,6 +237,12 @@ public class ClipShareActivity extends AppCompatActivity {
     }
   }
 
+  @Override
+  public void onNewIntent(Intent intent) {
+    super.onNewIntent(intent);
+    extractIntent(intent);
+  }
+
   /**
    * Extract the file URIs or shared text from an intent.
    *
@@ -279,6 +287,26 @@ public class ClipShareActivity extends AppCompatActivity {
             AndroidUtils utils = new AndroidUtils(context, ClipShareActivity.this);
             utils.setClipboardText(text);
             output.setText(R.string.textSelected);
+
+            ExecutorService autoSendExecutorService = Executors.newSingleThreadExecutor();
+            Runnable runnableAutoSendText =
+                () -> {
+                  try {
+                    synchronized (settingsLock) {
+                      while (!isSettingsLoaded) {
+                        try {
+                          settingsLock.wait();
+                        } catch (InterruptedException ignored) {
+                        }
+                      }
+                    }
+                    Settings st = Settings.getInstance();
+                    if (st.getAutoSendText()) clkSendTxt();
+                  } catch (Exception e) {
+                    outputAppend("Auto send failed: " + e.getMessage());
+                  }
+                };
+            autoSendExecutorService.submit(runnableAutoSendText);
           }
         } else {
           this.fileURIs = null;
@@ -303,7 +331,7 @@ public class ClipShareActivity extends AppCompatActivity {
     int retries = 2;
     do {
       try {
-        Settings settings = Settings.getInstance(null);
+        Settings settings = Settings.getInstance();
         if (tunnelSwitch != null && tunnelSwitch.isChecked()) {
           return new TunnelConnection(addressStr);
         } else if (settings.getSecure()) {
@@ -359,17 +387,11 @@ public class ClipShareActivity extends AppCompatActivity {
     return null;
   }
 
-  @Override
-  public void onNewIntent(Intent intent) {
-    super.onNewIntent(intent);
-    extractIntent(intent);
-  }
-
   private void clkScanBtn(View parent) {
     new Thread(
             () -> {
               try {
-                Settings settings = Settings.getInstance(null);
+                Settings settings = Settings.getInstance();
                 List<InetAddress> serverAddresses =
                     ServerFinder.find(settings.getPort(), settings.getPortUDP());
                 if (!serverAddresses.isEmpty()) {
@@ -460,8 +482,8 @@ public class ClipShareActivity extends AppCompatActivity {
               boolean status = proto.sendText(clipDataString);
               proto.close();
               if (!status) return;
-              if (clipDataString.length() < 16384) outputAppend("Text: " + clipDataString);
-              else outputAppend("Text: " + clipDataString.substring(0, 1024) + " ... (truncated)");
+              if (clipDataString.length() < 16384) outputAppend("Sent: " + clipDataString);
+              else outputAppend("Sent: " + clipDataString.substring(0, 1024) + " ... (truncated)");
             } catch (Exception e) {
               outputAppend("Error " + e.getMessage());
             }
@@ -602,8 +624,8 @@ public class ClipShareActivity extends AppCompatActivity {
               proto.close();
               if (text == null) return;
               utils.setClipboardText(text);
-              if (text.length() < 16384) outputAppend("Text: " + text);
-              else outputAppend("Text: " + text.substring(0, 1024) + " ... (truncated)");
+              if (text.length() < 16384) outputAppend("Received: " + text);
+              else outputAppend("Received: " + text.substring(0, 1024) + " ... (truncated)");
             } catch (Exception e) {
               outputAppend("Error " + e.getMessage());
             }

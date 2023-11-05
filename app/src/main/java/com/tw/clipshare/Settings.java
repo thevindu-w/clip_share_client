@@ -44,6 +44,7 @@ public class Settings implements Serializable {
   private int port;
   private int portSecure;
   private int portUDP;
+  private boolean autoSendText;
 
   private Settings(ArrayList<String> trustedList) {
     this.secure = false;
@@ -56,6 +57,7 @@ public class Settings implements Serializable {
     this.port = 4337;
     this.portSecure = 4338;
     this.portUDP = 4337;
+    this.autoSendText = false;
   }
 
   private Settings() {
@@ -164,11 +166,20 @@ public class Settings implements Serializable {
     } catch (Exception ignored) {
     }
 
+    // Set autoSendText
+    try {
+      Object attributeO = map.get("autoSendText");
+      if (attributeO instanceof Boolean) {
+        settings.autoSendText = (Boolean) attributeO;
+      }
+    } catch (Exception ignored) {
+    }
+
     return settings;
   }
 
   public static String toString(Settings settings) throws IOException {
-    HashMap<String, Object> map = new HashMap<>(10);
+    HashMap<String, Object> map = new HashMap<>(11);
     map.put("caCert", settings.caCert);
     map.put("cert", settings.cert);
     map.put("passwd", settings.passwd);
@@ -179,6 +190,7 @@ public class Settings implements Serializable {
     map.put("port", settings.port);
     map.put("portSecure", settings.portSecure);
     map.put("portUDP", settings.portUDP);
+    map.put("autoSendText", settings.autoSendText);
 
     ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
     ObjectOutputStream oos = new ObjectOutputStream(byteArrayOutputStream);
@@ -210,10 +222,15 @@ public class Settings implements Serializable {
         INSTANCE.port = strSet.port;
         INSTANCE.portSecure = strSet.portSecure;
         INSTANCE.portUDP = strSet.portUDP;
+        INSTANCE.autoSendText = strSet.autoSendText;
       } catch (Exception ignored) {
       }
     }
     return Settings.INSTANCE;
+  }
+
+  public static Settings getInstance() {
+    return Settings.getInstance(null);
   }
 
   public List<String> getTrustedList() {
@@ -314,5 +331,13 @@ public class Settings implements Serializable {
 
   public void setPortSecure(int port) {
     this.portSecure = port;
+  }
+
+  public boolean getAutoSendText() {
+    return autoSendText;
+  }
+
+  public void setAutoSendText(boolean autoSendText) {
+    this.autoSendText = autoSendText;
   }
 }

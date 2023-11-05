@@ -66,7 +66,7 @@ public class SettingsActivity extends AppCompatActivity {
       TextView cnTxt = trustServer.findViewById(R.id.cnTxt);
       EditText cnEdit = trustServer.findViewById(R.id.cnEdit);
       trustServer.setId(id.getAndIncrement());
-      Settings st = Settings.getInstance(null);
+      Settings st = Settings.getInstance();
       List<String> servers = st.getTrustedList();
       if (name != null) cnTxt.setText(name);
       if (addToList) servers.add(cnTxt.getText().toString());
@@ -113,7 +113,7 @@ public class SettingsActivity extends AppCompatActivity {
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.settings_activity);
-    Settings st = Settings.getInstance(null);
+    Settings st = Settings.getInstance();
     this.intent = getIntent();
     this.id = new AtomicInteger();
     this.trustList = findViewById(R.id.trustedList);
@@ -221,6 +221,11 @@ public class SettingsActivity extends AppCompatActivity {
     for (String server : servers) {
       addRowToTrustList(false, server);
     }
+
+    SwitchCompat autoSendTextSwitch = findViewById(R.id.autoSendTextSwitch);
+    autoSendTextSwitch.setOnClickListener(
+        view -> st.setAutoSendText(autoSendTextSwitch.isChecked()));
+    autoSendTextSwitch.setChecked(st.getAutoSendText());
 
     addBtn.setOnClickListener(view -> addRowToTrustList(true, null));
 

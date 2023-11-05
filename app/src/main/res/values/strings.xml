@@ -30,13 +30,15 @@
     <string name="name" translatable="false">Name :</string>
     <string name="browse" translatable="false">Browse</string>
     <string name="ca_certificate" translatable="false">CA Certificate</string>
+    <string name="auto_send" translatable="false">Auto send</string>
+    <string name="auto_send_text" translatable="false">Auto send text</string>
     <string name="sendingFiles" translatable="false">Sending files …</string>
-    <string name="tunnel">Tunnel</string>
-    <string name="textSelected">Text is selected. Press the Send button.</string>
-    <string name="ports">Ports</string>
-    <string name="port">Port</string>
-    <string name="secure_port">Secure Port</string>
-    <string name="UDP_port">UDP Port</string>
-    <string name="port_number">4337</string>
-    <string name="secure_port_number">4338</string>
+    <string name="tunnel" translatable="false">Tunnel</string>
+    <string name="textSelected" translatable="false">Text is selected. Press the Send button.\nEnable auto-send text in Settings to automatically send.</string>
+    <string name="ports" translatable="false">Ports</string>
+    <string name="port" translatable="false">Port</string>
+    <string name="secure_port" translatable="false">Secure Port</string>
+    <string name="UDP_port" translatable="false">UDP Port</string>
+    <string name="port_number" translatable="false">4337</string>
+    <string name="secure_port_number" translatable="false">4338</string>
 </resources>
