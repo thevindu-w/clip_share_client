@@ -32,6 +32,7 @@
     <string name="ca_certificate" translatable="false">CA Certificate</string>
     <string name="auto_send" translatable="false">Auto send</string>
     <string name="auto_send_text" translatable="false">Auto send text</string>
+    <string name="auto_send_file" translatable="false">Auto send files</string>
     <string name="sendingFiles" translatable="false">Sending files …</string>
     <string name="tunnel" translatable="false">Tunnel</string>
     <string name="textSelected" translatable="false">Text is selected. Press the Send button.\nEnable auto-send text in Settings to automatically send.</string>

@@ -45,6 +45,7 @@ public class Settings implements Serializable {
   private int portSecure;
   private int portUDP;
   private boolean autoSendText;
+  private boolean autoSendFiles;
 
   private Settings(ArrayList<String> trustedList) {
     this.secure = false;
@@ -58,6 +59,7 @@ public class Settings implements Serializable {
     this.portSecure = 4338;
     this.portUDP = 4337;
     this.autoSendText = false;
+    this.setAutoSendFiles(false);
   }
 
   private Settings() {
@@ -175,11 +177,20 @@ public class Settings implements Serializable {
     } catch (Exception ignored) {
     }
 
+    // Set autoSendFiles
+    try {
+      Object attributeO = map.get("autoSendFiles");
+      if (attributeO instanceof Boolean) {
+        settings.autoSendFiles = (Boolean) attributeO;
+      }
+    } catch (Exception ignored) {
+    }
+
     return settings;
   }
 
   public static String toString(Settings settings) throws IOException {
-    HashMap<String, Object> map = new HashMap<>(11);
+    HashMap<String, Object> map = new HashMap<>(12);
     map.put("caCert", settings.caCert);
     map.put("cert", settings.cert);
     map.put("passwd", settings.passwd);
@@ -191,6 +202,7 @@ public class Settings implements Serializable {
     map.put("portSecure", settings.portSecure);
     map.put("portUDP", settings.portUDP);
     map.put("autoSendText", settings.autoSendText);
+    map.put("autoSendFiles", settings.autoSendFiles);
 
     ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
     ObjectOutputStream oos = new ObjectOutputStream(byteArrayOutputStream);
@@ -223,6 +235,7 @@ public class Settings implements Serializable {
         INSTANCE.portSecure = strSet.portSecure;
         INSTANCE.portUDP = strSet.portUDP;
         INSTANCE.autoSendText = strSet.autoSendText;
+        INSTANCE.autoSendFiles = strSet.autoSendFiles;
       } catch (Exception ignored) {
       }
     }
@@ -339,5 +352,13 @@ public class Settings implements Serializable {
 
   public void setAutoSendText(boolean autoSendText) {
     this.autoSendText = autoSendText;
+  }
+
+  public boolean getAutoSendFiles() {
+    return autoSendFiles;
+  }
+
+  public void setAutoSendFiles(boolean autoSendFiles) {
+    this.autoSendFiles = autoSendFiles;
   }
 }

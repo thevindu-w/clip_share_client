@@ -227,6 +227,11 @@ public class SettingsActivity extends AppCompatActivity {
         view -> st.setAutoSendText(autoSendTextSwitch.isChecked()));
     autoSendTextSwitch.setChecked(st.getAutoSendText());
 
+    SwitchCompat autoSendFileSwitch = findViewById(R.id.autoSendFileSwitch);
+    autoSendFileSwitch.setOnClickListener(
+        view -> st.setAutoSendFiles(autoSendFileSwitch.isChecked()));
+    autoSendFileSwitch.setChecked(st.getAutoSendFiles());
+
     addBtn.setOnClickListener(view -> addRowToTrustList(true, null));
 
     certType = 0;

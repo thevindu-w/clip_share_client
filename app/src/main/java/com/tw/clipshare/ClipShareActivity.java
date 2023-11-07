@@ -73,6 +73,8 @@ public class ClipShareActivity extends AppCompatActivity {
   public static final int WRITE_IMAGE = 222;
   public static final int WRITE_FILE = 223;
   public static final String CHANNEL_ID = "notification_channel";
+  private static final int AUTO_SEND_TEXT = 1;
+  private static final int AUTO_SEND_FILES = 2;
   private static final Object fileGetCntLock = new Object();
   private static final Object fileSendCntLock = new Object();
   private static final Object settingsLock = new Object();
@@ -264,6 +266,7 @@ public class ClipShareActivity extends AppCompatActivity {
             this.fileURIs = new ArrayList<>(1);
             this.fileURIs.add(extra);
             output.setText(R.string.fileSelectedTxt);
+            autoSend(AUTO_SEND_FILES);
             return;
           }
         } else if (Intent.ACTION_SEND_MULTIPLE.equals(action)) {
@@ -278,6 +281,7 @@ public class ClipShareActivity extends AppCompatActivity {
             int count = this.fileURIs.size();
             output.setText(
                 context.getResources().getQuantityString(R.plurals.filesSelectedTxt, count, count));
+            autoSend(AUTO_SEND_FILES);
             return;
           }
         }
@@ -287,26 +291,7 @@ public class ClipShareActivity extends AppCompatActivity {
             AndroidUtils utils = new AndroidUtils(context, ClipShareActivity.this);
             utils.setClipboardText(text);
             output.setText(R.string.textSelected);
-
-            ExecutorService autoSendExecutorService = Executors.newSingleThreadExecutor();
-            Runnable runnableAutoSendText =
-                () -> {
-                  try {
-                    synchronized (settingsLock) {
-                      while (!isSettingsLoaded) {
-                        try {
-                          settingsLock.wait();
-                        } catch (InterruptedException ignored) {
-                        }
-                      }
-                    }
-                    Settings st = Settings.getInstance();
-                    if (st.getAutoSendText()) clkSendTxt();
-                  } catch (Exception e) {
-                    outputAppend("Auto send failed: " + e.getMessage());
-                  }
-                };
-            autoSendExecutorService.submit(runnableAutoSendText);
+            autoSend(AUTO_SEND_TEXT);
           }
         } else {
           this.fileURIs = null;
@@ -318,6 +303,44 @@ public class ClipShareActivity extends AppCompatActivity {
     } else {
       this.fileURIs = null;
     }
+  }
+
+  /**
+   * Auto-sends the given type of data in a separate thread
+   *
+   * @param type data type to auto send
+   */
+  private void autoSend(int type) {
+    ExecutorService autoSendExecutorService = Executors.newSingleThreadExecutor();
+    Runnable runnableAutoSendText =
+        () -> {
+          try {
+            synchronized (settingsLock) {
+              while (!isSettingsLoaded) {
+                try {
+                  settingsLock.wait();
+                } catch (InterruptedException ignored) {
+                }
+              }
+            }
+            Settings st = Settings.getInstance();
+            switch (type) {
+              case AUTO_SEND_TEXT:
+                {
+                  if (st.getAutoSendText()) clkSendTxt();
+                  break;
+                }
+              case AUTO_SEND_FILES:
+                {
+                  if (st.getAutoSendFiles()) clkSendFile();
+                  break;
+                }
+            }
+          } catch (Exception e) {
+            outputAppend("Auto send failed: " + e.getMessage());
+          }
+        };
+    autoSendExecutorService.submit(runnableAutoSendText);
   }
 
   /**

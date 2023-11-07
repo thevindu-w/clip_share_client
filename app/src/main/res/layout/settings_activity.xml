@@ -121,6 +121,13 @@
                                                 android:layout_width="match_parent"
                                                 android:layout_height="wrap_content"
                                                 android:checked="false"/>
+        <androidx.appcompat.widget.SwitchCompat android:id="@+id/autoSendFileSwitch"
+                                                android:text="@string/auto_send_file"
+                                                android:padding="12dp"
+                                                android:textSize="18sp"
+                                                android:layout_width="match_parent"
+                                                android:layout_height="wrap_content"
+                                                android:checked="false"/>
 
         <LinearLayout android:layout_width="match_parent"
                       android:layout_height="1dp"
