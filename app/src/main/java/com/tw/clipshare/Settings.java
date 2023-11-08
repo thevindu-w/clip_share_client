@@ -24,11 +24,13 @@
 
 package com.tw.clipshare;
 
-import android.util.Base64;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class Settings implements Serializable {
 
@@ -66,21 +68,21 @@ public class Settings implements Serializable {
     this(new ArrayList<>(1));
   }
 
-  @SuppressWarnings("unchecked")
-  private static Settings fromString(String s) throws IOException, ClassNotFoundException {
-    byte[] data = Base64.decode(s, Base64.DEFAULT);
-    ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(data));
-    Object o = ois.readObject();
-    ois.close();
-    if (!(o instanceof HashMap)) throw new RuntimeException();
-    HashMap<String, Object> map = (HashMap<String, Object>) o;
+  private static Settings fromString(String s) throws JSONException {
+    JSONObject map = new JSONObject(s);
     ArrayList<String> trustedList = null;
     try {
       Object trustedListO = map.get("trustedList");
-      if (trustedListO instanceof ArrayList) {
-        trustedList = (ArrayList<String>) trustedListO;
+      if (trustedListO instanceof JSONArray) {
+        JSONArray jsonArray = (JSONArray) trustedListO;
+        int len = jsonArray.length();
+        trustedList = new ArrayList<>(len);
+        for (int i = 0; i < len; i++) {
+          trustedList.add(jsonArray.getString(i));
+        }
       }
     } catch (Exception ignored) {
+      trustedList = null;
     }
 
     Settings settings;
@@ -204,11 +206,8 @@ public class Settings implements Serializable {
     map.put("autoSendText", settings.autoSendText);
     map.put("autoSendFiles", settings.autoSendFiles);
 
-    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-    ObjectOutputStream oos = new ObjectOutputStream(byteArrayOutputStream);
-    oos.writeObject(map);
-    oos.close();
-    return Base64.encodeToString(byteArrayOutputStream.toByteArray(), Base64.DEFAULT);
+    JSONObject jsonObject = new JSONObject(map);
+    return jsonObject.toString();
   }
 
   public static Settings getInstance(String data) {
