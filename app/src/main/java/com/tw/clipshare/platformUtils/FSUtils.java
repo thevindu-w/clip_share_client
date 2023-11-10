@@ -44,6 +44,7 @@ public class FSUtils extends AndroidUtils {
   private String outFilePath;
   private String baseDirName;
   private final LinkedList<PendingFile> pendingFiles;
+  private static long lastToastTime = 0;
 
   public FSUtils(Context context, Activity activity, LinkedList<PendingFile> pendingFiles) {
     super(context, activity);
@@ -195,13 +196,17 @@ public class FSUtils extends AndroidUtils {
   }
 
   public void getFileDone(String type) {
-    this.activity.runOnUiThread(
-        () ->
-            Toast.makeText(
-                    context,
-                    "Saved " + type + " to " + outFilePath.substring(baseDirName.length() + 1),
-                    Toast.LENGTH_SHORT)
-                .show());
+    long currTime = System.currentTimeMillis();
+    if (currTime - lastToastTime > 2000) {
+      lastToastTime = currTime;
+      this.activity.runOnUiThread(
+          () ->
+              Toast.makeText(
+                      context,
+                      "Saved " + type + " to " + outFilePath.substring(baseDirName.length() + 1),
+                      Toast.LENGTH_SHORT)
+                  .show());
+    }
     int dotIndex = outFilePath.lastIndexOf('.');
     if (dotIndex > 0) {
       String extension = outFilePath.substring(dotIndex + 1);
