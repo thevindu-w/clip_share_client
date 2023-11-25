@@ -81,13 +81,15 @@ public class ClipShareActivity extends AppCompatActivity {
   private static int fileGettingCount = 0;
   private static int fileSendingCount = 0;
   private static boolean isSettingsLoaded = false;
+  private String receivedURI;
   public TextView output;
   private ActivityResultLauncher<Intent> activityLauncherForResult;
   private EditText editAddress;
   private Context context;
   private ArrayList<Uri> fileURIs;
   private Menu menu;
-  private SwitchCompat tunnelSwitch = null;
+  private SwitchCompat tunnelSwitch;
+  private LinearLayout openBrowserLayout;
 
   @Override
   public boolean onCreateOptionsMenu(Menu menu) {
@@ -164,8 +166,7 @@ public class ClipShareActivity extends AppCompatActivity {
               }
               if (intent1.hasExtra("settingsResult")) {
                 Settings st = Settings.getInstance();
-                boolean sec = st.getSecure();
-                int icon_id = sec ? R.drawable.ic_secure : R.drawable.ic_insecure;
+                int icon_id = st.getSecure() ? R.drawable.ic_secure : R.drawable.ic_insecure;
                 menu.findItem(R.id.action_secure)
                     .setIcon(ContextCompat.getDrawable(ClipShareActivity.this, icon_id));
                 SharedPreferences.Editor editor = sharedPref.edit();
@@ -213,6 +214,9 @@ public class ClipShareActivity extends AppCompatActivity {
     btnSendFile.setOnClickListener(view -> clkSendFile());
     Button btnScanHost = findViewById(R.id.btnScanHost);
     btnScanHost.setOnClickListener(this::clkScanBtn);
+    Button btnOpenBrowser = findViewById(R.id.btnOpenBrowser);
+    btnOpenBrowser.setOnClickListener(view -> openInBrowser());
+    openBrowserLayout = findViewById(R.id.layoutOpenBrowser);
     editAddress.setText(sharedPref.getString("serverIP", ""));
     try {
       Settings.getInstance(sharedPref.getString("settings", null));
@@ -408,6 +412,20 @@ public class ClipShareActivity extends AppCompatActivity {
     } while (retries-- > 0);
     outputAppend("Couldn't connect");
     return null;
+  }
+
+  private void openInBrowser() {
+    // TODO: Implement
+    try {
+      try {
+        Intent intent =
+            new Intent(Intent.ACTION_VIEW, Uri.parse(ClipShareActivity.this.receivedURI));
+        startActivity(intent);
+      } catch (Exception ignored) {
+      }
+      openBrowserLayout.setVisibility(View.GONE);
+    } catch (Exception ignored) {
+    }
   }
 
   private void clkScanBtn(View parent) {
@@ -649,6 +667,11 @@ public class ClipShareActivity extends AppCompatActivity {
               utils.setClipboardText(text);
               if (text.length() < 16384) outputAppend("Received: " + text);
               else outputAppend("Received: " + text.substring(0, 1024) + " ... (truncated)");
+              if (text.matches(
+                  "^(http|https|ftp)://([0-9a-zA-Z_.-]{1,256}(:[^\\s@:/?#]{1,256})?@)?[0-9a-zA-Z_-]{1,256}(\\.[0-9a-zA-Z_-]{1,256}){0,256}(:(0|[1-9][0-9]{0,3}|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5]))?(/[^\\s/?#]+)*/?(\\?[^\\s?&#]+=[^\\s?&#]*(&[^\\s?&#]+=[^\\s?&#]*)*)?(#\\S*)?$")) {
+                ClipShareActivity.this.receivedURI = text;
+                runOnUiThread(() -> openBrowserLayout.setVisibility(View.VISIBLE));
+              }
             } catch (Exception e) {
               outputAppend("Error " + e.getMessage());
             }
