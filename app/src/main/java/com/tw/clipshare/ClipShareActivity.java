@@ -415,7 +415,6 @@ public class ClipShareActivity extends AppCompatActivity {
   }
 
   private void openInBrowser() {
-    // TODO: Implement
     try {
       try {
         Intent intent =
@@ -423,7 +422,6 @@ public class ClipShareActivity extends AppCompatActivity {
         startActivity(intent);
       } catch (Exception ignored) {
       }
-      openBrowserLayout.setVisibility(View.GONE);
     } catch (Exception ignored) {
     }
   }
@@ -508,7 +506,11 @@ public class ClipShareActivity extends AppCompatActivity {
 
   private void clkSendTxt() {
     try {
-      runOnUiThread(() -> output.setText(""));
+      runOnUiThread(
+          () -> {
+            openBrowserLayout.setVisibility(View.GONE);
+            output.setText("");
+          });
       String address = this.getServerAddress();
       if (address == null) return;
       ExecutorService executorService = Executors.newSingleThreadExecutor();
@@ -558,7 +560,11 @@ public class ClipShareActivity extends AppCompatActivity {
    */
   private void sendFromURIs(ArrayList<Uri> uris) {
     try {
-      runOnUiThread(() -> output.setText(""));
+      runOnUiThread(
+          () -> {
+            openBrowserLayout.setVisibility(View.GONE);
+            output.setText("");
+          });
       String address = this.getServerAddress();
       if (address == null) return;
 
@@ -651,7 +657,11 @@ public class ClipShareActivity extends AppCompatActivity {
 
   private void clkGetTxt() {
     try {
-      runOnUiThread(() -> output.setText(""));
+      runOnUiThread(
+          () -> {
+            openBrowserLayout.setVisibility(View.GONE);
+            output.setText("");
+          });
       String address = this.getServerAddress();
       if (address == null) return;
       ExecutorService executorService = Executors.newSingleThreadExecutor();
@@ -686,7 +696,11 @@ public class ClipShareActivity extends AppCompatActivity {
     try {
       if (needsPermission(WRITE_IMAGE)) return;
 
-      runOnUiThread(() -> output.setText(""));
+      runOnUiThread(
+          () -> {
+            openBrowserLayout.setVisibility(View.GONE);
+            output.setText("");
+          });
       String address = this.getServerAddress();
       if (address == null) return;
 
@@ -719,7 +733,11 @@ public class ClipShareActivity extends AppCompatActivity {
     try {
       if (needsPermission(WRITE_FILE)) return;
 
-      runOnUiThread(() -> output.setText(""));
+      runOnUiThread(
+          () -> {
+            openBrowserLayout.setVisibility(View.GONE);
+            output.setText("");
+          });
       String address = this.getServerAddress();
       if (address == null) return;
 
