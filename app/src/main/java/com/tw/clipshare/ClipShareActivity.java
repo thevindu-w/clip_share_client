@@ -179,21 +179,7 @@ public class ClipShareActivity extends AppCompatActivity {
                 }
               } else {
                 try {
-                  ClipData clipData = intent1.getClipData();
-                  ArrayList<Uri> uris;
-                  if (clipData != null) {
-                    int itemCount = clipData.getItemCount();
-                    uris = new ArrayList<>(itemCount);
-                    for (int count = 0; count < itemCount; count++) {
-                      Uri uri = clipData.getItemAt(count).getUri();
-                      uris.add(uri);
-                    }
-                  } else {
-                    Uri uri = intent1.getData();
-                    uris = new ArrayList<>(1);
-                    uris.add(uri);
-                  }
-                  this.fileURIs = uris;
+                  this.fileURIs = getFileUris(intent1);
                   clkSendFile();
                 } catch (Exception e) {
                   outputAppend("Error " + e.getMessage());
@@ -243,6 +229,25 @@ public class ClipShareActivity extends AppCompatActivity {
     }
   }
 
+  @NonNull
+  private static ArrayList<Uri> getFileUris(Intent intent1) {
+    ClipData clipData = intent1.getClipData();
+    ArrayList<Uri> uris;
+    if (clipData != null) {
+      int itemCount = clipData.getItemCount();
+      uris = new ArrayList<>(itemCount);
+      for (int count = 0; count < itemCount; count++) {
+        Uri uri = clipData.getItemAt(count).getUri();
+        uris.add(uri);
+      }
+    } else {
+      Uri uri = intent1.getData();
+      uris = new ArrayList<>(1);
+      uris.add(uri);
+    }
+    return uris;
+  }
+
   @Override
   public void onNewIntent(Intent intent) {
     super.onNewIntent(intent);
@@ -280,7 +285,7 @@ public class ClipShareActivity extends AppCompatActivity {
           } else {
             uris = intent.getParcelableArrayListExtra(Intent.EXTRA_STREAM);
           }
-          if (uris != null && uris.size() > 0) {
+          if (uris != null && !uris.isEmpty()) {
             this.fileURIs = uris;
             int count = this.fileURIs.size();
             output.setText(

@@ -51,7 +51,7 @@ class SubnetScanner {
     this.hostCnt = (1 << (32 - subLen)) - 2;
     short hostLen = (short) (32 - subLen);
     for (int i = 3; i >= 0 && hostLen > 0; i--) {
-      this.addressBytes[i] &= -(1 << hostLen);
+      this.addressBytes[i] &= (byte) -(1 << hostLen);
       hostLen -= 8;
     }
   }

@@ -67,7 +67,7 @@ public class Proto_v1 extends Proto {
     long fileCnt = readSize();
     for (long fileNum = 0; fileNum < fileCnt; fileNum++) {
       String fileName = readString(2048);
-      if (fileName == null || fileName.length() == 0 || fileName.contains("/")) {
+      if (fileName == null || fileName.isEmpty() || fileName.contains("/")) {
         return false;
       }
       long file_size = readSize();
@@ -113,7 +113,7 @@ public class Proto_v1 extends Proto {
     FSUtils fsUtils = (FSUtils) this.utils;
     if (!fsUtils.prepareNextFile()) return false;
     String fileName = fsUtils.getFileName();
-    if (fileName == null || fileName.length() == 0) {
+    if (fileName == null || fileName.isEmpty()) {
       return false;
     }
     long fileSize = fsUtils.getFileSize();
@@ -205,7 +205,7 @@ public class Proto_v1 extends Proto {
     }
     try {
       String info = readString(2048);
-      if (info == null || info.length() == 0) {
+      if (info == null || info.isEmpty()) {
         return null;
       }
       return info;

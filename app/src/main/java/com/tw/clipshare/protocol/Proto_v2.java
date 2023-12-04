@@ -51,7 +51,7 @@ public class Proto_v2 extends Proto_v1 {
     long fileCnt = readSize();
     for (long fileNum = 0; fileNum < fileCnt; fileNum++) {
       String fileName = readString(2048);
-      if (fileName == null || fileName.length() == 0) {
+      if (fileName == null || fileName.isEmpty()) {
         return false;
       }
       long file_size = readSize();
@@ -134,7 +134,7 @@ public class Proto_v2 extends Proto_v1 {
           fileSize = bytes.length;
           inStream = new ByteArrayInputStream(bytes);
         }
-        if (fileName == null || fileName.length() == 0) {
+        if (fileName == null || fileName.isEmpty()) {
           return false;
         }
         if (fileSize < 0) {

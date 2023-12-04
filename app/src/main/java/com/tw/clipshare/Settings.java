@@ -191,7 +191,7 @@ public class Settings implements Serializable {
     return settings;
   }
 
-  public static String toString(Settings settings) throws IOException {
+  public static String toString(Settings settings) {
     HashMap<String, Object> map = new HashMap<>(12);
     map.put("caCert", settings.caCert);
     map.put("cert", settings.cert);

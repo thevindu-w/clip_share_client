@@ -40,5 +40,5 @@ You can find more information on running the server on Linux and Windows at
 [github.com/thevindu-w/clip_share_server](https://github.com/thevindu-w/clip_share_server#how-to-use).
 
 <p align="center">
-<img src="https://raw.githubusercontent.com/thevindu-w/clip_share_client/master/fastlane/metadata/android/en-US/images/phoneScreenshots/3.jpg">
+<img src="https://raw.githubusercontent.com/thevindu-w/clip_share_client/master/fastlane/metadata/android/en-US/images/phoneScreenshots/3.jpg" alt="help image">
 </p>
