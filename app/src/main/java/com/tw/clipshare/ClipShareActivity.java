@@ -39,6 +39,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.provider.OpenableColumns;
 import android.text.method.ScrollingMovementMethod;
+import android.util.Patterns;
 import android.view.*;
 import android.widget.*;
 import androidx.activity.result.ActivityResultLauncher;
@@ -422,15 +423,8 @@ public class ClipShareActivity extends AppCompatActivity {
   private void openInBrowser() {
     try {
       try {
-        String uri;
-        if (ClipShareActivity.this.receivedURI.startsWith("https://")
-            || ClipShareActivity.this.receivedURI.startsWith("http://")
-            || ClipShareActivity.this.receivedURI.startsWith("ftp://")) {
-          uri = ClipShareActivity.this.receivedURI;
-        } else {
-          uri = "http://" + ClipShareActivity.this.receivedURI;
-        }
-        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
+        Intent intent =
+            new Intent(Intent.ACTION_VIEW, Uri.parse(ClipShareActivity.this.receivedURI));
         startActivity(intent);
       } catch (Exception ignored) {
       }
@@ -667,6 +661,16 @@ public class ClipShareActivity extends AppCompatActivity {
     }
   }
 
+  private void checkURL(String url) {
+    if (!url.matches("^[a-z]{1,12}://.*$")) {
+      url = "http://" + url;
+    }
+    if (Patterns.WEB_URL.matcher(url).matches()) {
+      ClipShareActivity.this.receivedURI = url;
+      runOnUiThread(() -> openBrowserLayout.setVisibility(View.VISIBLE));
+    }
+  }
+
   private void clkGetTxt() {
     try {
       runOnUiThread(
@@ -689,11 +693,7 @@ public class ClipShareActivity extends AppCompatActivity {
               utils.setClipboardText(text);
               if (text.length() < 16384) outputAppend("Received: " + text);
               else outputAppend("Received: " + text.substring(0, 1024) + " ... (truncated)");
-              if (text.matches(
-                  "^((http|https|ftp)://)?([0-9a-zA-Z_.-]{1,256}(:[^\\s@:/?#]{1,256})?@)?[0-9a-zA-Z_-]{1,256}(\\.[0-9a-zA-Z_-]{1,256}){0,256}(:(0|[1-9][0-9]{0,3}|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5]))?(/[^\\s/?#]+)*/?(\\?[^\\s?&#]+=[^\\s?&#]*(&[^\\s?&#]+=[^\\s?&#]*)*)?(#\\S*)?$")) {
-                ClipShareActivity.this.receivedURI = text;
-                runOnUiThread(() -> openBrowserLayout.setVisibility(View.VISIBLE));
-              }
+              checkURL(text);
             } catch (Exception e) {
               outputAppend("Error " + e.getMessage());
             }
