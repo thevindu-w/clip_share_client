@@ -42,6 +42,7 @@ dependencies {
 }
 
 googleJavaFormat {
+    toolVersion = "1.2"
     exclude 'src/test'
     exclude 'src/androidTest'
 }
