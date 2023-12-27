@@ -45,7 +45,7 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="0.2"
-                android:backgroundTint="#FF999999"
+                android:backgroundTint="#FF6666FF"
                 android:textAppearance="@style/TextAppearance.AppCompat.Button"
                 android:textStyle="bold"/>
         <LinearLayout android:layout_width="0dp"
