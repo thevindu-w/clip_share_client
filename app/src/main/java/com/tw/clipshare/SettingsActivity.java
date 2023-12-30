@@ -37,6 +37,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.*;
+import androidx.activity.OnBackPressedCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
@@ -319,6 +320,18 @@ public class SettingsActivity extends AppCompatActivity {
           SettingsActivity.this.certType = CLIENT;
           activityLauncherForResult.launch(intent);
         });
+
+    getOnBackPressedDispatcher()
+        .addCallback(
+            new OnBackPressedCallback(true) {
+              @Override
+              public void handleOnBackPressed() {
+                if (SettingsActivity.this.intent != null) {
+                  SettingsActivity.this.setResult(Activity.RESULT_OK, intent);
+                }
+                SettingsActivity.this.finish();
+              }
+            });
   }
 
   @Override
@@ -337,13 +350,5 @@ public class SettingsActivity extends AppCompatActivity {
       }
     }
     return super.dispatchTouchEvent(event);
-  }
-
-  @Override
-  public void onBackPressed() {
-    if (this.intent != null) {
-      this.setResult(Activity.RESULT_OK, intent);
-    }
-    this.finish();
   }
 }
