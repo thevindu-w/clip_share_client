@@ -5,6 +5,8 @@
     <item
             android:id="@+id/action_tunnel_switch"
             android:title=""
+            android:checked="false"
+            android:visible="false"
             android:actionLayout="@layout/tunnel_switch"
             app:showAsAction="always"/>
 
