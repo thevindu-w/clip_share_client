@@ -35,8 +35,7 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
-import android.os.Build;
-import android.os.Bundle;
+import android.os.*;
 import android.provider.OpenableColumns;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Patterns;
@@ -275,7 +274,8 @@ public class ClipShareActivity extends AppCompatActivity {
           if (extra != null) {
             this.fileURIs = new ArrayList<>(1);
             this.fileURIs.add(extra);
-            output.setText(R.string.fileSelectedTxt);
+            runOnUiThread(
+                () -> output.setText(R.string.fileSelectedTxt));
             autoSend(AUTO_SEND_FILES);
             return;
           }
@@ -289,8 +289,11 @@ public class ClipShareActivity extends AppCompatActivity {
           if (uris != null && !uris.isEmpty()) {
             this.fileURIs = uris;
             int count = this.fileURIs.size();
-            output.setText(
-                context.getResources().getQuantityString(R.plurals.filesSelectedTxt, count, count));
+            runOnUiThread(
+                () -> output.setText(
+                    context
+                        .getResources()
+                        .getQuantityString(R.plurals.filesSelectedTxt, count, count)));
             autoSend(AUTO_SEND_FILES);
             return;
           }
@@ -300,15 +303,18 @@ public class ClipShareActivity extends AppCompatActivity {
           if (text != null) {
             AndroidUtils utils = new AndroidUtils(context, ClipShareActivity.this);
             utils.setClipboardText(text);
-            output.setText(R.string.textSelected);
+            runOnUiThread(
+                () -> output.setText(R.string.textSelected));
             autoSend(AUTO_SEND_TEXT);
           }
         } else {
           this.fileURIs = null;
-          output.setText(R.string.noFilesTxt);
+          runOnUiThread(
+              () -> output.setText(R.string.noFilesTxt));
         }
       } catch (Exception e) {
-        output.setText(e.getMessage());
+        runOnUiThread(
+            () -> output.setText(e.getMessage()));
       }
     } else {
       this.fileURIs = null;
@@ -351,6 +357,28 @@ public class ClipShareActivity extends AppCompatActivity {
           }
         };
     autoSendExecutorService.submit(runnableAutoSendText);
+  }
+
+  @SuppressWarnings("deprecation")
+  private void vibrate() {
+    try {
+      Vibrator vibrator;
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        VibratorManager vibratorManager =
+            (VibratorManager) getSystemService(Context.VIBRATOR_MANAGER_SERVICE);
+        vibrator = vibratorManager.getDefaultVibrator();
+      } else {
+        vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+      }
+
+      final int duration = 100;
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        vibrator.vibrate(VibrationEffect.createOneShot(duration, VibrationEffect.DEFAULT_AMPLITUDE));
+      } else {
+        vibrator.vibrate(duration);
+      }
+    } catch (Exception ignored) {
+    }
   }
 
   /**
@@ -533,6 +561,7 @@ public class ClipShareActivity extends AppCompatActivity {
               if (!status) return;
               if (clipDataString.length() < 16384) outputAppend("Sent: " + clipDataString);
               else outputAppend("Sent: " + clipDataString.substring(0, 1024) + " ... (truncated)");
+              this.vibrate();
             } catch (Exception e) {
               outputAppend("Error " + e.getMessage());
             }
@@ -634,6 +663,7 @@ public class ClipShareActivity extends AppCompatActivity {
                 } catch (Exception ignored) {
                 }
               });
+          this.vibrate();
         }
       } catch (Exception e) {
         outputAppend("Error " + e.getMessage());
@@ -694,6 +724,7 @@ public class ClipShareActivity extends AppCompatActivity {
               if (text.length() < 16384) outputAppend("Received: " + text);
               else outputAppend("Received: " + text.substring(0, 1024) + " ... (truncated)");
               checkURL(text);
+              this.vibrate();
             } catch (Exception e) {
               outputAppend("Error " + e.getMessage());
             }
@@ -725,12 +756,15 @@ public class ClipShareActivity extends AppCompatActivity {
               if (proto == null) return;
               boolean status = proto.getImage();
               proto.close();
-              if (!status)
+              if (status) {
+                this.vibrate();
+              } else {
                 runOnUiThread(
                     () ->
                         Toast.makeText(
                                 ClipShareActivity.this, "Getting image failed", Toast.LENGTH_SHORT)
                             .show());
+              }
             } catch (Exception e) {
               outputAppend("Error " + e.getMessage());
             }
@@ -794,6 +828,7 @@ public class ClipShareActivity extends AppCompatActivity {
                       } catch (Exception ignored) {
                       }
                     });
+                this.vibrate();
               }
             } catch (Exception e) {
               outputAppend("Error " + e.getMessage());
