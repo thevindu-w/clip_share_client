@@ -274,8 +274,7 @@ public class ClipShareActivity extends AppCompatActivity {
           if (extra != null) {
             this.fileURIs = new ArrayList<>(1);
             this.fileURIs.add(extra);
-            runOnUiThread(
-                () -> output.setText(R.string.fileSelectedTxt));
+            runOnUiThread(() -> output.setText(R.string.fileSelectedTxt));
             autoSend(AUTO_SEND_FILES);
             return;
           }
@@ -290,10 +289,11 @@ public class ClipShareActivity extends AppCompatActivity {
             this.fileURIs = uris;
             int count = this.fileURIs.size();
             runOnUiThread(
-                () -> output.setText(
-                    context
-                        .getResources()
-                        .getQuantityString(R.plurals.filesSelectedTxt, count, count)));
+                () ->
+                    output.setText(
+                        context
+                            .getResources()
+                            .getQuantityString(R.plurals.filesSelectedTxt, count, count)));
             autoSend(AUTO_SEND_FILES);
             return;
           }
@@ -303,18 +303,15 @@ public class ClipShareActivity extends AppCompatActivity {
           if (text != null) {
             AndroidUtils utils = new AndroidUtils(context, ClipShareActivity.this);
             utils.setClipboardText(text);
-            runOnUiThread(
-                () -> output.setText(R.string.textSelected));
+            runOnUiThread(() -> output.setText(R.string.textSelected));
             autoSend(AUTO_SEND_TEXT);
           }
         } else {
           this.fileURIs = null;
-          runOnUiThread(
-              () -> output.setText(R.string.noFilesTxt));
+          runOnUiThread(() -> output.setText(R.string.noFilesTxt));
         }
       } catch (Exception e) {
-        runOnUiThread(
-            () -> output.setText(e.getMessage()));
+        runOnUiThread(() -> output.setText(e.getMessage()));
       }
     } else {
       this.fileURIs = null;
@@ -373,7 +370,8 @@ public class ClipShareActivity extends AppCompatActivity {
 
       final int duration = 100;
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-        vibrator.vibrate(VibrationEffect.createOneShot(duration, VibrationEffect.DEFAULT_AMPLITUDE));
+        vibrator.vibrate(
+            VibrationEffect.createOneShot(duration, VibrationEffect.DEFAULT_AMPLITUDE));
       } else {
         vibrator.vibrate(duration);
       }
