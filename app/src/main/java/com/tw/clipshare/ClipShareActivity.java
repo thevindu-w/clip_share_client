@@ -359,6 +359,7 @@ public class ClipShareActivity extends AppCompatActivity {
   @SuppressWarnings("deprecation")
   private void vibrate() {
     try {
+      if (!Settings.getInstance().getVibrate()) return;
       Vibrator vibrator;
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
         VibratorManager vibratorManager =

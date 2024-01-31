@@ -48,6 +48,7 @@ public class Settings implements Serializable {
   private int portUDP;
   private boolean autoSendText;
   private boolean autoSendFiles;
+  private boolean vibrate;
 
   private Settings(ArrayList<String> trustedList) {
     this.secure = false;
@@ -61,7 +62,8 @@ public class Settings implements Serializable {
     this.portSecure = 4338;
     this.portUDP = 4337;
     this.autoSendText = false;
-    this.setAutoSendFiles(false);
+    this.autoSendFiles = false;
+    this.vibrate = true;
   }
 
   private Settings() {
@@ -188,11 +190,20 @@ public class Settings implements Serializable {
     } catch (Exception ignored) {
     }
 
+    // Set vibrate
+    try {
+      Object attributeO = map.get("vibrate");
+      if (attributeO instanceof Boolean) {
+        settings.vibrate = (Boolean) attributeO;
+      }
+    } catch (Exception ignored) {
+    }
+
     return settings;
   }
 
   public static String toString(Settings settings) {
-    HashMap<String, Object> map = new HashMap<>(12);
+    HashMap<String, Object> map = new HashMap<>(13);
     map.put("caCert", settings.caCert);
     map.put("cert", settings.cert);
     map.put("passwd", settings.passwd);
@@ -205,6 +216,7 @@ public class Settings implements Serializable {
     map.put("portUDP", settings.portUDP);
     map.put("autoSendText", settings.autoSendText);
     map.put("autoSendFiles", settings.autoSendFiles);
+    map.put("vibrate", settings.vibrate);
 
     JSONObject jsonObject = new JSONObject(map);
     return jsonObject.toString();
@@ -235,6 +247,7 @@ public class Settings implements Serializable {
         INSTANCE.portUDP = strSet.portUDP;
         INSTANCE.autoSendText = strSet.autoSendText;
         INSTANCE.autoSendFiles = strSet.autoSendFiles;
+        INSTANCE.vibrate = strSet.vibrate;
       } catch (Exception ignored) {
       }
     }
@@ -283,6 +296,18 @@ public class Settings implements Serializable {
 
   public int getPortUDP() {
     return portUDP;
+  }
+
+  public boolean getAutoSendText() {
+    return autoSendText;
+  }
+
+  public boolean getAutoSendFiles() {
+    return autoSendFiles;
+  }
+
+  public boolean getVibrate() {
+    return vibrate;
   }
 
   public void setSecure(boolean secure) {
@@ -345,19 +370,15 @@ public class Settings implements Serializable {
     this.portSecure = port;
   }
 
-  public boolean getAutoSendText() {
-    return autoSendText;
-  }
-
   public void setAutoSendText(boolean autoSendText) {
     this.autoSendText = autoSendText;
   }
 
-  public boolean getAutoSendFiles() {
-    return autoSendFiles;
-  }
-
   public void setAutoSendFiles(boolean autoSendFiles) {
     this.autoSendFiles = autoSendFiles;
+  }
+
+  public void setVibrate(boolean vibrate) {
+    this.vibrate = vibrate;
   }
 }

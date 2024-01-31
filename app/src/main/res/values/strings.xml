@@ -20,6 +20,7 @@
     <string name="sentAllFiles" translatable="false">Sent all files</string>
     <string name="settings" translatable="false">Settings</string>
     <string name="secure_mode" translatable="false">Secure mode</string>
+    <string name="vibrate" translatable="false">Vibration alerts</string>
     <string name="security" translatable="false">Security</string>
     <string name="delete" translatable="false">Delete</string>
     <string name="add" translatable="false">Add</string>

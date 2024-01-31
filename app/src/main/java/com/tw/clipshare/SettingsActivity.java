@@ -233,6 +233,10 @@ public class SettingsActivity extends AppCompatActivity {
         view -> st.setAutoSendFiles(autoSendFileSwitch.isChecked()));
     autoSendFileSwitch.setChecked(st.getAutoSendFiles());
 
+    SwitchCompat vibrateSwitch = findViewById(R.id.vibrateSwitch);
+    vibrateSwitch.setOnClickListener(view -> st.setVibrate(vibrateSwitch.isChecked()));
+    vibrateSwitch.setChecked(st.getVibrate());
+
     addBtn.setOnClickListener(view -> addRowToTrustList(true, null));
 
     certType = 0;
