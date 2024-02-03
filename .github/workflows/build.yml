@@ -14,17 +14,31 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Check out repository code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
-        ref: ${{github.head_ref}}
-        fetch-depth: 0
+        ref: ${{ github.head_ref || github.ref_name }}
         repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+
     - name: Set up JDK 19
       uses: actions/setup-java@v3
       with:
         java-version: '19'
         distribution: 'temurin'
+
+    - name: Create KeyStore and gradle.properties
+      run: |
+        storePass=dummyPassword
+        keyAlias=test
+        keyPass=dummyPassword
+        keytool -genkey -keystore keyStore.jks -keyalg RSA -keysize 2048 -validity 10000 -alias "$keyAlias" -dname "cn=Unknown, ou=Unknown, o=Unknown, c=Unknown" -storepass "$storePass" -keypass "$keyPass"
+        mkdir -p ~/.gradle
+        echo "RELEASE_STORE_FILE=../keyStore.jks" >~/.gradle/gradle.properties
+        echo "RELEASE_STORE_PASSWORD=$storePass" >>~/.gradle/gradle.properties
+        echo "RELEASE_KEY_ALIAS=$keyAlias" >>~/.gradle/gradle.properties
+        echo "RELEASE_KEY_PASSWORD=$keyPass" >>~/.gradle/gradle.properties
+
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
+
     - name: Build with Gradle
       run: ./gradlew build -x verifyGoogleJavaFormat
