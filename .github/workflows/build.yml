@@ -20,7 +20,7 @@ jobs:
         repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
 
     - name: Set up JDK 19
-      uses: actions/setup-java@v3
+      uses: actions/setup-java@v4
       with:
         java-version: '19'
         distribution: 'temurin'
