@@ -49,8 +49,8 @@ jobs:
       if: ${{ (github.event_name == 'push') && (success() || failure()) }}
       run: ./gradlew googleJavaFormat
 
-    - name: Creat pull request
-      if: github.event_name == 'push'
+    - name: Create pull request
+      if: ${{ (github.event_name == 'push') && (success() || failure()) }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
