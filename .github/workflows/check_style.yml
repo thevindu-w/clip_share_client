@@ -4,14 +4,20 @@ run-name: Style check on ${{ github.sha }}
 on:
   push:
     branches:
-      - master
+    - master
   pull_request:
     branches:
-      - master
+    - master
+
+permissions:
+  contents: write
+  pull-requests: write
 
 jobs:
   Style-Check:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
+
     steps:
     - name: Check out repository code
       uses: actions/checkout@v4
@@ -38,3 +44,26 @@ jobs:
 
     - name: Verify Google Java format
       run: ./gradlew verifyGoogleJavaFormat
+
+    - name: Format Java code
+      if: ${{ (github.event_name == 'push') && (success() || failure()) }}
+      run: ./gradlew googleJavaFormat
+
+    - name: Creat pull request
+      if: github.event_name == 'push'
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        [[ -z "$(git status -s)" ]] && echo No changes && exit 0
+        curr_branch="${{ github.head_ref || github.ref_name }}"
+        new_branch="auto-format-$(git rev-parse HEAD | head -c 8)"
+        author_name="$(git log -1 --pretty=format:'%an')"
+        author_email="$(git log -1 --pretty=format:'%ae')"
+        git checkout -b "$new_branch" && git merge "$curr_branch"
+        git config user.name "$author_name"
+        git config user.email "$author_email"
+        git remote set-url origin "https://github.com/${{ github.repository }}"
+        git commit -am 'Apply code formatting automatically from GitHub actions'
+        git push origin "$new_branch"
+        gh pr create -B "$curr_branch" -H "$new_branch" --title "Merge \`$new_branch\` into \`$curr_branch\`" --body 'Apply code formatting [generated automatically]'
+
