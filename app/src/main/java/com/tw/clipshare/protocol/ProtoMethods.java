@@ -4,7 +4,6 @@ import com.tw.clipshare.netConnection.ServerConnection;
 import com.tw.clipshare.platformUtils.AndroidUtils;
 import com.tw.clipshare.platformUtils.FSUtils;
 import com.tw.clipshare.platformUtils.StatusNotifier;
-
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;

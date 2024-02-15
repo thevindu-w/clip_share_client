@@ -30,6 +30,7 @@ import com.tw.clipshare.platformUtils.StatusNotifier;
 
 public abstract class Proto {
   protected final ProtoMethods protoMethods;
+
   protected Proto(ServerConnection serverConnection, AndroidUtils utils, StatusNotifier notifier) {
     this.protoMethods = new ProtoMethods(serverConnection, utils, notifier);
   }
