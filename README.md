@@ -39,8 +39,8 @@ and a desktop.
 <br>
 
 This repository is the Android client of ClipShare. You will need the server on your desktop to connect with it.
-ClipShare is lightweight and easy to use. Run the server on your Windows or Linux machine to use the ClipShare app.
-You can find more information on running the server on Linux and Windows at
+ClipShare is lightweight and easy to use. Run the server on your Windows, macOS, or Linux machine to use the ClipShare
+app. You can find more information on running the server on Windows, macOS, or Linux at
 [github.com/thevindu-w/clip_share_server](https://github.com/thevindu-w/clip_share_server#how-to-use).
 
 ## How to use
