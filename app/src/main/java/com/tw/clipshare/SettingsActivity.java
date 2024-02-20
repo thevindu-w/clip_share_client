@@ -71,7 +71,7 @@ public class SettingsActivity extends AppCompatActivity {
       List<String> servers = st.getTrustedList();
       if (name != null) cnTxt.setText(name);
       if (addToList) servers.add(cnTxt.getText().toString());
-      trustList.addView(trustServer);
+      trustList.addView(trustServer, 0);
       cnTxt.setTextColor(caCnTxt.getTextColors());
       cnEdit.setTextColor(caCnTxt.getTextColors());
       delBtn.setOnClickListener(

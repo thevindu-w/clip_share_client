@@ -266,7 +266,7 @@ public class ClipShareActivity extends AppCompatActivity {
         String action = intent.getAction();
         if (Intent.ACTION_SEND.equals(action)) {
           Uri extra;
-          if (Build.VERSION.SDK_INT > Build.VERSION_CODES.TIRAMISU) {
+          if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             extra = intent.getParcelableExtra(Intent.EXTRA_STREAM, Uri.class);
           } else {
             extra = intent.getParcelableExtra(Intent.EXTRA_STREAM);
@@ -280,7 +280,7 @@ public class ClipShareActivity extends AppCompatActivity {
           }
         } else if (Intent.ACTION_SEND_MULTIPLE.equals(action)) {
           ArrayList<Uri> uris;
-          if (Build.VERSION.SDK_INT > Build.VERSION_CODES.TIRAMISU) {
+          if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             uris = intent.getParcelableArrayListExtra(Intent.EXTRA_STREAM, Uri.class);
           } else {
             uris = intent.getParcelableArrayListExtra(Intent.EXTRA_STREAM);
