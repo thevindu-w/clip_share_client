@@ -71,4 +71,5 @@ jobs:
         git remote set-url origin "https://github.com/${{ github.repository }}"
         git commit -am 'Apply code formatting automatically from GitHub actions'
         git push origin "$new_branch"
-        gh pr create -B "$curr_branch" -H "$new_branch" --title "Merge \`$new_branch\` into \`$curr_branch\`" --body 'Apply code formatting [generated automatically]'
+        gh pr create -B "$curr_branch" -H "$new_branch" --title "Merge \`$new_branch\` into \`$curr_branch\`" \
+        --body 'Apply code formatting [generated automatically]'

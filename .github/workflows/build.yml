@@ -30,7 +30,8 @@ jobs:
         storePass=dummyPassword
         keyAlias=test
         keyPass=dummyPassword
-        keytool -genkey -keystore keyStore.jks -keyalg RSA -keysize 2048 -validity 10000 -alias "$keyAlias" -dname "cn=Unknown, ou=Unknown, o=Unknown, c=Unknown" -storepass "$storePass" -keypass "$keyPass"
+        keytool -genkey -keystore keyStore.jks -keyalg RSA -keysize 2048 -validity 10000 -alias "$keyAlias" \
+        -dname "cn=Unknown, ou=Unknown, o=Unknown, c=Unknown" -storepass "$storePass" -keypass "$keyPass"
         mkdir -p ~/.gradle
         echo "RELEASE_STORE_FILE=../keyStore.jks" >~/.gradle/gradle.properties
         echo "RELEASE_STORE_PASSWORD=$storePass" >>~/.gradle/gradle.properties
