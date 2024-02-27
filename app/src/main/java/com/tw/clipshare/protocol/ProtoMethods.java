@@ -13,6 +13,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class ProtoMethods {
+  private static final int MAX_TEXT_LENGTH = 4194304; // 4 MiB
+  private static final int MAX_FILE_NAME_LENGTH = 2048;
+  private static final long MAX_FILE_SIZE = 17179869184L; // 16 GiB
+  private static final long MAX_IMAGE_SIZE = 268435456; // 256 MiB
   private static final byte GET_TEXT = 1;
   private static final byte SEND_TEXT = 2;
   private static final byte GET_FILE = 3;
@@ -37,7 +41,7 @@ public final class ProtoMethods {
     if (methodInit(GET_TEXT)) {
       return null;
     }
-    return readString(4194304);
+    return readString(MAX_TEXT_LENGTH);
   }
 
   boolean v1_sendText(String text) {
@@ -56,14 +60,25 @@ public final class ProtoMethods {
     if (methodInit(GET_FILE)) {
       return false;
     }
-    long fileCnt = readSize();
+    long fileCnt;
+    try {
+      fileCnt = readSize();
+    } catch (IOException e) {
+      if (this.notifier != null) this.notifier.finish();
+      return false;
+    }
     for (long fileNum = 0; fileNum < fileCnt; fileNum++) {
-      String fileName = readString(2048);
+      String fileName = readString(MAX_FILE_NAME_LENGTH);
       if (fileName == null || fileName.isEmpty() || fileName.contains("/")) {
         return false;
       }
-      long file_size = readSize();
-      if (file_size < 0 || file_size > 17179869184L) { // limit the file size to 16 GiB
+      long file_size;
+      try {
+        file_size = readSize();
+      } catch (IOException ignored) {
+        return false;
+      }
+      if (file_size < 0 || file_size > 17179869184L) {
         return false;
       }
       OutputStream out = fsUtils.getFileOutStream(fileName);
@@ -159,8 +174,13 @@ public final class ProtoMethods {
     if (methodInit(GET_IMAGE)) {
       return false;
     }
-    long file_size = readSize();
-    if (file_size <= 0 || file_size > 268435456) { // limit the image size to 256 MiB
+    long file_size;
+    try {
+      file_size = readSize();
+    } catch (IOException ignored) {
+      return false;
+    }
+    if (file_size <= 0 || file_size > MAX_IMAGE_SIZE) {
       return false;
     }
     OutputStream out = fsUtils.getImageOutStream();
@@ -188,24 +208,12 @@ public final class ProtoMethods {
     return true;
   }
 
-  private long readSize() {
-    byte[] data = new byte[8];
-    if (this.serverConnection.receive(data)) {
-      return -1;
-    }
-    long size = 0;
-    for (byte b : data) {
-      size = (size << 8) | (b & 0xFF);
-    }
-    return size;
-  }
-
   String v1_checkInfo() {
     if (methodInit(INFO)) {
       return null;
     }
     try {
-      String info = readString(2048);
+      String info = readString(MAX_FILE_NAME_LENGTH);
       if (info == null || info.isEmpty()) {
         return null;
       }
@@ -221,14 +229,26 @@ public final class ProtoMethods {
     if (methodInit(GET_FILE)) {
       return false;
     }
-    long fileCnt = readSize();
+    long fileCnt;
+    try {
+      fileCnt = readSize();
+    } catch (IOException ignored) {
+      return false;
+    }
     for (long fileNum = 0; fileNum < fileCnt; fileNum++) {
-      String fileName = readString(2048);
+      String fileName = readString(MAX_FILE_NAME_LENGTH);
       if (fileName == null || fileName.isEmpty()) {
         return false;
       }
-      long file_size = readSize();
-      if (file_size < 0 || file_size > 17179869184L) { // limit the file size to 16 GiB
+      long file_size;
+      try {
+        file_size = readSize();
+      } catch (IOException e) {
+        if (this.notifier != null) this.notifier.finish();
+        fsUtils.finish();
+        return false;
+      }
+      if (file_size < 0 || file_size > MAX_FILE_SIZE) {
         return false;
       }
       int base_ind = fileName.lastIndexOf('/') + 1;
@@ -356,6 +376,18 @@ public final class ProtoMethods {
     return true;
   }
 
+  private long readSize() throws IOException {
+    byte[] data = new byte[8];
+    if (this.serverConnection.receive(data)) {
+      throw new IOException();
+    }
+    long size = 0;
+    for (byte b : data) {
+      size = (size << 8) | (b & 0xFF);
+    }
+    return size;
+  }
+
   private boolean sendSize(long size) {
     byte[] data = new byte[8];
     for (int i = data.length - 1; i >= 0; i--) {
@@ -375,14 +407,19 @@ public final class ProtoMethods {
   }
 
   /**
-   * Reads a String encoded with UTF-8 from server
+   * Reads a non-empty String, encoded with UTF-8, from server
    *
    * @param maxSize maximum size to read
    * @return read string or null on error
    */
   private String readString(int maxSize) {
-    long size = this.readSize();
-    if (size < 0 || size > maxSize) {
+    long size;
+    try {
+      size = this.readSize();
+    } catch (IOException ignored) {
+      return null;
+    }
+    if (size <= 0 || size > maxSize) {
       return null;
     }
     byte[] data = new byte[(int) size];
