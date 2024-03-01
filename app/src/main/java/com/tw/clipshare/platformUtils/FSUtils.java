@@ -196,6 +196,7 @@ public class FSUtils extends AndroidUtils {
   }
 
   public void getFileDone(String type) {
+    if (this.activity == null) return;
     long currTime = System.currentTimeMillis();
     if (currTime - lastToastTime > 2000) {
       lastToastTime = currTime;

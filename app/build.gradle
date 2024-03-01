@@ -15,6 +15,7 @@ android {
         versionCode = 21001
         versionName = "2.10.1"
         resConfigs "en"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
     signingConfigs {
@@ -34,10 +35,12 @@ android {
             shrinkResources = true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             signingConfig signingConfigs.release
+            testCoverageEnabled = false
         }
         debug {
             minifyEnabled = false
             shrinkResources = false
+            testCoverageEnabled = true
         }
     }
 
@@ -51,10 +54,13 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'com.google.android.material:material:1.11.0'
     implementation 'org.json:json:20231013'
+    implementation 'androidx.test.ext:junit:1.1.5'
+    androidTestImplementation 'androidx.test:core:1.5.0'
+    androidTestImplementation 'androidx.test:runner:1.5.2'
+    androidTestImplementation 'androidx.test:rules:1.5.0'
 }
 
 googleJavaFormat {
     toolVersion = "1.2"
     exclude 'src/test'
-    exclude 'src/androidTest'
 }
