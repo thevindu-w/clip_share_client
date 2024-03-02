@@ -1,5 +1,5 @@
-name: Build
-run-name: Build on ${{ github.sha }}
+name: Build and Test
+run-name: Build and Test on ${{ github.sha }}
 
 on:
   push:
@@ -12,6 +12,8 @@ on:
 jobs:
   Build:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+
     steps:
     - name: Check out repository code
       uses: actions/checkout@v4
@@ -38,8 +40,31 @@ jobs:
         echo "RELEASE_KEY_ALIAS=$keyAlias" >>~/.gradle/gradle.properties
         echo "RELEASE_KEY_PASSWORD=$keyPass" >>~/.gradle/gradle.properties
 
-    - name: Grant execute permission for gradlew
-      run: chmod +x gradlew
-
     - name: Build with Gradle
-      run: ./gradlew build -x verifyGoogleJavaFormat
+      run: |
+        chmod +x gradlew
+        ./gradlew build -x verifyGoogleJavaFormat
+
+  Test:
+    runs-on: ubuntu-latest
+    needs: Build
+    timeout-minutes: 20
+
+    steps:
+    - name: Check out repository code
+      uses: actions/checkout@v4
+      with:
+        ref: ${{ github.head_ref || github.ref_name }}
+        repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+
+    - name: Enable KVM
+      run: |
+        echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+        sudo udevadm control --reload-rules
+        sudo udevadm trigger --name-match=kvm
+
+    - name: Run tests
+      uses: reactivecircus/android-emulator-runner@v2
+      with:
+        api-level: 28
+        script: ./gradlew connectedCheck

@@ -1,4 +1,4 @@
-![Build](https://github.com/thevindu-w/clip_share_client/actions/workflows/build.yml/badge.svg?branch=master)
+![Build and Test](https://github.com/thevindu-w/clip_share_client/actions/workflows/build_and_test.yml/badge.svg?branch=master)
 ![Check Style](https://github.com/thevindu-w/clip_share_client/actions/workflows/check_style.yml/badge.svg?branch=master)
 ![Last commit](https://img.shields.io/github/last-commit/thevindu-w/clip_share_client.svg?color=yellow)
 ![License](https://img.shields.io/github/license/thevindu-w/clip_share_client.svg?color=blue)
