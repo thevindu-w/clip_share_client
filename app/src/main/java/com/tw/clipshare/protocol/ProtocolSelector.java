@@ -59,6 +59,8 @@ public class ProtocolSelector {
       }
       byte serverMaxProto = serverProto[0];
       if (serverMaxProto < PROTO_MIN) {
+        serverProto[0] = 0;
+        connection.send(serverProto);
         throw new ProtocolException("Obsolete server");
       }
       if (!acceptProto(connection, serverMaxProto)) {
@@ -71,8 +73,6 @@ public class ProtocolSelector {
           return new Proto_v2(connection, utils, notifier);
         default:
           {
-            serverProto[0] = 0;
-            connection.send(serverProto);
             throw new ProtocolException("Unknown protocol");
           }
       }

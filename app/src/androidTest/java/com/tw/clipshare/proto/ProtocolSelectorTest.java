@@ -5,7 +5,7 @@ import static org.junit.Assert.*;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.tw.clipshare.netConnection.MockConnection;
 import com.tw.clipshare.protocol.Proto;
-import com.tw.clipshare.protocol.Proto_v2;
+import com.tw.clipshare.protocol.Proto_v3;
 import com.tw.clipshare.protocol.ProtocolSelector;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -15,6 +15,8 @@ import org.junit.runner.RunWith;
 
 @RunWith(AndroidJUnit4.class)
 public class ProtocolSelectorTest {
+  static final byte MAX_PROTO = 3;
+
   @Test
   public void testNullConnection() throws IOException {
     Proto proto = ProtocolSelector.getProto(null, null, null);
@@ -28,9 +30,9 @@ public class ProtocolSelectorTest {
     ByteArrayInputStream istream = builder.getStream();
     MockConnection connection = new MockConnection(istream);
     Proto proto = ProtocolSelector.getProto(connection, null, null);
-    assertTrue(proto instanceof Proto_v2);
+    assertTrue(proto instanceof Proto_v3);
     byte[] received = connection.getOutputBytes();
-    assertArrayEquals(new byte[] {2}, received);
+    assertArrayEquals(new byte[] {MAX_PROTO}, received);
     proto.close();
   }
 
@@ -42,7 +44,7 @@ public class ProtocolSelectorTest {
     MockConnection connection = new MockConnection(istream);
     assertThrows(ProtocolException.class, () -> ProtocolSelector.getProto(connection, null, null));
     byte[] received = connection.getOutputBytes();
-    assertArrayEquals(new byte[] {2}, received);
+    assertArrayEquals(new byte[] {MAX_PROTO}, received);
   }
 
   @Test
@@ -54,7 +56,7 @@ public class ProtocolSelectorTest {
     MockConnection connection = new MockConnection(istream);
     Proto proto = ProtocolSelector.getProto(connection, null, null);
     byte[] received = connection.getOutputBytes();
-    assertArrayEquals(new byte[] {2, 1}, received);
+    assertArrayEquals(new byte[] {MAX_PROTO, 1}, received);
     proto.close();
   }
 
@@ -67,7 +69,7 @@ public class ProtocolSelectorTest {
     MockConnection connection = new MockConnection(istream);
     assertThrows(ProtocolException.class, () -> ProtocolSelector.getProto(connection, null, null));
     byte[] received = connection.getOutputBytes();
-    assertArrayEquals(new byte[] {2, 0}, received);
+    assertArrayEquals(new byte[] {MAX_PROTO, 0}, received);
   }
 
   @Test

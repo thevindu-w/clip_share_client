@@ -1,5 +1,6 @@
 package com.tw.clipshare.proto;
 
+import static com.tw.clipshare.proto.ProtocolSelectorTest.MAX_PROTO;
 import static org.junit.Assert.*;
 
 import android.Manifest;
@@ -157,7 +158,7 @@ public class Proto_v1Test {
     proto.close();
 
     builder = new BAOStreamBuilder();
-    builder.addByte(2);
+    builder.addByte(MAX_PROTO);
     builder.addByte(1);
     builder.addByte(2);
     builder.addString(sample);
@@ -253,7 +254,7 @@ public class Proto_v1Test {
     proto.close();
 
     builder = new BAOStreamBuilder();
-    builder.addByte(2);
+    builder.addByte(MAX_PROTO);
     builder.addByte(1);
     builder.addByte(4);
     builder.addString(fileName);
@@ -271,7 +272,7 @@ public class Proto_v1Test {
     MockConnection connection = new MockConnection(istream);
     Proto proto = ProtocolSelector.getProto(connection, null, null);
     assertEquals(info, proto.checkInfo());
-    assertArrayEquals(new byte[] {2, 1, 125}, connection.getOutputBytes());
+    assertArrayEquals(new byte[] {MAX_PROTO, 1, 125}, connection.getOutputBytes());
     proto.close();
   }
 
