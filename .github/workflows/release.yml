@@ -7,9 +7,36 @@ on:
     - 'v[0-9]+.[0-9]+.[0-9]+'
 
 jobs:
+  Checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+    - name: Check out repository code
+      uses: actions/checkout@v4
+
+    - name: Set version
+      run: |
+        echo VERSION="$(echo '${{github.ref_name}}' | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')" >> $GITHUB_ENV
+
+    - name: Check app.rc version
+      run: |
+        version="${{env.VERSION}}"
+        echo 'Checking versionName ...'
+        [ ! -z "$(grep -E 'versionName\s?=' app/build.gradle | grep -F "$version")" ]
+        echo 'versionName is correct.'
+        major="$(cut -d'.' -f1 <<<"$version")"
+        minor="$(cut -d'.' -f2 <<<"$version")"
+        patch="$(cut -d'.' -f3 <<<"$version")"
+        versionCode="$(printf '%i%02i%02i' "$major" "$minor" "$patch")"
+        echo 'Checking versionCode ...'
+        [ ! -z "$(grep -E 'versionCode\s?=' app/build.gradle | grep -F "$versionCode")" ]
+        echo 'versionCode is correct.'
+
   Release:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
+    needs: Checks
 
     steps:
     - name: Check out repository code
