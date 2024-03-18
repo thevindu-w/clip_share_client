@@ -104,11 +104,10 @@ public class FSUtils extends AndroidUtils {
     }
   }
 
-  public OutputStream getFileOutStream(String path, String baseName) {
-    int ind = path != null ? path.indexOf('/') : -1;
-    if (ind <= 0) return this.getFileOutStream(baseName);
-
-    if (path.charAt(path.length() - 1) != '/') path += '/';
+  private String getDataDirPath(String path) {
+    if (path.charAt(path.length() - 1) != '/') {
+      path += '/';
+    }
     final String dirName = getDocumentDir();
     File dir = new File(dirName);
     if (!dir.exists() && !dir.mkdirs()) {
@@ -120,7 +119,17 @@ public class FSUtils extends AndroidUtils {
     if (!dataDir.exists() && !dataDir.mkdirs()) {
       return null;
     }
-    path = dataDirName + "/" + path;
+    return dataDirName + "/" + path;
+  }
+
+  public OutputStream getFileOutStream(String path, String baseName) {
+    int ind = path != null ? path.indexOf('/') : -1;
+    if (ind <= 0) return this.getFileOutStream(baseName);
+
+    path = getDataDirPath(path);
+    if (path == null) {
+      return null;
+    }
     File fp = new File(path);
     if (!fp.exists() && !fp.mkdirs()) {
       return null;
@@ -133,6 +142,17 @@ public class FSUtils extends AndroidUtils {
     } catch (Exception ignored) {
       return null;
     }
+  }
+
+  public boolean createDirectory(String dirPath) {
+    dirPath = getDataDirPath(dirPath);
+    if (dirPath == null) {
+      return false;
+    }
+    File fp = new File(dirPath);
+    if (fp.isDirectory()) return true;
+    if (fp.exists()) return false;
+    return fp.mkdirs();
   }
 
   public boolean finish() {

@@ -223,7 +223,7 @@ public final class ProtoMethods {
     }
   }
 
-  boolean v2_getFile() {
+  private boolean getFilesCommon(int version) {
     if (!(this.utils instanceof FSUtils)) return false;
     FSUtils fsUtils = (FSUtils) this.utils;
     if (methodInit(GET_FILE)) {
@@ -248,7 +248,12 @@ public final class ProtoMethods {
         fsUtils.finish();
         return false;
       }
-      if (file_size < 0 || file_size > MAX_FILE_SIZE) {
+      if (file_size > MAX_FILE_SIZE) {
+        return false;
+      }
+      if (version == 3 && file_size < 0) {
+        return fsUtils.createDirectory(fileName);
+      } else if (file_size < 0) {
         return false;
       }
       int base_ind = fileName.lastIndexOf('/') + 1;
@@ -287,6 +292,10 @@ public final class ProtoMethods {
     }
     if (this.notifier != null) this.notifier.finish();
     return fsUtils.finish();
+  }
+
+  boolean v2_getFile() {
+    return getFilesCommon(2);
   }
 
   boolean v2_sendFile() {
@@ -374,6 +383,10 @@ public final class ProtoMethods {
     }
     if (this.notifier != null) this.notifier.finish();
     return true;
+  }
+
+  boolean v3_getFile() {
+    return getFilesCommon(3);
   }
 
   private long readSize() throws IOException {
