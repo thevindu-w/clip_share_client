@@ -84,6 +84,7 @@ public class ClipShareActivity extends AppCompatActivity {
   private String receivedURI;
   public TextView output;
   private ActivityResultLauncher<Intent> activityLauncherForResult;
+  private ActivityResultLauncher<Intent> settingsActivityLauncher;
   private EditText editAddress;
   private Context context;
   private ArrayList<Uri> fileURIs;
@@ -131,8 +132,7 @@ public class ClipShareActivity extends AppCompatActivity {
     int itemID = item.getItemId();
     if (itemID == R.id.action_settings) {
       Intent settingsIntent = new Intent(ClipShareActivity.this, SettingsActivity.class);
-      settingsIntent.putExtra("settingsResult", 1);
-      activityLauncherForResult.launch(settingsIntent);
+      settingsActivityLauncher.launch(settingsIntent);
     } else if (itemID == R.id.action_secure) {
       Toast.makeText(ClipShareActivity.this, "Change this in settings", Toast.LENGTH_SHORT).show();
     }
@@ -153,6 +153,31 @@ public class ClipShareActivity extends AppCompatActivity {
 
     SharedPreferences sharedPref = ClipShareActivity.this.getPreferences(Context.MODE_PRIVATE);
 
+    this.settingsActivityLauncher =
+        registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+              if (result.getResultCode() != Activity.RESULT_OK) {
+                return;
+              }
+              Intent intent1 = result.getData();
+              if (intent1 == null) {
+                return;
+              }
+              try {
+                Settings st = Settings.getInstance();
+                int icon_id = st.getSecure() ? R.drawable.ic_secure : R.drawable.ic_insecure;
+                menu.findItem(R.id.action_secure)
+                    .setIcon(ContextCompat.getDrawable(ClipShareActivity.this, icon_id));
+                SharedPreferences.Editor editor = sharedPref.edit();
+                editor.putString("settings", Settings.toString(st));
+                editor.apply();
+                runOnUiThread(
+                    () -> Toast.makeText(context, "Saved settings", Toast.LENGTH_SHORT).show());
+              } catch (Exception ignored) {
+              }
+            });
+
     this.activityLauncherForResult =
         registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
@@ -164,26 +189,11 @@ public class ClipShareActivity extends AppCompatActivity {
               if (intent1 == null) {
                 return;
               }
-              if (intent1.hasExtra("settingsResult")) {
-                Settings st = Settings.getInstance();
-                int icon_id = st.getSecure() ? R.drawable.ic_secure : R.drawable.ic_insecure;
-                menu.findItem(R.id.action_secure)
-                    .setIcon(ContextCompat.getDrawable(ClipShareActivity.this, icon_id));
-                SharedPreferences.Editor editor = sharedPref.edit();
-                try {
-                  editor.putString("settings", Settings.toString(st));
-                  editor.apply();
-                  runOnUiThread(
-                      () -> Toast.makeText(context, "Saved settings", Toast.LENGTH_SHORT).show());
-                } catch (Exception ignored) {
-                }
-              } else {
-                try {
-                  this.fileURIs = getFileUris(intent1);
-                  clkSendFile();
-                } catch (Exception e) {
-                  outputAppend("Error " + e.getMessage());
-                }
+              try {
+                this.fileURIs = getFileUris(intent1);
+                clkSendFile();
+              } catch (Exception e) {
+                outputAppend("Error " + e.getMessage());
               }
             });
 
@@ -230,8 +240,8 @@ public class ClipShareActivity extends AppCompatActivity {
   }
 
   @NonNull
-  private static ArrayList<Uri> getFileUris(Intent intent1) {
-    ClipData clipData = intent1.getClipData();
+  private static ArrayList<Uri> getFileUris(Intent intent) {
+    ClipData clipData = intent.getClipData();
     ArrayList<Uri> uris;
     if (clipData != null) {
       int itemCount = clipData.getItemCount();
@@ -241,7 +251,7 @@ public class ClipShareActivity extends AppCompatActivity {
         uris.add(uri);
       }
     } else {
-      Uri uri = intent1.getData();
+      Uri uri = intent.getData();
       uris = new ArrayList<>(1);
       uris.add(uri);
     }
@@ -572,18 +582,24 @@ public class ClipShareActivity extends AppCompatActivity {
   }
 
   private void clkSendFile() {
-    if (this.fileURIs == null || this.fileURIs.isEmpty()) {
-      Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-      intent.setType("*/*");
-      intent.addCategory(Intent.CATEGORY_OPENABLE);
-      intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
-      activityLauncherForResult.launch(intent);
-    } else {
-      ArrayList<Uri> tmp = this.fileURIs;
-      this.fileURIs = null;
-      ExecutorService executorService = Executors.newSingleThreadExecutor();
-      Runnable sendURIs = () -> sendFromURIs(tmp);
-      executorService.submit(sendURIs);
+    try {
+      if (this.fileURIs == null || this.fileURIs.isEmpty()) {
+        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setFlags(
+            Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
+        intent.setType("*/*");
+        intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+        activityLauncherForResult.launch(intent);
+      } else {
+        ArrayList<Uri> tmp = this.fileURIs;
+        this.fileURIs = null;
+        ExecutorService executorService = Executors.newSingleThreadExecutor();
+        Runnable sendURIs = () -> sendFromURIs(tmp);
+        executorService.submit(sendURIs);
+      }
+    } catch (Exception ignored) {
+      outputAppend("Error occurred");
     }
   }
 
