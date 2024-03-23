@@ -185,7 +185,7 @@ public class Proto_v2Test {
     ByteArrayInputStream istream = builder.getStream();
     MockConnection connection = new MockConnection(istream);
     Context appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
-    FSUtils utils = new FSUtils(appContext, null, null);
+    FSUtils utils = new FSUtils(appContext, null);
     Proto proto = ProtocolSelector.getProto(connection, utils, null);
     assertTrue(proto.getImage());
     proto.close();
@@ -217,7 +217,7 @@ public class Proto_v2Test {
     ByteArrayInputStream istream = builder.getStream();
     MockConnection connection = new MockConnection(istream);
     Context appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
-    FSUtils utils = new FSUtils(appContext, null, null);
+    FSUtils utils = new FSUtils(appContext, null);
     Proto proto = ProtocolSelector.getProto(connection, utils, null);
     assertTrue(proto.getFile());
     proto.close();
@@ -230,7 +230,7 @@ public class Proto_v2Test {
     ByteArrayInputStream istream = builder.getStream();
     MockConnection connection = new MockConnection(istream);
     Context appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
-    FSUtils utils = new FSUtils(appContext, null, null);
+    FSUtils utils = new FSUtils(appContext, null);
     Proto proto = ProtocolSelector.getProto(connection, utils, null);
     assertFalse(proto.getFile());
     proto.close();

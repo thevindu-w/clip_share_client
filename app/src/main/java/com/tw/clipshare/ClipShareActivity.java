@@ -51,13 +51,18 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
+import androidx.documentfile.provider.DocumentFile;
 import com.tw.clipshare.netConnection.*;
 import com.tw.clipshare.platformUtils.AndroidStatusNotifier;
 import com.tw.clipshare.platformUtils.AndroidUtils;
 import com.tw.clipshare.platformUtils.FSUtils;
 import com.tw.clipshare.platformUtils.StatusNotifier;
+import com.tw.clipshare.platformUtils.directoryTree.Directory;
+import com.tw.clipshare.platformUtils.directoryTree.DirectoryTreeNode;
+import com.tw.clipshare.platformUtils.directoryTree.RegularFile;
 import com.tw.clipshare.protocol.Proto;
 import com.tw.clipshare.protocol.ProtocolSelector;
+import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.net.Inet4Address;
 import java.net.InetAddress;
@@ -83,7 +88,8 @@ public class ClipShareActivity extends AppCompatActivity {
   private static boolean isSettingsLoaded = false;
   private String receivedURI;
   public TextView output;
-  private ActivityResultLauncher<Intent> activityLauncherForResult;
+  private ActivityResultLauncher<Intent> fileSelectActivityLauncher;
+  private ActivityResultLauncher<Intent> folderSelectActivityLauncher;
   private ActivityResultLauncher<Intent> settingsActivityLauncher;
   private EditText editAddress;
   private Context context;
@@ -178,7 +184,7 @@ public class ClipShareActivity extends AppCompatActivity {
               }
             });
 
-    this.activityLauncherForResult =
+    this.fileSelectActivityLauncher =
         registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
@@ -197,6 +203,25 @@ public class ClipShareActivity extends AppCompatActivity {
               }
             });
 
+    this.folderSelectActivityLauncher =
+        registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+              if (result.getResultCode() != Activity.RESULT_OK) {
+                return;
+              }
+              Intent intent1 = result.getData();
+              if (intent1 == null) {
+                return;
+              }
+              try {
+                DirectoryTreeNode root = ClipShareActivity.this.getDirectoryTree(intent1);
+                clkSendFolder(root);
+              } catch (Exception e) {
+                outputAppend("Error " + e.getMessage());
+              }
+            });
+
     output.setMovementMethod(new ScrollingMovementMethod());
     Button btnGet = findViewById(R.id.btnGetTxt);
     btnGet.setOnClickListener(view -> clkGetTxt());
@@ -208,10 +233,12 @@ public class ClipShareActivity extends AppCompatActivity {
     btnSendTxt.setOnClickListener(view -> clkSendTxt());
     Button btnSendFile = findViewById(R.id.btnSendFile);
     btnSendFile.setOnClickListener(view -> clkSendFile());
+    Button btnSendFolder = findViewById(R.id.btnSendFolder);
+    btnSendFolder.setOnClickListener(view -> clkSendFolder(null));
     Button btnScanHost = findViewById(R.id.btnScanHost);
     btnScanHost.setOnClickListener(this::clkScanBtn);
-    Button btnOpenBrowser = findViewById(R.id.btnOpenBrowser);
-    btnOpenBrowser.setOnClickListener(view -> openInBrowser());
+    Button btnOpenLink = findViewById(R.id.btnOpenLink);
+    btnOpenLink.setOnClickListener(view -> openInBrowser());
     openBrowserLayout = findViewById(R.id.layoutOpenBrowser);
     editAddress.setText(sharedPref.getString("serverIP", ""));
     try {
@@ -237,6 +264,41 @@ public class ClipShareActivity extends AppCompatActivity {
       }
     } catch (Exception ignored) {
     }
+  }
+
+  private DirectoryTreeNode createDirectoryTreeNode(DocumentFile documentFile, Directory parent)
+      throws FileNotFoundException {
+    String name = documentFile.getName();
+    if (!documentFile.isDirectory()) {
+      Uri uri = documentFile.getUri();
+      Cursor cursor = getContentResolver().query(uri, null, null, null, null);
+      if (cursor.getCount() <= 0) {
+        cursor.close();
+        return null;
+      }
+      cursor.moveToFirst();
+      String fileSizeStr = cursor.getString(cursor.getColumnIndexOrThrow(OpenableColumns.SIZE));
+      cursor.close();
+      InputStream fileInputStream = getContentResolver().openInputStream(uri);
+      long fileSize = fileSizeStr != null ? Long.parseLong(fileSizeStr) : -1;
+      return new RegularFile(name, fileSize, fileInputStream, parent);
+    }
+    DocumentFile[] children = documentFile.listFiles();
+    Directory root = new Directory(name, children.length, parent);
+    for (DocumentFile child : children) {
+      DirectoryTreeNode node = createDirectoryTreeNode(child, root);
+      if (node != null) {
+        root.children.add(node);
+      }
+    }
+    return root;
+  }
+
+  private DirectoryTreeNode getDirectoryTree(Intent intent) throws FileNotFoundException {
+    Uri uri = intent.getData();
+    DocumentFile documentFile = DocumentFile.fromTreeUri(this.context, uri);
+    if (documentFile == null) return null;
+    return createDirectoryTreeNode(documentFile, null);
   }
 
   @NonNull
@@ -275,15 +337,15 @@ public class ClipShareActivity extends AppCompatActivity {
       try {
         String action = intent.getAction();
         if (Intent.ACTION_SEND.equals(action)) {
-          Uri extra;
+          Uri uri;
           if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            extra = intent.getParcelableExtra(Intent.EXTRA_STREAM, Uri.class);
+            uri = intent.getParcelableExtra(Intent.EXTRA_STREAM, Uri.class);
           } else {
-            extra = intent.getParcelableExtra(Intent.EXTRA_STREAM);
+            uri = intent.getParcelableExtra(Intent.EXTRA_STREAM);
           }
-          if (extra != null) {
+          if (uri != null) {
             this.fileURIs = new ArrayList<>(1);
-            this.fileURIs.add(extra);
+            this.fileURIs.add(uri);
             runOnUiThread(() -> output.setText(R.string.fileSelectedTxt));
             autoSend(AUTO_SEND_FILES);
             return;
@@ -590,7 +652,7 @@ public class ClipShareActivity extends AppCompatActivity {
             Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
         intent.setType("*/*");
         intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
-        activityLauncherForResult.launch(intent);
+        fileSelectActivityLauncher.launch(intent);
       } else {
         ArrayList<Uri> tmp = this.fileURIs;
         this.fileURIs = null;
@@ -600,6 +662,98 @@ public class ClipShareActivity extends AppCompatActivity {
       }
     } catch (Exception ignored) {
       outputAppend("Error occurred");
+    }
+  }
+
+  private void clkSendFolder(DirectoryTreeNode dirTree) {
+    try {
+      if (dirTree == null) {
+        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+        intent.setFlags(
+            Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
+        intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+        folderSelectActivityLauncher.launch(intent);
+      } else {
+        ExecutorService executorService = Executors.newSingleThreadExecutor();
+        Runnable sendURIs = () -> sendFromDirectoryTree(dirTree);
+        executorService.submit(sendURIs);
+      }
+    } catch (Exception ignored) {
+      outputAppend("Error occurred");
+    }
+  }
+
+  private void sendFromDirectoryTree(DirectoryTreeNode dirTree) {
+    try {
+      runOnUiThread(
+          () -> {
+            openBrowserLayout.setVisibility(View.GONE);
+            output.setText("");
+          });
+      String address = this.getServerAddress();
+      if (address == null) return;
+      FSUtils utils = new FSUtils(context, ClipShareActivity.this, dirTree);
+      Random rnd = new Random();
+      int notificationId = Math.abs(rnd.nextInt(Integer.MAX_VALUE - 1)) + 1;
+      NotificationManagerCompat notificationManager = null;
+      synchronized (fileSendCntLock) {
+        while (fileSendingCount > 1) {
+          try {
+            fileSendCntLock.wait();
+          } catch (InterruptedException ignored) {
+          }
+        }
+        fileSendingCount++;
+      }
+      try {
+        runOnUiThread(() -> output.setText(R.string.sendingFiles));
+        notificationManager = NotificationManagerCompat.from(context);
+        NotificationCompat.Builder builder =
+            new NotificationCompat.Builder(context, ClipShareActivity.CHANNEL_ID)
+                .setSmallIcon(R.drawable.ic_upload_icon)
+                .setContentTitle("Sending files");
+        StatusNotifier notifier =
+            new AndroidStatusNotifier(
+                ClipShareActivity.this, notificationManager, builder, notificationId);
+        boolean status = true;
+        Proto proto = getProtoWrapper(address, utils, notifier);
+        if (proto != null) {
+          status &= proto.sendFile();
+          proto.close();
+        } else status = false;
+        if (status) {
+          runOnUiThread(
+              () -> {
+                try {
+                  output.setText(R.string.sentAllFiles);
+                } catch (Exception ignored) {
+                }
+              });
+          this.vibrate();
+        }
+      } catch (Exception e) {
+        outputAppend("Error " + e.getMessage());
+      } finally {
+        synchronized (fileSendCntLock) {
+          fileSendingCount--;
+          fileSendCntLock.notifyAll();
+        }
+        try {
+          if (notificationManager != null) {
+            NotificationManagerCompat finalNotificationManager = notificationManager;
+            runOnUiThread(
+                () -> {
+                  try {
+                    finalNotificationManager.cancel(notificationId);
+                  } catch (Exception ignored) {
+                  }
+                });
+          }
+        } catch (Exception ignored) {
+        }
+      }
+    } catch (Exception e) {
+      outputAppend("Error " + e.getMessage());
     }
   }
 
@@ -638,11 +792,8 @@ public class ClipShareActivity extends AppCompatActivity {
       }
       FSUtils utils = new FSUtils(context, ClipShareActivity.this, pendingFiles);
 
-      int notificationId;
-      {
-        Random rnd = new Random();
-        notificationId = Math.abs(rnd.nextInt(Integer.MAX_VALUE - 1)) + 1;
-      }
+      Random rnd = new Random();
+      int notificationId = Math.abs(rnd.nextInt(Integer.MAX_VALUE - 1)) + 1;
       NotificationManagerCompat notificationManager = null;
       synchronized (fileSendCntLock) {
         while (fileSendingCount > 1) {
@@ -666,7 +817,10 @@ public class ClipShareActivity extends AppCompatActivity {
         boolean status = true;
         while (utils.getRemainingFileCount() > 0) {
           Proto proto = getProtoWrapper(address, utils, notifier);
-          if (proto == null) return;
+          if (proto == null) {
+            status = false;
+            break;
+          }
           status &= proto.sendFile();
           proto.close();
         }

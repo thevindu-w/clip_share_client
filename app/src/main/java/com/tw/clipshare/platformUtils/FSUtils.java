@@ -31,6 +31,7 @@ import android.os.Build;
 import android.os.Environment;
 import android.widget.Toast;
 import com.tw.clipshare.PendingFile;
+import com.tw.clipshare.platformUtils.directoryTree.DirectoryTreeNode;
 import java.io.*;
 import java.util.LinkedList;
 import java.util.Random;
@@ -44,11 +45,17 @@ public class FSUtils extends AndroidUtils {
   private String outFilePath;
   private String baseDirName;
   private final LinkedList<PendingFile> pendingFiles;
+  private final DirectoryTreeNode directoryTree;
   private static long lastToastTime = 0;
 
-  public FSUtils(Context context, Activity activity, LinkedList<PendingFile> pendingFiles) {
+  private FSUtils(
+      Context context,
+      Activity activity,
+      LinkedList<PendingFile> pendingFiles,
+      DirectoryTreeNode directoryTree) {
     super(context, activity);
     this.pendingFiles = pendingFiles;
+    this.directoryTree = directoryTree;
     Random rnd = new Random();
     long idNum = Math.abs(rnd.nextLong());
     String id;
@@ -63,8 +70,16 @@ public class FSUtils extends AndroidUtils {
     this.id = id;
   }
 
+  public FSUtils(Context context, Activity activity, LinkedList<PendingFile> pendingFiles) {
+    this(context, activity, pendingFiles, null);
+  }
+
+  public FSUtils(Context context, Activity activity, DirectoryTreeNode directoryTree) {
+    this(context, activity, null, directoryTree);
+  }
+
   public FSUtils(Context context, Activity activity) {
-    this(context, activity, null);
+    this(context, activity, null, null);
   }
 
   private String getDocumentDir() {
@@ -257,20 +272,38 @@ public class FSUtils extends AndroidUtils {
     return this.inStream;
   }
 
+  public int getRemainingFileCount(boolean includeLeafDirs) {
+    if (this.pendingFiles != null) return this.pendingFiles.size();
+    if (this.directoryTree != null) return this.directoryTree.getLeafCount(includeLeafDirs);
+    return -1;
+  }
+
   public int getRemainingFileCount() {
-    if (this.pendingFiles == null) return -1;
-    return this.pendingFiles.size();
+    return this.getRemainingFileCount(false);
+  }
+
+  public boolean prepareNextFile(boolean allowDirs) {
+    try {
+      if (this.directoryTree != null) {
+        DirectoryTreeNode node = this.directoryTree.pop(allowDirs);
+        this.inFileName = node.getFullName();
+        this.fileSize = node.getFileSize();
+        this.inStream = node.getInStream();
+        return true;
+      }
+      if (this.pendingFiles != null) {
+        PendingFile pendingFile = this.pendingFiles.pop();
+        this.inFileName = pendingFile.name;
+        this.fileSize = pendingFile.size;
+        this.inStream = pendingFile.inputStream;
+        return true;
+      }
+    } catch (Exception ignored) {
+    }
+    return false;
   }
 
   public boolean prepareNextFile() {
-    try {
-      PendingFile pendingFile = this.pendingFiles.pop();
-      this.inFileName = pendingFile.name;
-      this.fileSize = pendingFile.size;
-      this.inStream = pendingFile.inputStream;
-      return true;
-    } catch (Exception ignored) {
-      return false;
-    }
+    return this.prepareNextFile(false);
   }
 }

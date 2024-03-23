@@ -75,8 +75,8 @@
                       android:layout_height="match_parent"
                       android:layout_weight="0.02" tools:ignore="UselessLeaf"/>
         <Button
-                android:id="@+id/btnOpenBrowser"
-                android:text="@string/btnOpenBrowser"
+                android:id="@+id/btnOpenLink"
+                android:text="@string/btnOpenLink"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="0.96"
@@ -100,7 +100,19 @@
                 android:text="@string/btnSendTxt"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_weight="0.47"
+                android:layout_weight="0.23"
+                android:backgroundTint="#FFFF0000"
+                android:textAppearance="@style/TextAppearance.AppCompat.Button"
+                android:textStyle="bold"/>
+        <LinearLayout android:layout_width="0dp"
+                      android:layout_height="match_parent"
+                      android:layout_weight="0.02" tools:ignore="UselessLeaf"/>
+        <Button
+                android:id="@+id/btnSendFolder"
+                android:text="@string/btnFolderTxt"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="0.23"
                 android:backgroundTint="#FFFF0000"
                 android:textAppearance="@style/TextAppearance.AppCompat.Button"
                 android:textStyle="bold"/>
@@ -112,7 +124,7 @@
                 android:text="@string/btnFileTxt"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_weight="0.47"
+                android:layout_weight="0.23"
                 android:backgroundTint="#FFFF0000"
                 android:textAppearance="@style/TextAppearance.AppCompat.Button"
                 android:textStyle="bold"/>
