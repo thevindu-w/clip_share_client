@@ -1,16 +1,16 @@
 package com.tw.clipshare.platformUtils.directoryTree;
 
-import java.io.InputStream;
+import android.net.Uri;
 
 public class RegularFile extends DirectoryTreeNode {
 
-  public final InputStream inputStream;
+  public final Uri uri;
   public final long size;
 
-  public RegularFile(String name, long size, InputStream inputStream, Directory parent) {
+  public RegularFile(String name, long size, Uri uri, Directory parent) {
     super(name, parent);
     this.size = size;
-    this.inputStream = inputStream;
+    this.uri = uri;
   }
 
   @Override
@@ -24,8 +24,8 @@ public class RegularFile extends DirectoryTreeNode {
   }
 
   @Override
-  public InputStream getInStream() {
-    return this.inputStream;
+  public Uri getUri() {
+    return this.uri;
   }
 
   @Override

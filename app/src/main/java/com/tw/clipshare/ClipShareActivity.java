@@ -279,9 +279,8 @@ public class ClipShareActivity extends AppCompatActivity {
       cursor.moveToFirst();
       String fileSizeStr = cursor.getString(cursor.getColumnIndexOrThrow(OpenableColumns.SIZE));
       cursor.close();
-      InputStream fileInputStream = getContentResolver().openInputStream(uri);
       long fileSize = fileSizeStr != null ? Long.parseLong(fileSizeStr) : -1;
-      return new RegularFile(name, fileSize, fileInputStream, parent);
+      return new RegularFile(name, fileSize, uri, parent);
     }
     DocumentFile[] children = documentFile.listFiles();
     Directory root = new Directory(name, children.length, parent);

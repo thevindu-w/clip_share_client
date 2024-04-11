@@ -1,5 +1,7 @@
 package com.tw.clipshare.platformUtils.directoryTree;
 
+import android.net.Uri;
+
 import java.io.InputStream;
 import java.util.LinkedList;
 
@@ -16,7 +18,7 @@ public abstract class DirectoryTreeNode {
 
   public abstract long getFileSize();
 
-  public abstract InputStream getInStream();
+  public abstract Uri getUri();
 
   public abstract DirectoryTreeNode pop(boolean includeDirs);
 

@@ -1,5 +1,7 @@
 package com.tw.clipshare.platformUtils.directoryTree;
 
+import android.net.Uri;
+
 import java.io.InputStream;
 import java.util.ArrayList;
 
@@ -27,7 +29,7 @@ public class Directory extends DirectoryTreeNode {
   }
 
   @Override
-  public InputStream getInStream() {
+  public Uri getUri() {
     return null;
   }
 

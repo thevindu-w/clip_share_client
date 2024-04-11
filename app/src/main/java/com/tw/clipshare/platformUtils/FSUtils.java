@@ -27,6 +27,7 @@ package com.tw.clipshare.platformUtils;
 import android.app.Activity;
 import android.content.Context;
 import android.media.MediaScannerConnection;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.widget.Toast;
@@ -288,7 +289,10 @@ public class FSUtils extends AndroidUtils {
         DirectoryTreeNode node = this.directoryTree.pop(allowDirs);
         this.inFileName = node.getFullName();
         this.fileSize = node.getFileSize();
-        this.inStream = node.getInStream();
+        Uri uri = node.getUri();
+        if (uri != null)
+          this.inStream = activity.getContentResolver().openInputStream(node.getUri());
+        else this.inStream = null;
         return true;
       }
       if (this.pendingFiles != null) {
