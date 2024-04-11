@@ -27,9 +27,8 @@ package com.tw.clipshare.protocol;
 import com.tw.clipshare.netConnection.ServerConnection;
 import com.tw.clipshare.platformUtils.AndroidUtils;
 import com.tw.clipshare.platformUtils.StatusNotifier;
-import org.jetbrains.annotations.NotNull;
-
 import java.net.ProtocolException;
+import org.jetbrains.annotations.NotNull;
 
 public class ProtocolSelector {
 

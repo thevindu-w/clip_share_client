@@ -1,8 +1,6 @@
 package com.tw.clipshare.platformUtils.directoryTree;
 
 import android.net.Uri;
-
-import java.io.InputStream;
 import java.util.LinkedList;
 
 public abstract class DirectoryTreeNode {
