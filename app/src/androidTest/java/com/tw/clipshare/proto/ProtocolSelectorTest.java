@@ -4,8 +4,7 @@ import static org.junit.Assert.*;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.tw.clipshare.netConnection.MockConnection;
-import com.tw.clipshare.protocol.Proto;
-import com.tw.clipshare.protocol.Proto_v3;
+import com.tw.clipshare.protocol.*;
 import com.tw.clipshare.protocol.ProtocolSelector;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -19,14 +18,16 @@ public class ProtocolSelectorTest {
   static final byte PROTOCOL_SUPPORTED = 1;
   static final byte PROTOCOL_OBSOLETE = 2;
   static final byte PROTOCOL_UNKNOWN = 3;
-  static final byte MAX_PROTO = 3;
+  static final byte MAX_PROTO = ProtocolSelector.PROTO_MAX;
 
+  @SuppressWarnings("ConstantConditions")
   @Test
   public void testNullConnection() throws IOException {
     Proto proto = ProtocolSelector.getProto(null, null, null);
     assertNull(proto);
   }
 
+  @SuppressWarnings("ConstantConditions")
   @Test
   public void testProtoOk() throws IOException {
     BAOStreamBuilder builder = new BAOStreamBuilder();
@@ -34,7 +35,29 @@ public class ProtocolSelectorTest {
     ByteArrayInputStream istream = builder.getStream();
     MockConnection connection = new MockConnection(istream);
     Proto proto = ProtocolSelector.getProto(connection, null, null);
-    assertTrue(proto instanceof Proto_v3);
+    Class<?> protoClass;
+    switch (MAX_PROTO) {
+      case 1:
+        {
+          protoClass = Proto_v1.class;
+          break;
+        }
+      case 2:
+        {
+          protoClass = Proto_v2.class;
+          break;
+        }
+      case 3:
+        {
+          protoClass = Proto_v3.class;
+          break;
+        }
+      default:
+        {
+          throw new ProtocolException("Unknown protocol version");
+        }
+    }
+    assertTrue(protoClass.isInstance(proto));
     byte[] received = connection.getOutputBytes();
     assertArrayEquals(new byte[] {MAX_PROTO}, received);
     proto.close();
@@ -51,8 +74,10 @@ public class ProtocolSelectorTest {
     assertArrayEquals(new byte[] {MAX_PROTO}, received);
   }
 
+  @SuppressWarnings("ConstantConditions")
   @Test
   public void testProtoNegotiateV1() throws ProtocolException {
+    if (MAX_PROTO <= 1) return;
     BAOStreamBuilder builder = new BAOStreamBuilder();
     builder.addByte(PROTOCOL_UNKNOWN);
     builder.addByte(1);
@@ -64,8 +89,10 @@ public class ProtocolSelectorTest {
     proto.close();
   }
 
+  @SuppressWarnings("ConstantConditions")
   @Test
   public void testProtoNegotiateV2() throws ProtocolException {
+    if (MAX_PROTO <= 2) return;
     BAOStreamBuilder builder = new BAOStreamBuilder();
     builder.addByte(PROTOCOL_UNKNOWN);
     builder.addByte(2);

@@ -36,7 +36,7 @@ public class ProtocolSelector {
   static final byte PROTOCOL_OBSOLETE = 2;
   static final byte PROTOCOL_UNKNOWN = 3;
   private static final byte PROTO_MIN = 1;
-  private static final byte PROTO_MAX = 3;
+  public static final byte PROTO_MAX = 2;
 
   private ProtocolSelector() {}
 
@@ -53,6 +53,7 @@ public class ProtocolSelector {
     if (connection.receive(proto_v)) {
       return null;
     }
+    int selectedProto = PROTO_MAX;
     if (proto_v[0] == ProtocolSelector.PROTOCOL_OBSOLETE) {
       throw new ProtocolException("Obsolete client");
     } else if (proto_v[0] == ProtocolSelector.PROTOCOL_UNKNOWN) {
@@ -69,20 +70,20 @@ public class ProtocolSelector {
       if (!acceptProto(connection, serverMaxProto)) {
         return null;
       }
-      switch (serverMaxProto) {
-        case 1:
-          return new Proto_v1(connection, utils, notifier);
-        case 2:
-          return new Proto_v2(connection, utils, notifier);
-        default:
-          {
-            throw new ProtocolException("Unknown protocol");
-          }
-      }
+      selectedProto = serverMaxProto;
     } else if (proto_v[0] != ProtocolSelector.PROTOCOL_SUPPORTED) {
       return null;
     }
-    return new Proto_v3(connection, utils, notifier);
+    switch (selectedProto) {
+      case 1:
+        return new Proto_v1(connection, utils, notifier);
+      case 2:
+        return new Proto_v2(connection, utils, notifier);
+      case 3:
+        return new Proto_v3(connection, utils, notifier);
+      default:
+        throw new ProtocolException("Unknown protocol");
+    }
   }
 
   private static boolean acceptProto(@NotNull ServerConnection connection, byte proto) {
