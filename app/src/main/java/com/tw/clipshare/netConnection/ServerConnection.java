@@ -34,9 +34,11 @@ public abstract class ServerConnection {
   protected OutputStream outStream;
   protected InputStream inStream;
   protected Socket socket;
+  private boolean closed;
 
   protected ServerConnection() {
     this.socket = null;
+    this.closed = false;
   }
 
   protected ServerConnection(Socket socket) {
@@ -79,9 +81,19 @@ public abstract class ServerConnection {
   }
 
   public void close() {
+    synchronized (this) {
+      if (this.closed) return;
+      this.closed = true;
+    }
     try {
       this.socket.close();
     } catch (RuntimeException | IOException ignored) {
     }
+  }
+
+  @Override
+  protected void finalize() throws Throwable {
+    this.close();
+    super.finalize();
   }
 }

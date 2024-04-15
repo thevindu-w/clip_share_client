@@ -29,7 +29,7 @@ import android.app.Activity;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
-public class AndroidStatusNotifier implements StatusNotifier {
+public final class AndroidStatusNotifier implements StatusNotifier {
 
   private static final int PROGRESS_MAX = 100;
   private final NotificationManagerCompat notificationManager;
@@ -38,6 +38,7 @@ public class AndroidStatusNotifier implements StatusNotifier {
   private final int notificationId;
   private int prev;
   private long prevTime;
+  private boolean finished;
 
   public AndroidStatusNotifier(
       Activity activity,
@@ -56,6 +57,7 @@ public class AndroidStatusNotifier implements StatusNotifier {
     this.notificationId = notificationId;
     this.prev = -1;
     this.prevTime = 0;
+    this.finished = false;
   }
 
   @Override
@@ -98,6 +100,10 @@ public class AndroidStatusNotifier implements StatusNotifier {
 
   @Override
   public void finish() {
+    synchronized (this) {
+      if (this.finished) return;
+      this.finished = true;
+    }
     try {
       if (this.notificationManager != null) {
         NotificationManagerCompat finalNotificationManager = this.notificationManager;
@@ -111,5 +117,11 @@ public class AndroidStatusNotifier implements StatusNotifier {
       }
     } catch (Exception ignored) {
     }
+  }
+
+  @Override
+  protected void finalize() throws Throwable {
+    this.finish();
+    super.finalize();
   }
 }
