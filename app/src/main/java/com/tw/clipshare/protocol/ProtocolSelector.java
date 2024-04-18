@@ -28,7 +28,6 @@ import com.tw.clipshare.netConnection.ServerConnection;
 import com.tw.clipshare.platformUtils.AndroidUtils;
 import com.tw.clipshare.platformUtils.StatusNotifier;
 import java.net.ProtocolException;
-import org.jetbrains.annotations.NotNull;
 
 public class ProtocolSelector {
 
@@ -47,7 +46,7 @@ public class ProtocolSelector {
       return null;
     }
     byte[] proto_v = {PROTO_MAX};
-    if (!connection.send(proto_v)) {
+    if (connection.send(proto_v)) {
       return null;
     }
     if (connection.receive(proto_v)) {
@@ -67,7 +66,7 @@ public class ProtocolSelector {
         connection.send(serverProto);
         throw new ProtocolException("Obsolete server");
       }
-      if (!acceptProto(connection, serverMaxProto)) {
+      if (acceptProto(connection, serverMaxProto)) {
         return null;
       }
       selectedProto = serverMaxProto;
@@ -86,7 +85,14 @@ public class ProtocolSelector {
     }
   }
 
-  private static boolean acceptProto(@NotNull ServerConnection connection, byte proto) {
+  /**
+   * Accept the protocol and acknowledge the server
+   *
+   * @param connection Server connection
+   * @param proto protocol version
+   * @return false on success or true on error
+   */
+  private static boolean acceptProto(ServerConnection connection, byte proto) {
     byte[] proto_v = new byte[1];
     proto_v[0] = proto;
     return connection.send(proto_v);

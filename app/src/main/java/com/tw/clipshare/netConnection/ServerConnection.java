@@ -45,15 +45,31 @@ public abstract class ServerConnection {
     this.socket = socket;
   }
 
-  public boolean send(byte[] data, int offset, int length) {
+  /**
+   * Sends length bytes of data from buffer starting at offset to server.
+   *
+   * @param buffer buffer containing data, which should be at least offset+length in size
+   * @param offset index of starting byte of buffer
+   * @param length number of bytes to send
+   * @return false on success or true on failure
+   */
+  public boolean send(byte[] buffer, int offset, int length) {
     try {
-      outStream.write(data, offset, length);
-      return true;
-    } catch (RuntimeException | IOException ex) {
+      outStream.write(buffer, offset, length);
       return false;
+    } catch (RuntimeException | IOException ex) {
+      return true;
     }
   }
 
+  /**
+   * Receives length bytes of data from server and stores it in buffer starting at offset
+   *
+   * @param buffer buffer to store data, which should be at least offset+length in size
+   * @param offset index of starting byte in buffer
+   * @param length number of bytes to read
+   * @return false on success or true on failure
+   */
   public boolean receive(byte[] buffer, int offset, int length) {
     int remaining = length;
     try {
@@ -72,10 +88,22 @@ public abstract class ServerConnection {
     }
   }
 
-  public boolean send(byte[] data) {
-    return this.send(data, 0, data.length);
+  /**
+   * Sends all data in buffer to server.
+   *
+   * @param buffer buffer containing data
+   * @return false on success or true on failure
+   */
+  public boolean send(byte[] buffer) {
+    return this.send(buffer, 0, buffer.length);
   }
 
+  /**
+   * Receives data into buffer from server until buffer is full.
+   *
+   * @param buffer buffer to store data
+   * @return false on success or true on failure
+   */
   public boolean receive(byte[] buffer) {
     return this.receive(buffer, 0, buffer.length);
   }

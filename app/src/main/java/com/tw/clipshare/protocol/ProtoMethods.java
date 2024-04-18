@@ -75,7 +75,7 @@ public final class ProtoMethods {
     if (methodInit(SEND_TEXT)) {
       return false;
     }
-    return sendString(text);
+    return !sendString(text);
   }
 
   boolean v1_getFile() {
@@ -158,7 +158,7 @@ public final class ProtoMethods {
       return false;
     }
 
-    if (!sendString(fileName)) {
+    if (sendString(fileName)) {
       return false;
     }
     if (sendSize(fileSize)) {
@@ -182,7 +182,7 @@ public final class ProtoMethods {
       }
       fileSize -= read_sz;
       sent_sz += read_sz;
-      if (!this.serverConnection.send(buf, 0, read_sz)) {
+      if (this.serverConnection.send(buf, 0, read_sz)) {
         return false;
       }
       progressCurrent = (int) ((sent_sz * 100) / (sent_sz + fileSize));
@@ -368,7 +368,7 @@ public final class ProtoMethods {
         if (inStream == null) {
           return false;
         }
-        if (!sendString(fileName)) {
+        if (sendString(fileName)) {
           return false;
         }
         if (sendSize(fileSize)) {
@@ -395,7 +395,7 @@ public final class ProtoMethods {
           }
           fileSize -= read_sz;
           sent_sz += read_sz;
-          if (!this.serverConnection.send(buf, 0, read_sz)) {
+          if (this.serverConnection.send(buf, 0, read_sz)) {
             return false;
           }
           progressCurrent = (int) ((sent_sz * 100) / (sent_sz + fileSize));
@@ -431,12 +431,12 @@ public final class ProtoMethods {
       data[i] = (byte) (size & 0xFF);
       size >>= 8;
     }
-    return !this.serverConnection.send(data);
+    return this.serverConnection.send(data);
   }
 
   private boolean methodInit(byte method) {
     byte[] methodArr = {method};
-    if (!this.serverConnection.send(methodArr)) {
+    if (this.serverConnection.send(methodArr)) {
       return true;
     }
     byte[] status = new byte[1];
@@ -470,18 +470,14 @@ public final class ProtoMethods {
    * Sends a String encoded with UTF-8 to server
    *
    * @param data String to be sent
-   * @return true on success or false on error
+   * @return false on success or true on error
    */
   private boolean sendString(String data) {
     if (data == null) return false;
     final byte[] bytes = data.getBytes(StandardCharsets.UTF_8);
     final int len = bytes.length;
-    if (len >= 16777216) {
-      return false;
-    }
-    if (this.sendSize(len)) {
-      return false;
-    }
+    if (len >= 16777216) return true;
+    if (this.sendSize(len)) return true;
     return this.serverConnection.send(bytes);
   }
 
