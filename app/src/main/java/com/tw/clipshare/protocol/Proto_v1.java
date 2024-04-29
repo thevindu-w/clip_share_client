@@ -46,7 +46,7 @@ public class Proto_v1 extends Proto {
 
   @Override
   public boolean getFile() {
-    return this.protoMethods.v1_getFile();
+    return this.protoMethods.v1_getFiles();
   }
 
   @Override

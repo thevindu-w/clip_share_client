@@ -78,7 +78,7 @@ public final class ProtoMethods {
     return !sendString(text);
   }
 
-  boolean v1_getFile() {
+  boolean v1_getFiles() {
     if (!(this.utils instanceof FSUtils)) return false;
     FSUtils fsUtils = (FSUtils) this.utils;
     if (methodInit(GET_FILE)) {
@@ -318,11 +318,11 @@ public final class ProtoMethods {
     return fsUtils.finish();
   }
 
-  boolean v2_getFile() {
+  boolean v2_getFiles() {
     return getFilesCommon(2);
   }
 
-  boolean v2_sendFile() {
+  boolean sendFilesCommon(int version) {
     if (!(this.utils instanceof FSUtils)) return false;
     FSUtils fsUtils = (FSUtils) this.utils;
     int fileCnt = fsUtils.getRemainingFileCount();
@@ -337,9 +337,12 @@ public final class ProtoMethods {
       for (int fileNum = 0; fileNum < fileCnt; fileNum++) {
         fsUtils.prepareNextFile();
         String fileName = fsUtils.getFileName();
+        if (fileName == null || fileName.isEmpty()) {
+          return false;
+        }
         long fileSize = fsUtils.getFileSize();
         InputStream inStream = fsUtils.getFileInStream();
-        if (fileSize == -1) {
+        if (fileSize == -1 && inStream != null) {
           ArrayList<Byte> tmpList = new ArrayList<>(8192);
           byte[] tmpArray = new byte[8192];
           while (true) {
@@ -359,11 +362,13 @@ public final class ProtoMethods {
           fileSize = bytes.length;
           inStream = new ByteArrayInputStream(bytes);
         }
-        if (fileName == null || fileName.isEmpty()) {
-          return false;
-        }
         if (fileSize < 0) {
-          return false;
+          if (version == 2) return false;
+          if (version == 3) {
+            if (sendString(fileName)) return false;
+            if (sendSize(fileSize)) return false;
+            continue;
+          }
         }
         if (inStream == null) {
           return false;
@@ -409,10 +414,24 @@ public final class ProtoMethods {
     return true;
   }
 
-  boolean v3_getFile() {
+  boolean v2_sendFiles() {
+    return sendFilesCommon(2);
+  }
+
+  boolean v3_getFiles() {
     return getFilesCommon(3);
   }
 
+  boolean v3_sendFiles() {
+    return sendFilesCommon(3);
+  }
+
+  /**
+   * Reads a 64-bit signed integer from server
+   *
+   * @throws IOException on failure
+   * @return integer received
+   */
   private long readSize() throws IOException {
     byte[] data = new byte[8];
     if (this.serverConnection.receive(data)) {
@@ -425,6 +444,12 @@ public final class ProtoMethods {
     return size;
   }
 
+  /**
+   * Sends a 64-bit signed integer to server
+   *
+   * @param size value to be sent
+   * @return false on success or true on error
+   */
   private boolean sendSize(long size) {
     byte[] data = new byte[8];
     for (int i = data.length - 1; i >= 0; i--) {
@@ -434,6 +459,12 @@ public final class ProtoMethods {
     return this.serverConnection.send(data);
   }
 
+  /**
+   * Initializes the method
+   *
+   * @param method method code
+   * @return false on success or true on failure
+   */
   private boolean methodInit(byte method) {
     byte[] methodArr = {method};
     if (this.serverConnection.send(methodArr)) {
@@ -473,7 +504,7 @@ public final class ProtoMethods {
    * @return false on success or true on error
    */
   private boolean sendString(String data) {
-    if (data == null) return false;
+    if (data == null) return true;
     final byte[] bytes = data.getBytes(StandardCharsets.UTF_8);
     final int len = bytes.length;
     if (len >= 16777216) return true;
