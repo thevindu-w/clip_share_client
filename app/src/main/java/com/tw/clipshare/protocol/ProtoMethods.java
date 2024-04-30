@@ -46,6 +46,7 @@ public final class ProtoMethods {
   private static final byte GET_FILE = 3;
   private static final byte SEND_FILE = 4;
   private static final byte GET_IMAGE = 5;
+  private static final byte GET_COPIED_IMAGE = 6;
   private static final byte INFO = 125;
 
   private static final byte STATUS_OK = 1;
@@ -192,10 +193,10 @@ public final class ProtoMethods {
     return true;
   }
 
-  boolean v1_getImage() {
+  private boolean getImageCommon(byte method) {
     if (!(this.utils instanceof FSUtils)) return false;
     FSUtils fsUtils = (FSUtils) this.utils;
-    if (methodInit(GET_IMAGE)) {
+    if (methodInit(method)) {
       return false;
     }
     long file_size;
@@ -230,6 +231,10 @@ public final class ProtoMethods {
     } catch (IOException ignored) {
     }
     return true;
+  }
+
+  boolean v1_getImage() {
+    return getImageCommon(GET_IMAGE);
   }
 
   String v1_checkInfo() {
@@ -424,6 +429,10 @@ public final class ProtoMethods {
 
   boolean v3_sendFiles() {
     return sendFilesCommon(3);
+  }
+
+  boolean v3_getCopiedImage() {
+    return getImageCommon(GET_COPIED_IMAGE);
   }
 
   /**

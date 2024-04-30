@@ -35,7 +35,7 @@ public class ProtocolSelector {
   static final byte PROTOCOL_OBSOLETE = 2;
   static final byte PROTOCOL_UNKNOWN = 3;
   private static final byte PROTO_MIN = 1;
-  public static final byte PROTO_MAX = 2;
+  public static final byte PROTO_MAX = 3;
 
   private ProtocolSelector() {}
 
