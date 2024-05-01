@@ -47,6 +47,7 @@ public final class ProtoMethods {
   private static final byte SEND_FILE = 4;
   private static final byte GET_IMAGE = 5;
   private static final byte GET_COPIED_IMAGE = 6;
+  private static final byte GET_SCREENSHOT = 7;
   private static final byte INFO = 125;
 
   private static final byte STATUS_OK = 1;
@@ -193,12 +194,13 @@ public final class ProtoMethods {
     return true;
   }
 
-  private boolean getImageCommon(byte method) {
+  private boolean getImageCommon(byte method, int display) {
     if (!(this.utils instanceof FSUtils)) return false;
     FSUtils fsUtils = (FSUtils) this.utils;
     if (methodInit(method)) {
       return false;
     }
+    if (method == GET_SCREENSHOT && selectDisplay(display)) return false;
     long file_size;
     try {
       file_size = readSize();
@@ -231,6 +233,10 @@ public final class ProtoMethods {
     } catch (IOException ignored) {
     }
     return true;
+  }
+
+  private boolean getImageCommon(byte method) {
+    return getImageCommon(method, 0);
   }
 
   boolean v1_getImage() {
@@ -433,6 +439,16 @@ public final class ProtoMethods {
 
   boolean v3_getCopiedImage() {
     return getImageCommon(GET_COPIED_IMAGE);
+  }
+
+  private boolean selectDisplay(int display) {
+    if (sendSize(display)) return true;
+    byte[] status = new byte[1];
+    return (this.serverConnection.receive(status) || status[0] != STATUS_OK);
+  }
+
+  boolean v3_getScreenshot(int display) {
+    return getImageCommon(GET_COPIED_IMAGE, display);
   }
 
   /**
