@@ -1,5 +1,5 @@
 name: Build release
-run-name: Build artefacts for ${{github.ref_name}}
+run-name: Build artifacts for ${{github.ref_name}}
 
 on:
   push:
@@ -9,7 +9,7 @@ on:
 jobs:
   Checks:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 3
 
     steps:
     - name: Check out repository code
@@ -19,7 +19,7 @@ jobs:
       run: |
         echo VERSION="$(echo '${{github.ref_name}}' | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')" >> $GITHUB_ENV
 
-    - name: Check app.rc version
+    - name: Check version
       run: |
         version="${{env.VERSION}}"
         echo 'Checking versionName ...'
@@ -33,14 +33,30 @@ jobs:
         [ ! -z "$(grep -E 'versionCode\s?=' app/build.gradle | grep -F "$versionCode")" ]
         echo 'versionCode is correct.'
 
+    - name: Check release_notes.md version
+      run: |
+        for v in $(grep -oE '[0-9]+\.[0-9]+\.[0-9]+' .github/workflows/resources/release_notes.md); do \
+        grep -qF "${{env.VERSION}}" <<<"$v"; \
+        done
+
   Release:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     needs: Checks
+    permissions:
+      contents: write
 
     steps:
     - name: Check out repository code
       uses: actions/checkout@v4
+
+    - name: Set variables
+      run: |
+        version="$(echo '${{github.ref_name}}' | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')"
+        echo VERSION="$version" >> $GITHUB_ENV
+        echo TAG="v${version}" >> $GITHUB_ENV
+        echo TITLE="Version ${version}" >> $GITHUB_ENV
+        echo APK_FILE="clip_share_client.apk" >> $GITHUB_ENV
 
     - name: Set up JDK 19
       uses: actions/setup-java@v4
@@ -64,10 +80,12 @@ jobs:
       run: |
         chmod +x gradlew
         ./gradlew assembleRelease
-        mv app/build/outputs/apk/release/app-release.apk clip_share_client.apk
+        mv app/build/outputs/apk/release/app-release.apk "${{env.APK_FILE}}"
 
-    - name: Upload APK
-      uses: actions/upload-artifact@v4
-      with:
-        name: "clip_share_client.apk"
-        path: "clip_share_client.apk"
+    - name: Create release
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        gh release create "${{env.TAG}}" --latest --verify-tag \
+        --notes-file .github/workflows/resources/release_notes.md \
+        --title "${{env.TITLE}}" "${{env.APK_FILE}}"
