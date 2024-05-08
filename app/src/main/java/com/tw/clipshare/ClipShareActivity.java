@@ -944,9 +944,7 @@ public class ClipShareActivity extends AppCompatActivity {
     }
   }
 
-  /**
-   * @noinspection SameReturnValue
-   */
+  /** @noinspection SameReturnValue */
   private boolean longClkImg(View parent) {
     if (needsPermission(WRITE_IMAGE)) return true;
     try {
