@@ -45,4 +45,7 @@
     <string name="UDP_port" translatable="false">UDP Port</string>
     <string name="port_number" translatable="false">4337</string>
     <string name="secure_port_number" translatable="false">4338</string>
+    <string name="display">Display :</string>
+    <string name="copied_image">Copied Image</string>
+    <string name="screenshot">Screenshot</string>
 </resources>

@@ -59,6 +59,14 @@ public class Proto_v3 extends Proto {
     return this.protoMethods.v1_getImage();
   }
 
+  public boolean getCopiedImage() {
+    return this.protoMethods.v3_getCopiedImage();
+  }
+
+  public boolean getScreenshot(int display) {
+    return this.protoMethods.v3_getScreenshot(display);
+  }
+
   @Override
   public String checkInfo() {
     return this.protoMethods.v1_checkInfo();

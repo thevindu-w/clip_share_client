@@ -448,7 +448,7 @@ public final class ProtoMethods {
   }
 
   boolean v3_getScreenshot(int display) {
-    return getImageCommon(GET_COPIED_IMAGE, display);
+    return getImageCommon(GET_SCREENSHOT, display);
   }
 
   /**

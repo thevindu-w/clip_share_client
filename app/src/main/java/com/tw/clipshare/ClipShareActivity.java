@@ -61,6 +61,7 @@ import com.tw.clipshare.platformUtils.directoryTree.Directory;
 import com.tw.clipshare.platformUtils.directoryTree.DirectoryTreeNode;
 import com.tw.clipshare.platformUtils.directoryTree.RegularFile;
 import com.tw.clipshare.protocol.Proto;
+import com.tw.clipshare.protocol.Proto_v3;
 import com.tw.clipshare.protocol.ProtocolSelector;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
@@ -227,6 +228,7 @@ public class ClipShareActivity extends AppCompatActivity {
     btnGet.setOnClickListener(view -> clkGetTxt());
     Button btnImg = findViewById(R.id.btnGetImg);
     btnImg.setOnClickListener(view -> clkGetImg());
+    btnImg.setOnLongClickListener(this::longClkImg);
     Button btnGetFile = findViewById(R.id.btnGetFile);
     btnGetFile.setOnClickListener(view -> clkGetFile());
     Button btnSendTxt = findViewById(R.id.btnSendTxt);
@@ -543,7 +545,8 @@ public class ClipShareActivity extends AppCompatActivity {
                     LayoutInflater inflater =
                         (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
                     View popupView =
-                        inflater.inflate(R.layout.popup, findViewById(R.id.main_layout), false);
+                        inflater.inflate(
+                            R.layout.popup_servers, findViewById(R.id.main_layout), false);
                     popupView
                         .findViewById(R.id.popupLinearWrap)
                         .setOnClickListener(v -> popupView.performClick());
@@ -921,6 +924,150 @@ public class ClipShareActivity extends AppCompatActivity {
               Proto proto = getProtoWrapper(address, utils, null);
               if (proto == null) return;
               boolean status = proto.getImage();
+              proto.close();
+              if (status) {
+                this.vibrate();
+              } else {
+                runOnUiThread(
+                    () ->
+                        Toast.makeText(
+                                ClipShareActivity.this, "Getting image failed", Toast.LENGTH_SHORT)
+                            .show());
+              }
+            } catch (Exception e) {
+              outputAppend("Error " + e.getMessage());
+            }
+          };
+      executorService.submit(getImg);
+    } catch (Exception e) {
+      outputAppend("Error " + e.getMessage());
+    }
+  }
+
+  /**
+   * @noinspection SameReturnValue
+   */
+  private boolean longClkImg(View parent) {
+    if (needsPermission(WRITE_IMAGE)) return true;
+    try {
+      LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
+      View popupView =
+          inflater.inflate(R.layout.popup_display, findViewById(R.id.main_layout), false);
+      int width = LinearLayout.LayoutParams.MATCH_PARENT;
+      int height = LinearLayout.LayoutParams.MATCH_PARENT;
+      boolean focusable = true; // lets taps outside the popup also dismiss it
+      final PopupWindow popupWindow = new PopupWindow(popupView, width, height, focusable);
+      popupWindow.showAtLocation(parent, Gravity.CENTER, 0, 0);
+
+      Button btnGetCopiedImg = popupView.findViewById(R.id.btnGetCopiedImg);
+      btnGetCopiedImg.setOnClickListener(
+          view -> {
+            getCopiedImg();
+            popupWindow.dismiss();
+          });
+
+      EditText editDisplay = popupView.findViewById(R.id.editDisplay);
+      if (editDisplay == null) return true;
+      Button btnGetScreenshot = popupView.findViewById(R.id.btnGetScreenshot);
+      btnGetScreenshot.setOnClickListener(
+          view -> {
+            getScreenshot(editDisplay);
+            popupWindow.dismiss();
+          });
+
+      popupView.setOnClickListener(v -> popupWindow.dismiss());
+    } catch (Exception ignored) {
+    }
+    return true;
+  }
+
+  private void getCopiedImg() {
+    try {
+      runOnUiThread(
+          () -> {
+            openBrowserLayout.setVisibility(View.GONE);
+            output.setText("");
+          });
+      String address = this.getServerAddress();
+      if (address == null) return;
+
+      ExecutorService executorService = Executors.newSingleThreadExecutor();
+      Runnable getImg =
+          () -> {
+            try {
+              FSUtils utils = new FSUtils(context, ClipShareActivity.this);
+              Proto proto = getProtoWrapper(address, utils, null);
+              if (proto == null) return;
+              if (!(proto instanceof Proto_v3)) {
+                runOnUiThread(
+                    () ->
+                        Toast.makeText(
+                                ClipShareActivity.this,
+                                "Server doesn't support this method",
+                                Toast.LENGTH_SHORT)
+                            .show());
+                proto.close();
+                return;
+              }
+              Proto_v3 protoV3 = (Proto_v3) proto;
+              boolean status = protoV3.getCopiedImage();
+              proto.close();
+              if (status) {
+                this.vibrate();
+              } else {
+                runOnUiThread(
+                    () ->
+                        Toast.makeText(
+                                ClipShareActivity.this, "Getting image failed", Toast.LENGTH_SHORT)
+                            .show());
+              }
+            } catch (Exception e) {
+              outputAppend("Error " + e.getMessage());
+            }
+          };
+      executorService.submit(getImg);
+    } catch (Exception e) {
+      outputAppend("Error " + e.getMessage());
+    }
+  }
+
+  private void getScreenshot(EditText editDisplay) {
+    try {
+      runOnUiThread(
+          () -> {
+            openBrowserLayout.setVisibility(View.GONE);
+            output.setText("");
+          });
+      String address = this.getServerAddress();
+      if (address == null) return;
+      String displayStr = editDisplay.getText().toString();
+      int display;
+      try {
+        display = Integer.parseInt(displayStr);
+      } catch (NumberFormatException ignored) {
+        display = 0;
+      }
+      final int displayNum = display;
+      ExecutorService executorService = Executors.newSingleThreadExecutor();
+      Runnable getImg =
+          () -> {
+            try {
+              FSUtils utils = new FSUtils(context, ClipShareActivity.this);
+              Proto proto = getProtoWrapper(address, utils, null);
+              if (proto == null) return;
+              if (!(proto instanceof Proto_v3)) {
+                runOnUiThread(
+                    () ->
+                        Toast.makeText(
+                                ClipShareActivity.this,
+                                "Server doesn't support this method",
+                                Toast.LENGTH_SHORT)
+                            .show());
+                proto.close();
+                return;
+              }
+              Proto_v3 protoV3 = (Proto_v3) proto;
+              boolean status = protoV3.getScreenshot(displayNum);
               proto.close();
               if (status) {
                 this.vibrate();
