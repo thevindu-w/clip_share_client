@@ -159,7 +159,6 @@ public final class ProtoMethods {
     if (methodInit(SEND_FILE)) {
       return false;
     }
-
     if (sendString(fileName)) {
       return false;
     }
@@ -270,6 +269,7 @@ public final class ProtoMethods {
     } catch (IOException ignored) {
       return false;
     }
+    boolean status = true;
     for (long fileNum = 0; fileNum < fileCnt; fileNum++) {
       String fileName = readString(MAX_FILE_NAME_LENGTH);
       if (fileName == null || fileName.isEmpty()) {
@@ -287,7 +287,8 @@ public final class ProtoMethods {
         return false;
       }
       if (version == 3 && file_size < 0) {
-        return fsUtils.createDirectory(fileName);
+        status &= fsUtils.createDirectory(fileName);
+        continue;
       } else if (file_size < 0) {
         return false;
       }
@@ -326,7 +327,7 @@ public final class ProtoMethods {
       }
     }
     if (this.notifier != null) this.notifier.finish();
-    return fsUtils.finish();
+    return fsUtils.finish() && status;
   }
 
   boolean v2_getFiles() {
@@ -336,7 +337,7 @@ public final class ProtoMethods {
   boolean sendFilesCommon(int version) {
     if (!(this.utils instanceof FSUtils)) return false;
     FSUtils fsUtils = (FSUtils) this.utils;
-    int fileCnt = fsUtils.getRemainingFileCount();
+    int fileCnt = fsUtils.getRemainingFileCount(version >= 3);
     if (fileCnt <= 0) return false;
     if (methodInit(SEND_FILE)) {
       return false;
