@@ -177,7 +177,7 @@ public class ClipShareActivity extends AppCompatActivity {
                 menu.findItem(R.id.action_secure)
                     .setIcon(ContextCompat.getDrawable(ClipShareActivity.this, icon_id));
                 SharedPreferences.Editor editor = sharedPref.edit();
-                editor.putString("settings", Settings.toString(st));
+                editor.putString("settings", st.toString());
                 editor.apply();
                 runOnUiThread(
                     () -> Toast.makeText(context, "Saved settings", Toast.LENGTH_SHORT).show());

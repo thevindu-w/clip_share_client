@@ -28,6 +28,7 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import javax.annotation.Nonnull;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -202,21 +203,28 @@ public class Settings implements Serializable {
     return settings;
   }
 
-  public static String toString(Settings settings) {
+  @Nonnull
+  @Override
+  public String toString() {
+    return this.toString(true);
+  }
+
+  @Nonnull
+  public String toString(boolean includePassword) {
     HashMap<String, Object> map = new HashMap<>(13);
-    map.put("caCert", settings.caCert);
-    map.put("cert", settings.cert);
-    map.put("passwd", settings.passwd);
-    map.put("caCN", settings.caCN);
-    map.put("cn", settings.cn);
-    map.put("trustedList", settings.trustedList);
-    map.put("secure", settings.secure);
-    map.put("port", settings.port);
-    map.put("portSecure", settings.portSecure);
-    map.put("portUDP", settings.portUDP);
-    map.put("autoSendText", settings.autoSendText);
-    map.put("autoSendFiles", settings.autoSendFiles);
-    map.put("vibrate", settings.vibrate);
+    map.put("caCert", this.caCert);
+    map.put("cert", this.cert);
+    if (includePassword) map.put("passwd", this.passwd);
+    map.put("caCN", this.caCN);
+    map.put("cn", this.cn);
+    map.put("trustedList", this.trustedList);
+    map.put("secure", this.secure);
+    map.put("port", this.port);
+    map.put("portSecure", this.portSecure);
+    map.put("portUDP", this.portUDP);
+    map.put("autoSendText", this.autoSendText);
+    map.put("autoSendFiles", this.autoSendFiles);
+    map.put("vibrate", this.vibrate);
 
     JSONObject jsonObject = new JSONObject(map);
     return jsonObject.toString();

@@ -30,7 +30,10 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Rect;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.DocumentsContract;
 import android.provider.OpenableColumns;
 import android.text.method.ScrollingMovementMethod;
 import android.view.MotionEvent;
@@ -43,12 +46,14 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SwitchCompat;
 import com.tw.clipshare.netConnection.SecureConnection;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class SettingsActivity extends AppCompatActivity {
-
   private static final byte CLIENT = 10;
   private static final byte CA = 11;
   private SwitchCompat secureSwitch;
@@ -131,12 +136,13 @@ public class SettingsActivity extends AppCompatActivity {
     this.secureSwitch.setOnClickListener(
         view -> {
           if (!SettingsActivity.this.secureSwitch.isChecked()) {
-            st.setSecure(secureSwitch.isChecked());
+            st.setSecure(false);
             return;
           }
           if (st.getCACertCN() == null) {
             Toast.makeText(SettingsActivity.this, "No CA certificate", Toast.LENGTH_SHORT).show();
             SettingsActivity.this.secureSwitch.setChecked(false);
+            st.setSecure(false);
             return;
           }
           if (st.getCertCN() == null) {
@@ -144,11 +150,13 @@ public class SettingsActivity extends AppCompatActivity {
                     SettingsActivity.this, "No client key and certificate", Toast.LENGTH_SHORT)
                 .show();
             SettingsActivity.this.secureSwitch.setChecked(false);
+            st.setSecure(false);
             return;
           }
           if (st.getTrustedList().isEmpty()) {
             Toast.makeText(SettingsActivity.this, "No trusted servers", Toast.LENGTH_SHORT).show();
             SettingsActivity.this.secureSwitch.setChecked(false);
+            st.setSecure(false);
             return;
           }
           st.setSecure(secureSwitch.isChecked());
@@ -336,6 +344,50 @@ public class SettingsActivity extends AppCompatActivity {
                 SettingsActivity.this.finish();
               }
             });
+
+    ActivityResultLauncher<Intent> activityLauncher =
+        registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+              try {
+                if (result.getResultCode() != Activity.RESULT_OK) {
+                  return;
+                }
+                Intent intent1 = result.getData();
+                if (intent1 == null) {
+                  return;
+                }
+                Uri uri = intent1.getData();
+                if (uri == null) {
+                  return;
+                }
+                String jsonStr = st.toString(false);
+                try (OutputStream fileOutputStream =
+                    getContentResolver().openOutputStream(intent1.getData())) {
+                  fileOutputStream.write(jsonStr.getBytes(StandardCharsets.UTF_8));
+                }
+              } catch (IOException ignored) {
+              }
+            });
+    Button exportBtn = findViewById(R.id.btnExport);
+    exportBtn.setOnClickListener(
+        view -> {
+          try {
+            Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+            intent.addCategory(Intent.CATEGORY_OPENABLE);
+            intent.setType("application/json");
+            intent.putExtra(Intent.EXTRA_TITLE, "ClipShare_settings.json");
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+              Uri pickerInitialUri =
+                  Uri.fromFile(
+                      Environment.getExternalStoragePublicDirectory(
+                          Environment.DIRECTORY_DOCUMENTS));
+              intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, pickerInitialUri);
+            }
+            activityLauncher.launch(intent);
+          } catch (Exception ignored) {
+          }
+        });
   }
 
   @Override
