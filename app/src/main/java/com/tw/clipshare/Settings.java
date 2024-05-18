@@ -24,6 +24,7 @@
 
 package com.tw.clipshare;
 
+import android.util.Base64;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -95,8 +96,8 @@ public class Settings implements Serializable {
     // Set caCert
     try {
       Object attributeO = map.get("caCert");
-      if (attributeO instanceof byte[]) {
-        settings.caCert = (byte[]) attributeO;
+      if (attributeO instanceof String) {
+        settings.caCert = Base64.decode((String) attributeO, Base64.DEFAULT);
       }
     } catch (Exception ignored) {
     }
@@ -104,8 +105,8 @@ public class Settings implements Serializable {
     // Set cert
     try {
       Object attributeO = map.get("cert");
-      if (attributeO instanceof byte[]) {
-        settings.cert = (byte[]) attributeO;
+      if (attributeO instanceof String) {
+        settings.cert = Base64.decode((String) attributeO, Base64.DEFAULT);
       }
     } catch (Exception ignored) {
     }
@@ -113,8 +114,9 @@ public class Settings implements Serializable {
     // Set passwd
     try {
       Object attributeO = map.get("passwd");
-      if (attributeO instanceof char[]) {
-        settings.passwd = (char[]) attributeO;
+      if (attributeO instanceof String) {
+        String pwStr = (String) attributeO;
+        settings.passwd = pwStr.toCharArray();
       }
     } catch (Exception ignored) {
     }
@@ -212,20 +214,23 @@ public class Settings implements Serializable {
   @Nonnull
   public String toString(boolean includePassword) {
     HashMap<String, Object> map = new HashMap<>(13);
-    map.put("caCert", this.caCert);
-    map.put("cert", this.cert);
-    if (includePassword) map.put("passwd", this.passwd);
-    map.put("caCN", this.caCN);
-    map.put("cn", this.cn);
-    map.put("trustedList", this.trustedList);
-    map.put("secure", this.secure);
-    map.put("port", this.port);
-    map.put("portSecure", this.portSecure);
-    map.put("portUDP", this.portUDP);
-    map.put("autoSendText", this.autoSendText);
-    map.put("autoSendFiles", this.autoSendFiles);
-    map.put("vibrate", this.vibrate);
-
+    try {
+      if (this.caCert != null)
+        map.put("caCert", Base64.encodeToString(this.caCert, Base64.DEFAULT));
+      if (this.cert != null) map.put("cert", Base64.encodeToString(this.cert, Base64.DEFAULT));
+      if (includePassword && this.passwd != null) map.put("passwd", new String(this.passwd));
+      map.put("caCN", this.caCN);
+      map.put("cn", this.cn);
+      map.put("trustedList", this.trustedList);
+      map.put("secure", this.secure);
+      map.put("port", this.port);
+      map.put("portSecure", this.portSecure);
+      map.put("portUDP", this.portUDP);
+      map.put("autoSendText", this.autoSendText);
+      map.put("autoSendFiles", this.autoSendFiles);
+      map.put("vibrate", this.vibrate);
+    } catch (Exception ignored) {
+    }
     JSONObject jsonObject = new JSONObject(map);
     return jsonObject.toString();
   }
