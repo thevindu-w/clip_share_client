@@ -49,4 +49,5 @@
     <string name="copied_image">Copied Image</string>
     <string name="screenshot">Screenshot</string>
     <string name="export_settings">Export settings</string>
+    <string name="import_settings">Import settings</string>
 </resources>

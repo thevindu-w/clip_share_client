@@ -291,16 +291,27 @@
                       android:layout_gravity="center_vertical"
                       android:autofillHints="Scan port (UDP)"/>
         </LinearLayout>
-        <Button
-                android:id="@+id/btnExport"
-                android:text="@string/export_settings"
-                android:textSize="18sp"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="10dp"
-                android:layout_marginVertical="4dp"
-                android:backgroundTint="#FF5555FF"
-                android:textAppearance="@style/TextAppearance.AppCompat.Body2"
-                android:textStyle="normal"/>
+        <LinearLayout android:layout_width="match_parent"
+                      android:layout_height="wrap_content"
+                      android:orientation="vertical"
+                      android:layout_marginHorizontal="10dp"
+                      android:layout_marginVertical="4dp">
+            <Button
+                    android:id="@+id/btnImport"
+                    android:text="@string/import_settings"
+                    android:textSize="18sp"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:backgroundTint="#FF44BB44"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Body2"/>
+            <Button
+                    android:id="@+id/btnExport"
+                    android:text="@string/export_settings"
+                    android:textSize="18sp"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:backgroundTint="#FF5555FF"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Body2"/>
+        </LinearLayout>
     </LinearLayout>
 </ScrollView>

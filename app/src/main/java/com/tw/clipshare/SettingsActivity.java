@@ -46,7 +46,6 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SwitchCompat;
 import com.tw.clipshare.netConnection.SecureConnection;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
@@ -345,7 +344,7 @@ public class SettingsActivity extends AppCompatActivity {
               }
             });
 
-    ActivityResultLauncher<Intent> activityLauncher =
+    ActivityResultLauncher<Intent> exportActivityLauncher =
         registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
@@ -361,12 +360,11 @@ public class SettingsActivity extends AppCompatActivity {
                 if (uri == null) {
                   return;
                 }
-                String jsonStr = st.toString(false);
-                try (OutputStream fileOutputStream =
-                    getContentResolver().openOutputStream(intent1.getData())) {
+                String jsonStr = st.toString(true);
+                try (OutputStream fileOutputStream = getContentResolver().openOutputStream(uri)) {
                   fileOutputStream.write(jsonStr.getBytes(StandardCharsets.UTF_8));
                 }
-              } catch (IOException ignored) {
+              } catch (Exception ignored) {
               }
             });
     Button exportBtn = findViewById(R.id.btnExport);
@@ -384,7 +382,70 @@ public class SettingsActivity extends AppCompatActivity {
                           Environment.DIRECTORY_DOCUMENTS));
               intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, pickerInitialUri);
             }
-            activityLauncher.launch(intent);
+            exportActivityLauncher.launch(intent);
+          } catch (Exception ignored) {
+          }
+        });
+
+    ActivityResultLauncher<Intent> importActivityLauncher =
+        registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+              try {
+                if (result.getResultCode() != Activity.RESULT_OK) {
+                  return;
+                }
+                Intent intent1 = result.getData();
+                if (intent1 == null) {
+                  return;
+                }
+                Uri uri = intent1.getData();
+                if (uri == null) {
+                  return;
+                }
+                Cursor cursor = getContentResolver().query(uri, null, null, null, null);
+                if (cursor.getCount() <= 0) {
+                  cursor.close();
+                  return;
+                }
+                cursor.moveToFirst();
+                String fileSizeStr =
+                    cursor.getString(cursor.getColumnIndexOrThrow(OpenableColumns.SIZE));
+                int size = Integer.parseInt(fileSizeStr);
+                cursor.close();
+                try (InputStream fileInputStream = getContentResolver().openInputStream(uri)) {
+                  byte[] data = new byte[size];
+                  if (fileInputStream.read(data) < size) return;
+                  String jsonStr = new String(data, StandardCharsets.UTF_8);
+                  Settings.getInstance(jsonStr);
+                  this.secureSwitch.setChecked(st.getSecure());
+                  editPort.setText(String.valueOf(st.getPort()));
+                  editPortSecure.setText(String.valueOf(st.getPortSecure()));
+                  editPortUDP.setText(String.valueOf(st.getPortUDP()));
+                  String caCertCN1 = st.getCACertCN();
+                  if (caCertCN1 != null) this.caCnTxt.setText(caCertCN1);
+                  String certCN1 = st.getCertCN();
+                  if (certCN1 != null) this.cnTxt.setText(certCN1);
+                  List<String> servers1 = st.getTrustedList();
+                  trustList.removeAllViews();
+                  for (String server : servers1) {
+                    addRowToTrustList(false, server);
+                  }
+                  autoSendTextSwitch.setChecked(st.getAutoSendText());
+                  autoSendFileSwitch.setChecked(st.getAutoSendFiles());
+                  vibrateSwitch.setChecked(st.getVibrate());
+                }
+              } catch (Exception ignored) {
+              }
+            });
+    Button importBtn = findViewById(R.id.btnImport);
+    importBtn.setOnClickListener(
+        view -> {
+          try {
+            Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+            intent.addCategory(Intent.CATEGORY_OPENABLE);
+            intent.setType("application/json");
+            importActivityLauncher.launch(intent);
           } catch (Exception ignored) {
           }
         });
