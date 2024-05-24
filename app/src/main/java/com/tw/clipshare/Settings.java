@@ -25,11 +25,11 @@
 package com.tw.clipshare;
 
 import android.util.Base64;
+import androidx.annotation.NonNull;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import javax.annotation.Nonnull;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -205,13 +205,13 @@ public class Settings implements Serializable {
     return settings;
   }
 
-  @Nonnull
+  @NonNull
   @Override
   public String toString() {
     return this.toString(true);
   }
 
-  @Nonnull
+  @NonNull
   public String toString(boolean includePassword) {
     HashMap<String, Object> map = new HashMap<>(13);
     try {
