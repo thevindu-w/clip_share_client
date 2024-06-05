@@ -81,63 +81,7 @@ public final class ProtoMethods {
   }
 
   boolean v1_getFiles() {
-    if (!(this.utils instanceof FSUtils)) return false;
-    FSUtils fsUtils = (FSUtils) this.utils;
-    if (methodInit(GET_FILE)) {
-      return false;
-    }
-    long fileCnt;
-    try {
-      fileCnt = readSize();
-    } catch (IOException e) {
-      if (this.notifier != null) this.notifier.finish();
-      return false;
-    }
-    for (long fileNum = 0; fileNum < fileCnt; fileNum++) {
-      String fileName = readString(MAX_FILE_NAME_LENGTH);
-      if (fileName == null || fileName.isEmpty() || fileName.contains("/")) {
-        return false;
-      }
-      long file_size;
-      try {
-        file_size = readSize();
-      } catch (IOException ignored) {
-        return false;
-      }
-      if (file_size < 0 || file_size > 17179869184L) {
-        return false;
-      }
-      OutputStream out = fsUtils.getFileOutStream(fileName);
-      if (out == null) {
-        return false;
-      }
-      byte[] buf = new byte[BUF_SZ];
-      int progressCurrent;
-      long tot_sz = file_size;
-      if (this.notifier != null) this.notifier.reset();
-      if (this.notifier != null) this.notifier.setName("Getting file " + fileName);
-      while (file_size > 0) {
-        int read_sz = (int) Math.min(file_size, BUF_SZ);
-        if (this.serverConnection.receive(buf, 0, read_sz)) {
-          return false;
-        }
-        file_size -= read_sz;
-        progressCurrent = (int) (((tot_sz - file_size) * 100) / tot_sz);
-        if (this.notifier != null) this.notifier.setStatus(progressCurrent);
-        try {
-          out.write(buf, 0, read_sz);
-        } catch (IOException ex) {
-          return false;
-        }
-      }
-      try {
-        out.close();
-        fsUtils.getFileDone("file");
-      } catch (IOException ignored) {
-      }
-    }
-    if (this.notifier != null) this.notifier.finish();
-    return true;
+    return getFilesCommon(1);
   }
 
   boolean v1_sendFile() {
@@ -267,37 +211,42 @@ public final class ProtoMethods {
     try {
       fileCnt = readSize();
     } catch (IOException ignored) {
+      if (this.notifier != null) this.notifier.finish();
       return false;
     }
     boolean status = true;
     for (long fileNum = 0; fileNum < fileCnt; fileNum++) {
       String fileName = readString(MAX_FILE_NAME_LENGTH);
       if (fileName == null || fileName.isEmpty()) {
-        return false;
+        status = false;
+        break;
+      }
+      if (version == 1 && fileName.contains("/")) {
+        status = false;
+        break;
       }
       long file_size;
       try {
         file_size = readSize();
-      } catch (IOException e) {
-        if (this.notifier != null) this.notifier.finish();
-        fsUtils.finish();
-        return false;
+      } catch (IOException ignored) {
+        status = false;
+        break;
       }
       if (file_size > MAX_FILE_SIZE) {
-        return false;
+        status = false;
+        break;
       }
       if (version == 3 && file_size < 0) {
         status &= fsUtils.createDirectory(fileName);
         continue;
       } else if (file_size < 0) {
-        return false;
+        status = false;
+        break;
       }
-      int base_ind = fileName.lastIndexOf('/') + 1;
-      String baseName = fileName.substring(base_ind);
-      String path = fileName.substring(0, base_ind);
-      OutputStream out = fsUtils.getFileOutStream(path, baseName);
+      OutputStream out = fsUtils.getFileOutStream(fileName);
       if (out == null) {
-        return false;
+        status = false;
+        break;
       }
       byte[] buf = new byte[BUF_SZ];
       int progressCurrent;
@@ -309,7 +258,8 @@ public final class ProtoMethods {
       while (file_size > 0) {
         int read_sz = (int) Math.min(file_size, BUF_SZ);
         if (this.serverConnection.receive(buf, 0, read_sz)) {
-          return false;
+          status = false;
+          break;
         }
         file_size -= read_sz;
         progressCurrent = (int) (((tot_sz - file_size) * 100) / tot_sz);
@@ -317,17 +267,19 @@ public final class ProtoMethods {
         try {
           out.write(buf, 0, read_sz);
         } catch (IOException ex) {
-          return false;
+          status = false;
+          break;
         }
       }
       try {
         out.close();
-        fsUtils.getFileDone("file");
+        if (status) fsUtils.getFileDone("file");
       } catch (IOException ignored) {
       }
+      if (!status) break;
     }
     if (this.notifier != null) this.notifier.finish();
-    return fsUtils.finish() && status;
+    return status && fsUtils.finish();
   }
 
   boolean v2_getFiles() {

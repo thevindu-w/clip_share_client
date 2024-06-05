@@ -94,34 +94,8 @@ public class FSUtils extends AndroidUtils {
     return baseDirName + "/ClipShareDocuments";
   }
 
-  public OutputStream getFileOutStream(String fileName) {
-    final String dirName = getDocumentDir();
-    File dir = new File(dirName);
-    if (!dir.exists()) {
-      if (!dir.mkdirs()) {
-        return null;
-      }
-    }
-    String fileNameTmp = dirName + "/" + fileName;
-    File file = new File(fileNameTmp);
-    if (file.exists()) {
-      int i = 1;
-      while (file.exists()) {
-        fileNameTmp = dirName + "/" + i + "_" + fileName;
-        file = new File(fileNameTmp);
-        i++;
-      }
-    }
-    this.outFilePath = fileNameTmp;
-    try {
-      return new FileOutputStream(file);
-    } catch (FileNotFoundException ignored) {
-      return null;
-    }
-  }
-
   private String getDataDirPath(String path) {
-    if (path.charAt(path.length() - 1) != '/') {
+    if (!path.isEmpty() && path.charAt(path.length() - 1) != '/') {
       path += '/';
     }
     final String dirName = getDocumentDir();
@@ -138,18 +112,15 @@ public class FSUtils extends AndroidUtils {
     return dataDirName + "/" + path;
   }
 
-  public OutputStream getFileOutStream(String path, String baseName) {
-    int ind = path != null ? path.indexOf('/') : -1;
-    if (ind <= 0) return this.getFileOutStream(baseName);
-
+  public OutputStream getFileOutStream(String fileName) {
+    int base_ind = fileName.lastIndexOf('/') + 1;
+    String baseName = fileName.substring(base_ind);
+    String path = fileName.substring(0, base_ind);
+    if (path.startsWith("../") || path.endsWith("/..") || path.contains("/../")) return null;
     path = getDataDirPath(path);
-    if (path == null) {
-      return null;
-    }
+    if (path == null) return null;
     File fp = new File(path);
-    if (!fp.exists() && !fp.mkdirs()) {
-      return null;
-    }
+    if (!fp.exists() && !fp.mkdirs()) return null;
     String filename = path + baseName;
     File f = new File(filename);
     this.outFilePath = filename;
@@ -162,9 +133,7 @@ public class FSUtils extends AndroidUtils {
 
   public boolean createDirectory(String dirPath) {
     dirPath = getDataDirPath(dirPath);
-    if (dirPath == null) {
-      return false;
-    }
+    if (dirPath == null) return false;
     File fp = new File(dirPath);
     if (fp.isDirectory()) return true;
     if (fp.exists()) return false;
@@ -175,13 +144,9 @@ public class FSUtils extends AndroidUtils {
     final String dir = getDocumentDir() + "/";
     final String dataDirName = dir + this.id;
     File dataDir = new File(dataDirName);
-    if (!dataDir.exists()) {
-      return true;
-    }
+    if (!dataDir.exists()) return true;
     String[] content = dataDir.list();
-    if (content == null) {
-      return true;
-    }
+    if (content == null) return true;
     boolean status = true;
     for (String fileName : content) {
       File newFile = new File(dir + fileName);
