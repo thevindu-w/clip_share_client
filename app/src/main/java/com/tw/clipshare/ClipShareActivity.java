@@ -537,49 +537,48 @@ public class ClipShareActivity extends AppCompatActivity {
                 Settings settings = Settings.getInstance();
                 List<InetAddress> serverAddresses =
                     ServerFinder.find(settings.getPort(), settings.getPortUDP());
-                if (!serverAddresses.isEmpty()) {
-                  if (serverAddresses.size() == 1) {
-                    InetAddress serverAddress = serverAddresses.get(0);
-                    runOnUiThread(() -> editAddress.setText(serverAddress.getHostAddress()));
-                  } else {
-                    LayoutInflater inflater =
-                        (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
-                    View popupView =
-                        inflater.inflate(
-                            R.layout.popup_servers, findViewById(R.id.main_layout), false);
-                    popupView
-                        .findViewById(R.id.popupLinearWrap)
-                        .setOnClickListener(v -> popupView.performClick());
-
-                    int width = LinearLayout.LayoutParams.MATCH_PARENT;
-                    int height = LinearLayout.LayoutParams.MATCH_PARENT;
-                    boolean focusable = true; // lets taps outside the popup also dismiss it
-                    final PopupWindow popupWindow =
-                        new PopupWindow(popupView, width, height, focusable);
-                    runOnUiThread(() -> popupWindow.showAtLocation(parent, Gravity.CENTER, 0, 0));
-
-                    LinearLayout popupLayout = popupView.findViewById(R.id.popupLayout);
-                    if (popupLayout == null) return;
-                    View popupElemView;
-                    TextView txtView;
-                    for (InetAddress serverAddress : serverAddresses) {
-                      popupElemView = View.inflate(this, R.layout.popup_elem, null);
-                      txtView = popupElemView.findViewById(R.id.popElemTxt);
-                      txtView.setText(serverAddress.getHostAddress());
-                      txtView.setOnClickListener(
-                          view -> {
-                            runOnUiThread(() -> editAddress.setText(((TextView) view).getText()));
-                            popupView.performClick();
-                          });
-                      popupLayout.addView(popupElemView);
-                    }
-                    popupView.setOnClickListener(v -> popupWindow.dismiss());
-                  }
-                } else {
+                if (serverAddresses.isEmpty()) {
                   runOnUiThread(
                       () ->
                           Toast.makeText(context, "No servers found!", Toast.LENGTH_SHORT).show());
+                  return;
                 }
+                if (serverAddresses.size() == 1) {
+                  InetAddress serverAddress = serverAddresses.get(0);
+                  runOnUiThread(() -> editAddress.setText(serverAddress.getHostAddress()));
+                  return;
+                }
+                LayoutInflater inflater =
+                    (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
+                View popupView =
+                    inflater.inflate(R.layout.popup_servers, findViewById(R.id.main_layout), false);
+                popupView
+                    .findViewById(R.id.popupLinearWrap)
+                    .setOnClickListener(v -> popupView.performClick());
+
+                int width = LinearLayout.LayoutParams.MATCH_PARENT;
+                int height = LinearLayout.LayoutParams.MATCH_PARENT;
+                boolean focusable = true; // lets taps outside the popup also dismiss it
+                final PopupWindow popupWindow =
+                    new PopupWindow(popupView, width, height, focusable);
+                runOnUiThread(() -> popupWindow.showAtLocation(parent, Gravity.CENTER, 0, 0));
+
+                LinearLayout popupLayout = popupView.findViewById(R.id.popupLayout);
+                if (popupLayout == null) return;
+                View popupElemView;
+                TextView txtView;
+                for (InetAddress serverAddress : serverAddresses) {
+                  popupElemView = View.inflate(this, R.layout.popup_elem, null);
+                  txtView = popupElemView.findViewById(R.id.popElemTxt);
+                  txtView.setText(serverAddress.getHostAddress());
+                  txtView.setOnClickListener(
+                      view -> {
+                        runOnUiThread(() -> editAddress.setText(((TextView) view).getText()));
+                        popupView.performClick();
+                      });
+                  popupLayout.addView(popupElemView);
+                }
+                popupView.setOnClickListener(v -> popupWindow.dismiss());
               } catch (Exception ignored) {
               }
             })
@@ -648,8 +647,7 @@ public class ClipShareActivity extends AppCompatActivity {
       if (this.fileURIs == null || this.fileURIs.isEmpty()) {
         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
         intent.addCategory(Intent.CATEGORY_OPENABLE);
-        intent.setFlags(
-            Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
+        intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         intent.setType("*/*");
         intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
         fileSelectActivityLauncher.launch(intent);
@@ -669,8 +667,7 @@ public class ClipShareActivity extends AppCompatActivity {
     try {
       if (dirTree == null) {
         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
-        intent.setFlags(
-            Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
+        intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
         folderSelectActivityLauncher.launch(intent);
       } else {
@@ -944,7 +941,11 @@ public class ClipShareActivity extends AppCompatActivity {
     }
   }
 
-  /** @noinspection SameReturnValue */
+  /**
+   * Long click gives additional options from protocol v3
+   *
+   * @noinspection SameReturnValue
+   */
   private boolean longClkImg(View parent) {
     if (needsPermission(WRITE_IMAGE)) return true;
     try {

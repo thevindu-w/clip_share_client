@@ -299,7 +299,7 @@ public final class ProtoMethods {
         return false;
       }
       for (int fileNum = 0; fileNum < fileCnt; fileNum++) {
-        fsUtils.prepareNextFile();
+        fsUtils.prepareNextFile(version >= 3);
         String fileName = fsUtils.getFileName();
         if (fileName == null || fileName.isEmpty()) {
           return false;
