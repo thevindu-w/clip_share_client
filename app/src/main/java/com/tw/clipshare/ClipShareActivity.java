@@ -235,6 +235,12 @@ public class ClipShareActivity extends AppCompatActivity {
     btnSendTxt.setOnClickListener(view -> clkSendTxt());
     Button btnSendFile = findViewById(R.id.btnSendFile);
     btnSendFile.setOnClickListener(view -> clkSendFile());
+    btnSendFile.setOnLongClickListener(
+        view -> {
+          this.fileURIs = null;
+          clkSendFile();
+          return true;
+        });
     Button btnSendFolder = findViewById(R.id.btnSendFolder);
     btnSendFolder.setOnClickListener(view -> clkSendFolder(null));
     Button btnScanHost = findViewById(R.id.btnScanHost);
@@ -767,8 +773,12 @@ public class ClipShareActivity extends AppCompatActivity {
             output.setText("");
           });
       String address = this.getServerAddress();
-      if (address == null) return;
-
+      if (address == null) {
+        if (ClipShareActivity.this.fileURIs == null || ClipShareActivity.this.fileURIs.isEmpty()) {
+          ClipShareActivity.this.fileURIs = uris;
+        }
+        return;
+      }
       LinkedList<PendingFile> pendingFiles = new LinkedList<>();
       for (Uri uri : uris) {
         Cursor cursor = getContentResolver().query(uri, null, null, null, null);
@@ -812,6 +822,7 @@ public class ClipShareActivity extends AppCompatActivity {
             new AndroidStatusNotifier(
                 ClipShareActivity.this, notificationManager, builder, notificationId);
         boolean status = true;
+        boolean failedAll = true;
         while (utils.getRemainingFileCount() > 0) {
           Proto proto = getProtoWrapper(address, utils, notifier);
           if (proto == null) {
@@ -819,6 +830,7 @@ public class ClipShareActivity extends AppCompatActivity {
             break;
           }
           status &= proto.sendFile();
+          failedAll &= !status;
           proto.close();
         }
         if (status) {
@@ -830,6 +842,10 @@ public class ClipShareActivity extends AppCompatActivity {
                 }
               });
           this.vibrate();
+        } else if (failedAll
+            && (ClipShareActivity.this.fileURIs == null
+                || ClipShareActivity.this.fileURIs.isEmpty())) {
+          ClipShareActivity.this.fileURIs = uris;
         }
       } catch (Exception e) {
         outputAppend("Error " + e.getMessage());
