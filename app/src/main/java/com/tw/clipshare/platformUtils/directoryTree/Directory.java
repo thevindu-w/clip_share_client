@@ -63,7 +63,9 @@ public class Directory extends DirectoryTreeNode {
         this.children.remove(child);
         return child;
       }
-      DirectoryTreeNode node = child.pop(includeDirs);
+      Directory childDir = (Directory) child;
+      DirectoryTreeNode node = childDir.pop(includeDirs);
+      if (childDir.children.isEmpty()) this.children.remove(child);
       if (node != null) return node;
     }
     return null;
