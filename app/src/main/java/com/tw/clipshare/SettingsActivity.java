@@ -363,8 +363,17 @@ public class SettingsActivity extends AppCompatActivity {
                 String jsonStr = st.toString(true);
                 try (OutputStream fileOutputStream = getContentResolver().openOutputStream(uri)) {
                   fileOutputStream.write(jsonStr.getBytes(StandardCharsets.UTF_8));
+                  runOnUiThread(
+                      () ->
+                          Toast.makeText(
+                                  SettingsActivity.this, "Exported settings", Toast.LENGTH_SHORT)
+                              .show());
                 }
               } catch (Exception ignored) {
+                runOnUiThread(
+                    () ->
+                        Toast.makeText(SettingsActivity.this, "Error occurred", Toast.LENGTH_SHORT)
+                            .show());
               }
             });
     Button exportBtn = findViewById(R.id.btnExport);
@@ -418,7 +427,6 @@ public class SettingsActivity extends AppCompatActivity {
                   if (fileInputStream.read(data) < size) return;
                   String jsonStr = new String(data, StandardCharsets.UTF_8);
                   Settings.getInstance(jsonStr);
-                  this.secureSwitch.setChecked(st.getSecure());
                   editPort.setText(String.valueOf(st.getPort()));
                   editPortSecure.setText(String.valueOf(st.getPortSecure()));
                   editPortUDP.setText(String.valueOf(st.getPortUDP()));
@@ -431,11 +439,21 @@ public class SettingsActivity extends AppCompatActivity {
                   for (String server : servers1) {
                     addRowToTrustList(false, server);
                   }
+                  this.secureSwitch.setChecked(st.getSecure());
                   autoSendTextSwitch.setChecked(st.getAutoSendText());
                   autoSendFileSwitch.setChecked(st.getAutoSendFiles());
                   vibrateSwitch.setChecked(st.getVibrate());
+                  runOnUiThread(
+                      () ->
+                          Toast.makeText(
+                                  SettingsActivity.this, "Imported settings", Toast.LENGTH_SHORT)
+                              .show());
                 }
               } catch (Exception ignored) {
+                runOnUiThread(
+                    () ->
+                        Toast.makeText(SettingsActivity.this, "Error occurred", Toast.LENGTH_SHORT)
+                            .show());
               }
             });
     Button importBtn = findViewById(R.id.btnImport);
