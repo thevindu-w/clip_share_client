@@ -5,7 +5,7 @@
 
 # ClipShare Android Client
 
-### This is the client application of ClipShare for android devices.
+### This is the client application of ClipShare for Android devices.
 
 Share the clipboard between your phone and desktop. Share files and screenshots securely.
 <br>
@@ -79,13 +79,23 @@ alt="help image" height="500">
 
   _Method 1 Steps_:
   - Press the red colored _FILE_ button.
-  - Select the file(s) to send
+  - Select the file(s) to send.
   - The files are now sent to the laptop.
   
   _Method 2 Steps_:
   - Share any file(s) with ClipShare from any other app.
   - Press the red colored _FILE_ button.
   - The files are now sent to the laptop.
+
+
+- **Send folder**: To send a folder from the phone to the server (ex: laptop).
+
+  _Steps_:
+  - Press the red colored _FOLDER_ button.
+  - Select the folder to send.
+  - The folder is now sent to the laptop.
+
+&emsp; Note: Sending folders requires a server version 2.x or later.
 
 
 - **Get image/screenshot**: To get a copied image or screenshot from the server (ex: laptop) to the phone.
@@ -95,6 +105,11 @@ alt="help image" height="500">
     - Press the green colored _IMAGE_ button.
     - If there is an image copied on the laptop, it will be received and saved on the phone.
       Otherwise, a screenshot of the laptop will be received and saved on the phone.
+<br><br>
+  Long pressing the _IMAGE_ button gives more options.
+  - Get only a copied image without a screenshot.
+  - Get only a screenshot, even when there is an image, copied to the clipboard of the laptop.
+  - Select the display to get the screenshot.
 
 
 - **Scan**: To scan the network to find available servers in the network.
