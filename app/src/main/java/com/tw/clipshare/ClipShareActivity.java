@@ -63,7 +63,6 @@ import com.tw.clipshare.platformUtils.directoryTree.RegularFile;
 import com.tw.clipshare.protocol.Proto;
 import com.tw.clipshare.protocol.Proto_v3;
 import com.tw.clipshare.protocol.ProtocolSelector;
-import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.net.Inet4Address;
 import java.net.InetAddress;
@@ -89,15 +88,74 @@ public class ClipShareActivity extends AppCompatActivity {
   private static boolean isSettingsLoaded = false;
   private String receivedURI;
   public TextView output;
-  private ActivityResultLauncher<Intent> fileSelectActivityLauncher;
-  private ActivityResultLauncher<Intent> folderSelectActivityLauncher;
-  private ActivityResultLauncher<Intent> settingsActivityLauncher;
   private EditText editAddress;
   private Context context;
   private ArrayList<Uri> fileURIs;
   private Menu menu;
   private SwitchCompat tunnelSwitch;
   private LinearLayout openBrowserLayout;
+  private final ActivityResultLauncher<Intent> fileSelectActivityLauncher =
+      registerForActivityResult(
+          new ActivityResultContracts.StartActivityForResult(),
+          result -> {
+            if (result.getResultCode() != Activity.RESULT_OK) {
+              return;
+            }
+            Intent intent1 = result.getData();
+            if (intent1 == null) {
+              return;
+            }
+            try {
+              this.fileURIs = getFileUris(intent1);
+              clkSendFile();
+            } catch (Exception e) {
+              outputAppend("Error " + e.getMessage());
+            }
+          });
+  private final ActivityResultLauncher<Intent> folderSelectActivityLauncher =
+      registerForActivityResult(
+          new ActivityResultContracts.StartActivityForResult(),
+          result -> {
+            if (result.getResultCode() != Activity.RESULT_OK) {
+              return;
+            }
+            Intent intent1 = result.getData();
+            if (intent1 == null) {
+              return;
+            }
+            try {
+              DirectoryTreeNode root = ClipShareActivity.this.getDirectoryTree(intent1);
+              clkSendFolder(root);
+            } catch (Exception e) {
+              outputAppend("Error " + e.getMessage());
+            }
+          });
+  private final ActivityResultLauncher<Intent> settingsActivityLauncher =
+      registerForActivityResult(
+          new ActivityResultContracts.StartActivityForResult(),
+          result -> {
+            if (result.getResultCode() != Activity.RESULT_OK) {
+              return;
+            }
+            Intent intent1 = result.getData();
+            if (intent1 == null) {
+              return;
+            }
+            try {
+              Settings st = Settings.getInstance();
+              int icon_id = st.getSecure() ? R.drawable.ic_secure : R.drawable.ic_insecure;
+              menu.findItem(R.id.action_secure)
+                  .setIcon(ContextCompat.getDrawable(ClipShareActivity.this, icon_id));
+              SharedPreferences sharedPref =
+                  ClipShareActivity.this.getPreferences(Context.MODE_PRIVATE);
+              SharedPreferences.Editor editor = sharedPref.edit();
+              editor.putString("settings", st.toString());
+              editor.apply();
+              runOnUiThread(
+                  () -> Toast.makeText(context, "Saved settings", Toast.LENGTH_SHORT).show());
+            } catch (Exception ignored) {
+            }
+          });
 
   @Override
   public boolean onCreateOptionsMenu(Menu menu) {
@@ -158,71 +216,6 @@ public class ClipShareActivity extends AppCompatActivity {
     Intent intent = getIntent();
     if (intent != null) extractIntent(intent);
 
-    SharedPreferences sharedPref = ClipShareActivity.this.getPreferences(Context.MODE_PRIVATE);
-
-    this.settingsActivityLauncher =
-        registerForActivityResult(
-            new ActivityResultContracts.StartActivityForResult(),
-            result -> {
-              if (result.getResultCode() != Activity.RESULT_OK) {
-                return;
-              }
-              Intent intent1 = result.getData();
-              if (intent1 == null) {
-                return;
-              }
-              try {
-                Settings st = Settings.getInstance();
-                int icon_id = st.getSecure() ? R.drawable.ic_secure : R.drawable.ic_insecure;
-                menu.findItem(R.id.action_secure)
-                    .setIcon(ContextCompat.getDrawable(ClipShareActivity.this, icon_id));
-                SharedPreferences.Editor editor = sharedPref.edit();
-                editor.putString("settings", st.toString());
-                editor.apply();
-                runOnUiThread(
-                    () -> Toast.makeText(context, "Saved settings", Toast.LENGTH_SHORT).show());
-              } catch (Exception ignored) {
-              }
-            });
-
-    this.fileSelectActivityLauncher =
-        registerForActivityResult(
-            new ActivityResultContracts.StartActivityForResult(),
-            result -> {
-              if (result.getResultCode() != Activity.RESULT_OK) {
-                return;
-              }
-              Intent intent1 = result.getData();
-              if (intent1 == null) {
-                return;
-              }
-              try {
-                this.fileURIs = getFileUris(intent1);
-                clkSendFile();
-              } catch (Exception e) {
-                outputAppend("Error " + e.getMessage());
-              }
-            });
-
-    this.folderSelectActivityLauncher =
-        registerForActivityResult(
-            new ActivityResultContracts.StartActivityForResult(),
-            result -> {
-              if (result.getResultCode() != Activity.RESULT_OK) {
-                return;
-              }
-              Intent intent1 = result.getData();
-              if (intent1 == null) {
-                return;
-              }
-              try {
-                DirectoryTreeNode root = ClipShareActivity.this.getDirectoryTree(intent1);
-                clkSendFolder(root);
-              } catch (Exception e) {
-                outputAppend("Error " + e.getMessage());
-              }
-            });
-
     output.setMovementMethod(new ScrollingMovementMethod());
     Button btnGet = findViewById(R.id.btnGetTxt);
     btnGet.setOnClickListener(view -> clkGetTxt());
@@ -248,6 +241,8 @@ public class ClipShareActivity extends AppCompatActivity {
     Button btnOpenLink = findViewById(R.id.btnOpenLink);
     btnOpenLink.setOnClickListener(view -> openInBrowser());
     openBrowserLayout = findViewById(R.id.layoutOpenBrowser);
+
+    SharedPreferences sharedPref = ClipShareActivity.this.getPreferences(Context.MODE_PRIVATE);
     editAddress.setText(sharedPref.getString("serverIP", ""));
     try {
       Settings.getInstance(sharedPref.getString("settings", null));
@@ -272,8 +267,7 @@ public class ClipShareActivity extends AppCompatActivity {
     }
   }
 
-  private DirectoryTreeNode createDirectoryTreeNode(DocumentFile documentFile, Directory parent)
-      throws FileNotFoundException {
+  private DirectoryTreeNode createDirectoryTreeNode(DocumentFile documentFile, Directory parent) {
     String name = documentFile.getName();
     if (!documentFile.isDirectory()) {
       Uri uri = documentFile.getUri();
@@ -299,7 +293,7 @@ public class ClipShareActivity extends AppCompatActivity {
     return root;
   }
 
-  private DirectoryTreeNode getDirectoryTree(Intent intent) throws FileNotFoundException {
+  private DirectoryTreeNode getDirectoryTree(Intent intent) {
     Uri uri = intent.getData();
     DocumentFile documentFile = DocumentFile.fromTreeUri(this.context, uri);
     if (documentFile == null) return null;
