@@ -77,7 +77,8 @@ import java.util.concurrent.Executors;
 public class ClipShareActivity extends AppCompatActivity {
   public static final int WRITE_IMAGE = 222;
   public static final int WRITE_FILE = 223;
-  public static final String CHANNEL_ID = "notification_channel";
+  private static final String CHANNEL_ID = "notification_channel";
+  public static final String PREFERENCES = "preferences";
   private static final int AUTO_SEND_TEXT = 1;
   private static final int AUTO_SEND_FILES = 2;
   private static final Object fileGetCntLock = new Object();
@@ -134,25 +135,14 @@ public class ClipShareActivity extends AppCompatActivity {
       registerForActivityResult(
           new ActivityResultContracts.StartActivityForResult(),
           result -> {
-            if (result.getResultCode() != Activity.RESULT_OK) {
-              return;
-            }
+            if (result.getResultCode() != Activity.RESULT_OK) return;
             Intent intent1 = result.getData();
-            if (intent1 == null) {
-              return;
-            }
+            if (intent1 == null) return;
             try {
               Settings st = Settings.getInstance();
               int icon_id = st.getSecure() ? R.drawable.ic_secure : R.drawable.ic_insecure;
               menu.findItem(R.id.action_secure)
                   .setIcon(ContextCompat.getDrawable(ClipShareActivity.this, icon_id));
-              SharedPreferences sharedPref =
-                  ClipShareActivity.this.getPreferences(Context.MODE_PRIVATE);
-              SharedPreferences.Editor editor = sharedPref.edit();
-              editor.putString("settings", st.toString());
-              editor.apply();
-              runOnUiThread(
-                  () -> Toast.makeText(context, "Saved settings", Toast.LENGTH_SHORT).show());
             } catch (Exception ignored) {
             }
           });
@@ -242,7 +232,8 @@ public class ClipShareActivity extends AppCompatActivity {
     btnOpenLink.setOnClickListener(view -> openInBrowser());
     openBrowserLayout = findViewById(R.id.layoutOpenBrowser);
 
-    SharedPreferences sharedPref = ClipShareActivity.this.getPreferences(Context.MODE_PRIVATE);
+    SharedPreferences sharedPref =
+        context.getSharedPreferences(ClipShareActivity.PREFERENCES, Context.MODE_PRIVATE);
     editAddress.setText(sharedPref.getString("serverIP", ""));
     try {
       Settings.getInstance(sharedPref.getString("settings", null));
@@ -598,7 +589,8 @@ public class ClipShareActivity extends AppCompatActivity {
         Toast.makeText(ClipShareActivity.this, "Invalid address", Toast.LENGTH_SHORT).show();
         return null;
       }
-      SharedPreferences sharedPref = ClipShareActivity.this.getPreferences(Context.MODE_PRIVATE);
+      SharedPreferences sharedPref =
+          context.getSharedPreferences(ClipShareActivity.PREFERENCES, Context.MODE_PRIVATE);
       SharedPreferences.Editor editor = sharedPref.edit();
       editor.putString("serverIP", address);
       editor.apply();

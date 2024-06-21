@@ -27,6 +27,7 @@ package com.tw.clipshare;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Rect;
 import android.net.Uri;
@@ -337,6 +338,21 @@ public class SettingsActivity extends AppCompatActivity {
             new OnBackPressedCallback(true) {
               @Override
               public void handleOnBackPressed() {
+                try {
+                  SharedPreferences sharedPref =
+                      getApplicationContext()
+                          .getSharedPreferences(
+                              ClipShareActivity.PREFERENCES, Context.MODE_PRIVATE);
+                  SharedPreferences.Editor editor = sharedPref.edit();
+                  editor.putString("settings", st.toString());
+                  editor.apply();
+                  runOnUiThread(
+                      () ->
+                          Toast.makeText(
+                                  getApplicationContext(), "Saved settings", Toast.LENGTH_SHORT)
+                              .show());
+                } catch (Exception ignored) {
+                }
                 if (SettingsActivity.this.intent != null) {
                   SettingsActivity.this.setResult(Activity.RESULT_OK, intent);
                 }
