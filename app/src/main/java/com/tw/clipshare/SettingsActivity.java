@@ -54,8 +54,6 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class SettingsActivity extends AppCompatActivity {
-  private static final byte CLIENT = 10;
-  private static final byte CA = 11;
   private SwitchCompat secureSwitch;
   private Intent intent;
   private AtomicInteger id;
@@ -63,7 +61,72 @@ public class SettingsActivity extends AppCompatActivity {
   private EditText editPass;
   private TextView cnTxt;
   private TextView caCnTxt;
-  private volatile byte certType;
+  private final ActivityResultLauncher<Intent> clientActivityLauncher =
+      registerForActivityResult(
+          new ActivityResultContracts.StartActivityForResult(),
+          result -> {
+            if (result.getResultCode() != Activity.RESULT_OK) return;
+            Intent intent1 = result.getData();
+            if (intent1 == null) return;
+            try {
+              Uri uri = intent1.getData();
+              Cursor cursor = getContentResolver().query(uri, null, null, null, null);
+              if (cursor.getCount() <= 0) {
+                cursor.close();
+                return;
+              }
+              cursor.moveToFirst();
+              String fileSizeStr =
+                  cursor.getString(cursor.getColumnIndexOrThrow(OpenableColumns.SIZE));
+              int size = Integer.parseInt(fileSizeStr);
+              cursor.close();
+              InputStream fileInputStream = getContentResolver().openInputStream(uri);
+              char[] passwd = editPass.getText().toString().toCharArray();
+              Settings st = Settings.getInstance();
+              String cn = st.setCertPass(passwd, fileInputStream, size);
+              if (cn != null) {
+                SecureConnection.resetSSLContext();
+                cnTxt.setText(cn);
+              } else {
+                Toast.makeText(
+                        SettingsActivity.this, "Invalid client certificate", Toast.LENGTH_SHORT)
+                    .show();
+              }
+            } catch (Exception ignored) {
+            }
+          });
+  private final ActivityResultLauncher<Intent> caActivityLauncher =
+      registerForActivityResult(
+          new ActivityResultContracts.StartActivityForResult(),
+          result -> {
+            if (result.getResultCode() != Activity.RESULT_OK) return;
+            Intent intent1 = result.getData();
+            if (intent1 == null) return;
+            try {
+              Uri uri = intent1.getData();
+              Cursor cursor = getContentResolver().query(uri, null, null, null, null);
+              if (cursor.getCount() <= 0) {
+                cursor.close();
+                return;
+              }
+              cursor.moveToFirst();
+              String fileSizeStr =
+                  cursor.getString(cursor.getColumnIndexOrThrow(OpenableColumns.SIZE));
+              int size = Integer.parseInt(fileSizeStr);
+              cursor.close();
+              InputStream fileInputStream = getContentResolver().openInputStream(uri);
+              Settings st = Settings.getInstance();
+              String CA_CN = st.setCACert(fileInputStream, size);
+              if (CA_CN != null) {
+                SecureConnection.resetSSLContext();
+                caCnTxt.setText(CA_CN);
+              } else {
+                Toast.makeText(SettingsActivity.this, "Invalid CA certificate", Toast.LENGTH_SHORT)
+                    .show();
+              }
+            } catch (Exception ignored) {
+            }
+          });
 
   private void addRowToTrustList(boolean addToList, String name) {
     try {
@@ -124,7 +187,7 @@ public class SettingsActivity extends AppCompatActivity {
     this.id = new AtomicInteger();
     this.trustList = findViewById(R.id.trustedList);
     ImageButton addBtn = findViewById(R.id.addServerBtn);
-    Button browseBtn = findViewById(R.id.btnImportCert);
+    Button clientBrowseBtn = findViewById(R.id.btnImportCert);
     Button caBrowseBtn = findViewById(R.id.btnImportCACert);
     this.secureSwitch = findViewById(R.id.secureSwitch);
     this.editPass = findViewById(R.id.editCertPass);
@@ -247,67 +310,6 @@ public class SettingsActivity extends AppCompatActivity {
 
     addBtn.setOnClickListener(view -> addRowToTrustList(true, null));
 
-    certType = 0;
-    ActivityResultLauncher<Intent> activityLauncherForResult =
-        registerForActivityResult(
-            new ActivityResultContracts.StartActivityForResult(),
-            result -> {
-              if (result.getResultCode() != Activity.RESULT_OK) {
-                return;
-              }
-              Intent intent1 = result.getData();
-              if (intent1 == null) {
-                return;
-              }
-              try {
-                byte type = SettingsActivity.this.certType;
-                SettingsActivity.this.certType = 0;
-                if (type == CLIENT) {
-                  Uri uri = intent1.getData();
-                  Cursor cursor = getContentResolver().query(uri, null, null, null, null);
-                  if (cursor.getCount() <= 0) {
-                    cursor.close();
-                    return;
-                  }
-                  cursor.moveToFirst();
-                  String fileSizeStr =
-                      cursor.getString(cursor.getColumnIndexOrThrow(OpenableColumns.SIZE));
-                  int size = Integer.parseInt(fileSizeStr);
-                  cursor.close();
-                  InputStream fileInputStream = getContentResolver().openInputStream(uri);
-                  char[] passwd = editPass.getText().toString().toCharArray();
-                  String cn = st.setCertPass(passwd, fileInputStream, size);
-                  if (cn != null) {
-                    SecureConnection.resetSSLContext();
-                    cnTxt.setText(cn);
-                  } else {
-                    Toast.makeText(SettingsActivity.this, "Invalid", Toast.LENGTH_SHORT).show();
-                  }
-                } else if (type == CA) {
-                  Uri uri = intent1.getData();
-                  Cursor cursor = getContentResolver().query(uri, null, null, null, null);
-                  if (cursor.getCount() <= 0) {
-                    cursor.close();
-                    return;
-                  }
-                  cursor.moveToFirst();
-                  String fileSizeStr =
-                      cursor.getString(cursor.getColumnIndexOrThrow(OpenableColumns.SIZE));
-                  int size = Integer.parseInt(fileSizeStr);
-                  cursor.close();
-                  InputStream fileInputStream = getContentResolver().openInputStream(uri);
-                  String CA_CN = st.setCACert(fileInputStream, size);
-                  if (CA_CN != null) {
-                    SecureConnection.resetSSLContext();
-                    caCnTxt.setText(CA_CN);
-                  } else {
-                    Toast.makeText(SettingsActivity.this, "Invalid", Toast.LENGTH_SHORT).show();
-                  }
-                }
-              } catch (Exception ignored) {
-              }
-            });
-
     caBrowseBtn.setOnClickListener(
         view -> {
           Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
@@ -320,17 +322,15 @@ public class SettingsActivity extends AppCompatActivity {
           };
           intent.putExtra(Intent.EXTRA_MIME_TYPES, mimeTypes);
           intent.addCategory(Intent.CATEGORY_OPENABLE);
-          SettingsActivity.this.certType = CA;
-          activityLauncherForResult.launch(intent);
+          caActivityLauncher.launch(intent);
         });
 
-    browseBtn.setOnClickListener(
+    clientBrowseBtn.setOnClickListener(
         view -> {
           Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
           intent.setType("application/x-pkcs12");
           intent.addCategory(Intent.CATEGORY_OPENABLE);
-          SettingsActivity.this.certType = CLIENT;
-          activityLauncherForResult.launch(intent);
+          clientActivityLauncher.launch(intent);
         });
 
     getOnBackPressedDispatcher()
