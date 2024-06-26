@@ -95,55 +95,62 @@ public class ClipShareActivity extends AppCompatActivity {
   private Menu menu;
   private SwitchCompat tunnelSwitch;
   private LinearLayout openBrowserLayout;
+  private int activeTasks = 0;
+  private long lastActivityTime;
   private final ActivityResultLauncher<Intent> fileSelectActivityLauncher =
       registerForActivityResult(
           new ActivityResultContracts.StartActivityForResult(),
           result -> {
-            if (result.getResultCode() != Activity.RESULT_OK) {
-              return;
-            }
-            Intent intent1 = result.getData();
-            if (intent1 == null) {
-              return;
-            }
             try {
+              if (result.getResultCode() != Activity.RESULT_OK) {
+                return;
+              }
+              Intent intent1 = result.getData();
+              if (intent1 == null) {
+                return;
+              }
               this.fileURIs = getFileUris(intent1);
               clkSendFile();
             } catch (Exception e) {
               outputAppend("Error " + e.getMessage());
+            } finally {
+              ClipShareActivity.this.lastActivityTime = System.currentTimeMillis();
+              endActiveTask();
             }
           });
   private final ActivityResultLauncher<Intent> folderSelectActivityLauncher =
       registerForActivityResult(
           new ActivityResultContracts.StartActivityForResult(),
           result -> {
-            if (result.getResultCode() != Activity.RESULT_OK) {
-              return;
-            }
-            Intent intent1 = result.getData();
-            if (intent1 == null) {
-              return;
-            }
             try {
+              if (result.getResultCode() != Activity.RESULT_OK) return;
+              Intent intent1 = result.getData();
+              if (intent1 == null) return;
               DirectoryTreeNode root = ClipShareActivity.this.getDirectoryTree(intent1);
               clkSendFolder(root);
             } catch (Exception e) {
               outputAppend("Error " + e.getMessage());
+            } finally {
+              ClipShareActivity.this.lastActivityTime = System.currentTimeMillis();
+              endActiveTask();
             }
           });
   private final ActivityResultLauncher<Intent> settingsActivityLauncher =
       registerForActivityResult(
           new ActivityResultContracts.StartActivityForResult(),
           result -> {
-            if (result.getResultCode() != Activity.RESULT_OK) return;
-            Intent intent1 = result.getData();
-            if (intent1 == null) return;
             try {
+              if (result.getResultCode() != Activity.RESULT_OK) return;
+              Intent intent1 = result.getData();
+              if (intent1 == null) return;
               Settings st = Settings.getInstance();
               int icon_id = st.getSecure() ? R.drawable.ic_secure : R.drawable.ic_insecure;
               menu.findItem(R.id.action_secure)
                   .setIcon(ContextCompat.getDrawable(ClipShareActivity.this, icon_id));
             } catch (Exception ignored) {
+            } finally {
+              ClipShareActivity.this.lastActivityTime = System.currentTimeMillis();
+              endActiveTask();
             }
           });
 
@@ -188,6 +195,7 @@ public class ClipShareActivity extends AppCompatActivity {
     if (itemID == R.id.action_settings) {
       Intent settingsIntent = new Intent(ClipShareActivity.this, SettingsActivity.class);
       settingsActivityLauncher.launch(settingsIntent);
+      startActiveTask();
     } else if (itemID == R.id.action_secure) {
       Toast.makeText(ClipShareActivity.this, "Change this in settings", Toast.LENGTH_SHORT).show();
     }
@@ -255,6 +263,64 @@ public class ClipShareActivity extends AppCompatActivity {
         notificationManager.createNotificationChannel(channel);
       }
     } catch (Exception ignored) {
+    }
+
+    this.lastActivityTime = System.currentTimeMillis();
+    ExecutorService inactivityExecutor = Executors.newSingleThreadExecutor();
+    inactivityExecutor.submit(
+        () -> {
+          try {
+            final int delay = 120000;
+            //noinspection InfiniteLoopStatement
+            while (true) {
+              long time = System.currentTimeMillis();
+              long sleepTime = delay - time + ClipShareActivity.this.lastActivityTime + 50;
+              if (sleepTime <= 0 || sleepTime > delay || ClipShareActivity.this.activeTasks > 0)
+                sleepTime = delay;
+              //noinspection BusyWait
+              Thread.sleep(sleepTime);
+              time = System.currentTimeMillis();
+              if (ClipShareActivity.this.activeTasks == 0
+                  && ClipShareActivity.this.lastActivityTime + delay < time) {
+                ClipShareActivity.this.finish();
+              }
+            }
+          } catch (Exception ignored) {
+          }
+        });
+  }
+
+  @Override
+  public void onResume() {
+    super.onResume();
+    this.lastActivityTime = System.currentTimeMillis();
+    endActiveTask();
+  }
+
+  @Override
+  public void onPause() {
+    startActiveTask();
+    super.onPause();
+  }
+
+  @Override
+  public boolean dispatchTouchEvent(MotionEvent event) {
+    if (event.getAction() == MotionEvent.ACTION_DOWN) {
+      this.lastActivityTime = System.currentTimeMillis();
+    }
+    return super.dispatchTouchEvent(event);
+  }
+
+  private void startActiveTask() {
+    synchronized (this) {
+      this.activeTasks++;
+    }
+  }
+
+  private void endActiveTask() {
+    synchronized (this) {
+      this.activeTasks--;
+      if (this.activeTasks < 0) this.activeTasks = 0;
     }
   }
 
@@ -522,6 +588,7 @@ public class ClipShareActivity extends AppCompatActivity {
   }
 
   private void clkScanBtn(View parent) {
+    startActiveTask();
     new Thread(
             () -> {
               try {
@@ -571,6 +638,9 @@ public class ClipShareActivity extends AppCompatActivity {
                 }
                 popupView.setOnClickListener(v -> popupWindow.dismiss());
               } catch (Exception ignored) {
+              } finally {
+                ClipShareActivity.this.lastActivityTime = System.currentTimeMillis();
+                endActiveTask();
               }
             })
         .start();
@@ -602,6 +672,7 @@ public class ClipShareActivity extends AppCompatActivity {
 
   private void clkSendTxt() {
     try {
+      startActiveTask();
       runOnUiThread(
           () -> {
             openBrowserLayout.setVisibility(View.GONE);
@@ -631,6 +702,9 @@ public class ClipShareActivity extends AppCompatActivity {
       executorService.submit(sendClip);
     } catch (Exception e) {
       outputAppend("Error " + e.getMessage());
+    } finally {
+      this.lastActivityTime = System.currentTimeMillis();
+      endActiveTask();
     }
   }
 
@@ -643,6 +717,7 @@ public class ClipShareActivity extends AppCompatActivity {
         intent.setType("*/*");
         intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
         fileSelectActivityLauncher.launch(intent);
+        startActiveTask();
       } else {
         ArrayList<Uri> tmp = this.fileURIs;
         this.fileURIs = null;
@@ -652,6 +727,8 @@ public class ClipShareActivity extends AppCompatActivity {
       }
     } catch (Exception ignored) {
       outputAppend("Error occurred");
+    } finally {
+      this.lastActivityTime = System.currentTimeMillis();
     }
   }
 
@@ -662,6 +739,7 @@ public class ClipShareActivity extends AppCompatActivity {
         intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
         folderSelectActivityLauncher.launch(intent);
+        startActiveTask();
       } else {
         ExecutorService executorService = Executors.newSingleThreadExecutor();
         Runnable sendURIs = () -> sendFromDirectoryTree(dirTree);
@@ -669,11 +747,14 @@ public class ClipShareActivity extends AppCompatActivity {
       }
     } catch (Exception ignored) {
       outputAppend("Error occurred");
+    } finally {
+      this.lastActivityTime = System.currentTimeMillis();
     }
   }
 
   private void sendFromDirectoryTree(DirectoryTreeNode dirTree) {
     try {
+      startActiveTask();
       runOnUiThread(
           () -> {
             openBrowserLayout.setVisibility(View.GONE);
@@ -743,6 +824,9 @@ public class ClipShareActivity extends AppCompatActivity {
       }
     } catch (Exception e) {
       outputAppend("Error " + e.getMessage());
+    } finally {
+      this.lastActivityTime = System.currentTimeMillis();
+      endActiveTask();
     }
   }
 
@@ -753,6 +837,7 @@ public class ClipShareActivity extends AppCompatActivity {
    */
   private void sendFromURIs(ArrayList<Uri> uris) {
     try {
+      startActiveTask();
       runOnUiThread(
           () -> {
             openBrowserLayout.setVisibility(View.GONE);
@@ -856,6 +941,9 @@ public class ClipShareActivity extends AppCompatActivity {
       }
     } catch (Exception e) {
       outputAppend("Error " + e.getMessage());
+    } finally {
+      this.lastActivityTime = System.currentTimeMillis();
+      endActiveTask();
     }
   }
 
@@ -871,6 +959,7 @@ public class ClipShareActivity extends AppCompatActivity {
 
   private void clkGetTxt() {
     try {
+      startActiveTask();
       runOnUiThread(
           () -> {
             openBrowserLayout.setVisibility(View.GONE);
@@ -900,11 +989,15 @@ public class ClipShareActivity extends AppCompatActivity {
       executorService.submit(getClip);
     } catch (Exception e) {
       outputAppend("Error " + e.getMessage());
+    } finally {
+      this.lastActivityTime = System.currentTimeMillis();
+      endActiveTask();
     }
   }
 
   private void clkGetImg() {
     try {
+      startActiveTask();
       if (needsPermission(WRITE_IMAGE)) return;
 
       runOnUiThread(
@@ -940,6 +1033,9 @@ public class ClipShareActivity extends AppCompatActivity {
       executorService.submit(getImg);
     } catch (Exception e) {
       outputAppend("Error " + e.getMessage());
+    } finally {
+      this.lastActivityTime = System.currentTimeMillis();
+      endActiveTask();
     }
   }
 
@@ -949,8 +1045,9 @@ public class ClipShareActivity extends AppCompatActivity {
    * @noinspection SameReturnValue
    */
   private boolean longClkImg(View parent) {
-    if (needsPermission(WRITE_IMAGE)) return true;
     try {
+      startActiveTask();
+      if (needsPermission(WRITE_IMAGE)) return true;
       LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
       View popupView =
           inflater.inflate(R.layout.popup_display, findViewById(R.id.main_layout), false);
@@ -978,12 +1075,16 @@ public class ClipShareActivity extends AppCompatActivity {
 
       popupView.setOnClickListener(v -> popupWindow.dismiss());
     } catch (Exception ignored) {
+    } finally {
+      this.lastActivityTime = System.currentTimeMillis();
+      endActiveTask();
     }
     return true;
   }
 
   private void getCopiedImg() {
     try {
+      startActiveTask();
       runOnUiThread(
           () -> {
             openBrowserLayout.setVisibility(View.GONE);
@@ -1029,11 +1130,15 @@ public class ClipShareActivity extends AppCompatActivity {
       executorService.submit(getImg);
     } catch (Exception e) {
       outputAppend("Error " + e.getMessage());
+    } finally {
+      this.lastActivityTime = System.currentTimeMillis();
+      endActiveTask();
     }
   }
 
   private void getScreenshot(EditText editDisplay) {
     try {
+      startActiveTask();
       runOnUiThread(
           () -> {
             openBrowserLayout.setVisibility(View.GONE);
@@ -1086,11 +1191,15 @@ public class ClipShareActivity extends AppCompatActivity {
       executorService.submit(getImg);
     } catch (Exception e) {
       outputAppend("Error " + e.getMessage());
+    } finally {
+      this.lastActivityTime = System.currentTimeMillis();
+      endActiveTask();
     }
   }
 
   private void clkGetFile() {
     try {
+      startActiveTask();
       if (needsPermission(WRITE_FILE)) return;
 
       runOnUiThread(
@@ -1169,6 +1278,9 @@ public class ClipShareActivity extends AppCompatActivity {
       executorService.submit(getFile);
     } catch (Exception e) {
       outputAppend("Error " + e.getMessage());
+    } finally {
+      this.lastActivityTime = System.currentTimeMillis();
+      endActiveTask();
     }
   }
 
