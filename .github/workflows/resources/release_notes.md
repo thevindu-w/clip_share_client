@@ -9,4 +9,4 @@ Refer to the [README](https://github.com/thevindu-w/clip_share_client/#how-to-us
   - Send the files that previously failed without opening the file selection dialog
   - Fix received file paths
 - Other code improvements
-- Upgrade Android material versio
+- Upgrade Android material version
