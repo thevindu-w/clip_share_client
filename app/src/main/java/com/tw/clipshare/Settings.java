@@ -51,6 +51,7 @@ public class Settings implements Serializable {
   private boolean autoSendText;
   private boolean autoSendFiles;
   private boolean vibrate;
+  private boolean closeIfIdle;
 
   private Settings(ArrayList<String> trustedList) {
     this.secure = false;
@@ -66,6 +67,7 @@ public class Settings implements Serializable {
     this.autoSendText = false;
     this.autoSendFiles = false;
     this.vibrate = true;
+    this.closeIfIdle = true;
   }
 
   private Settings() {
@@ -202,6 +204,15 @@ public class Settings implements Serializable {
     } catch (Exception ignored) {
     }
 
+    // Set closeIfIdle
+    try {
+      Object attributeO = map.get("closeIfIdle");
+      if (attributeO instanceof Boolean) {
+        settings.closeIfIdle = (Boolean) attributeO;
+      }
+    } catch (Exception ignored) {
+    }
+
     return settings;
   }
 
@@ -213,7 +224,7 @@ public class Settings implements Serializable {
 
   @NonNull
   public String toString(boolean includePassword) {
-    HashMap<String, Object> map = new HashMap<>(13);
+    HashMap<String, Object> map = new HashMap<>(14);
     try {
       if (this.caCert != null)
         map.put("caCert", Base64.encodeToString(this.caCert, Base64.DEFAULT));
@@ -229,8 +240,10 @@ public class Settings implements Serializable {
       map.put("autoSendText", this.autoSendText);
       map.put("autoSendFiles", this.autoSendFiles);
       map.put("vibrate", this.vibrate);
+      map.put("closeIfIdle", this.closeIfIdle);
     } catch (Exception ignored) {
     }
+
     JSONObject jsonObject = new JSONObject(map);
     return jsonObject.toString();
   }
@@ -261,6 +274,7 @@ public class Settings implements Serializable {
         INSTANCE.autoSendText = strSet.autoSendText;
         INSTANCE.autoSendFiles = strSet.autoSendFiles;
         INSTANCE.vibrate = strSet.vibrate;
+        INSTANCE.closeIfIdle = strSet.closeIfIdle;
       } catch (Exception ignored) {
       }
     }
@@ -321,6 +335,10 @@ public class Settings implements Serializable {
 
   public boolean getVibrate() {
     return vibrate;
+  }
+
+  public boolean getCloseIfIdle() {
+    return closeIfIdle;
   }
 
   public void setSecure(boolean secure) {
@@ -393,5 +411,9 @@ public class Settings implements Serializable {
 
   public void setVibrate(boolean vibrate) {
     this.vibrate = vibrate;
+  }
+
+  public void setCloseIfIdle(boolean closeIfIdle) {
+    this.closeIfIdle = closeIfIdle;
   }
 }

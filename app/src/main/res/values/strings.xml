@@ -38,7 +38,9 @@
     <string name="auto_send_file" translatable="false">Auto send files</string>
     <string name="sendingFiles" translatable="false">Sending files …</string>
     <string name="tunnel" translatable="false">Tunnel</string>
-    <string name="textSelected" translatable="false">Text is selected. Press the Send button.\nEnable auto-send text in Settings to automatically send.</string>
+    <string name="textSelected" translatable="false">Text is selected. Press the Send button.\nEnable auto-send text in
+        Settings to automatically send.
+    </string>
     <string name="ports" translatable="false">Ports</string>
     <string name="port" translatable="false">Port</string>
     <string name="secure_port" translatable="false">Secure Port</string>
@@ -50,4 +52,5 @@
     <string name="screenshot">Screenshot</string>
     <string name="export_settings">Export settings</string>
     <string name="import_settings">Import settings</string>
+    <string name="close_app_if_idle">Close app if idle</string>
 </resources>

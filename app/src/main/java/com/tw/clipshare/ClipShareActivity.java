@@ -97,6 +97,7 @@ public class ClipShareActivity extends AppCompatActivity {
   private LinearLayout openBrowserLayout;
   private int activeTasks = 0;
   private long lastActivityTime;
+  private ExecutorService inactivityExecutor = null;
   private final ActivityResultLauncher<Intent> fileSelectActivityLauncher =
       registerForActivityResult(
           new ActivityResultContracts.StartActivityForResult(),
@@ -147,6 +148,8 @@ public class ClipShareActivity extends AppCompatActivity {
               int icon_id = st.getSecure() ? R.drawable.ic_secure : R.drawable.ic_insecure;
               menu.findItem(R.id.action_secure)
                   .setIcon(ContextCompat.getDrawable(ClipShareActivity.this, icon_id));
+              if (st.getCloseIfIdle()) closeIfIdle(120000);
+              else closeIfIdle(-1);
             } catch (Exception ignored) {
             } finally {
               ClipShareActivity.this.lastActivityTime = System.currentTimeMillis();
@@ -243,8 +246,9 @@ public class ClipShareActivity extends AppCompatActivity {
     SharedPreferences sharedPref =
         context.getSharedPreferences(ClipShareActivity.PREFERENCES, Context.MODE_PRIVATE);
     editAddress.setText(sharedPref.getString("serverIP", ""));
+    Settings settings = null;
     try {
-      Settings.getInstance(sharedPref.getString("settings", null));
+      settings = Settings.getInstance(sharedPref.getString("settings", null));
     } catch (Exception ignored) {
     }
     isSettingsLoaded = true;
@@ -264,13 +268,25 @@ public class ClipShareActivity extends AppCompatActivity {
       }
     } catch (Exception ignored) {
     }
+    try {
+      if (settings != null && settings.getCloseIfIdle()) closeIfIdle(120000);
+    } catch (Exception ignored) {
+    }
+  }
 
+  private void closeIfIdle(int delay) {
+    synchronized (this) {
+      if (inactivityExecutor != null) {
+        inactivityExecutor.shutdownNow();
+        inactivityExecutor = null;
+      }
+      if (delay < 0) return;
+      inactivityExecutor = Executors.newSingleThreadExecutor();
+    }
     this.lastActivityTime = System.currentTimeMillis();
-    ExecutorService inactivityExecutor = Executors.newSingleThreadExecutor();
     inactivityExecutor.submit(
         () -> {
           try {
-            final int delay = 120000;
             //noinspection InfiniteLoopStatement
             while (true) {
               long time = System.currentTimeMillis();

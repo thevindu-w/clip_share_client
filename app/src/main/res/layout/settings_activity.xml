@@ -30,6 +30,15 @@
                                                 android:layout_height="wrap_content"
                                                 android:checked="false"/>
 
+        <androidx.appcompat.widget.SwitchCompat android:id="@+id/autoCloseSwitch"
+                                                android:text="@string/close_app_if_idle"
+                                                android:padding="12dp"
+                                                android:textSize="20sp"
+                                                android:layout_width="match_parent"
+                                                android:layout_height="wrap_content"
+                                                android:checked="true"
+                                                android:background="#221111ff"/>
+
         <androidx.appcompat.widget.SwitchCompat android:id="@+id/vibrateSwitch"
                                                 android:text="@string/vibrate"
                                                 android:padding="12dp"

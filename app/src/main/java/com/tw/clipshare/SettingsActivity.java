@@ -308,6 +308,10 @@ public class SettingsActivity extends AppCompatActivity {
     vibrateSwitch.setOnClickListener(view -> st.setVibrate(vibrateSwitch.isChecked()));
     vibrateSwitch.setChecked(st.getVibrate());
 
+    SwitchCompat autoCloseSwitch = findViewById(R.id.autoCloseSwitch);
+    autoCloseSwitch.setOnClickListener(view -> st.setCloseIfIdle(autoCloseSwitch.isChecked()));
+    autoCloseSwitch.setChecked(st.getCloseIfIdle());
+
     addBtn.setOnClickListener(view -> addRowToTrustList(true, null));
 
     caBrowseBtn.setOnClickListener(
