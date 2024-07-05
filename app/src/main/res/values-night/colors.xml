@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="popupBackground">#FF444444</color>
-    <color name="popupTextBackground">#FF000000</color>
+    <color name="appBackground">#F000</color>
+    <color name="popupOverlayBackground">#5FFF</color>
+    <color name="popupBackground">#F000</color>
+    <color name="popupTextBackground">#F333</color>
 </resources>

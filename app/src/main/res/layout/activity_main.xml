@@ -4,7 +4,8 @@
               android:layout_width="match_parent"
               android:layout_height="match_parent"
               android:orientation="vertical"
-              android:id="@+id/main_layout">
+              android:id="@+id/main_layout"
+              android:background="@color/appBackground">
     <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="48dp"
@@ -60,8 +61,11 @@
             android:layout_marginLeft="10dp"
             android:layout_marginRight="10dp"
             android:textAlignment="viewStart"
-            android:textAllCaps="false" android:textSize="14sp" android:typeface="normal"
-            android:lineSpacingExtra="6sp" android:scrollY="?android:attr/scrollbarSize"
+            android:textAllCaps="false"
+            android:textSize="14sp"
+            android:typeface="normal"
+            android:lineSpacingExtra="6sp"
+            android:scrollY="?android:attr/scrollbarSize"
             android:scrollbars="vertical"
             android:scrollbarAlwaysDrawVerticalTrack="true"
             android:layout_marginTop="12dp"/>
