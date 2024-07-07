@@ -38,7 +38,40 @@
                                                 android:layout_width="match_parent"
                                                 android:layout_height="wrap_content"
                                                 android:checked="true"
-                                                android:background="#221111ff"/>
+                                                android:background="#303f3fff"/>
+
+        <LinearLayout android:id="@+id/layoutAutoCloseDelay"
+                      android:layout_width="match_parent"
+                      android:layout_height="wrap_content"
+                      android:orientation="horizontal">
+            <TextView android:layout_width="0dp"
+                      android:layout_height="wrap_content"
+                      android:layout_weight="0.7"
+                      android:layout_marginStart="12dp"
+                      android:layout_marginEnd="2dp"
+                      android:layout_marginVertical="10dp"
+                      android:textSize="18sp"
+                      android:textColor="?android:textColorPrimary"
+                      android:text="@string/auto_close_delay"
+                      android:layout_gravity="center_vertical"
+                      android:labelFor="@+id/editAutoCloseDelay"
+            />
+            <EditText android:id="@+id/editAutoCloseDelay"
+                      android:layout_width="0dp"
+                      android:layout_height="wrap_content"
+                      android:layout_weight="0.3"
+                      android:layout_marginTop="4dp"
+                      android:layout_marginEnd="12dp"
+                      android:layout_marginStart="2dp"
+                      android:textSize="16sp"
+                      android:textColor="?android:textColorPrimary"
+                      android:text="@string/autoCloseDelayDefault"
+                      android:inputType="number"
+                      android:maxLines="1"
+                      android:maxLength="4"
+                      android:layout_gravity="center_vertical"
+                      android:autofillHints="App port (TCP)"/>
+        </LinearLayout>
 
         <androidx.appcompat.widget.SwitchCompat android:id="@+id/vibrateSwitch"
                                                 android:text="@string/vibrate"
@@ -47,7 +80,8 @@
                                                 android:layout_width="match_parent"
                                                 android:layout_height="wrap_content"
                                                 android:checked="true"
-                                                android:background="#303f3fff"/>
+                                                android:background="#303f3fff"
+                                                android:layout_marginTop="1dp"/>
 
         <androidx.appcompat.widget.SwitchCompat android:id="@+id/secureSwitch"
                                                 android:text="@string/secure_mode"
@@ -238,6 +272,7 @@
                       android:text="@string/port_number"
                       android:inputType="number"
                       android:maxLines="1"
+                      android:maxLength="5"
                       android:layout_gravity="center_vertical"
                       android:autofillHints="App port (TCP)"/>
         </LinearLayout>
@@ -268,6 +303,7 @@
                       android:text="@string/secure_port_number"
                       android:inputType="number"
                       android:maxLines="1"
+                      android:maxLength="5"
                       android:layout_gravity="center_vertical"
                       android:autofillHints="Secure port for SSL/TLS"/>
         </LinearLayout>
@@ -298,6 +334,7 @@
                       android:text="@string/port_number"
                       android:inputType="number"
                       android:maxLines="1"
+                      android:maxLength="5"
                       android:layout_gravity="center_vertical"
                       android:autofillHints="Scan port (UDP)"/>
         </LinearLayout>

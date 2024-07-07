@@ -308,9 +308,44 @@ public class SettingsActivity extends AppCompatActivity {
     vibrateSwitch.setOnClickListener(view -> st.setVibrate(vibrateSwitch.isChecked()));
     vibrateSwitch.setChecked(st.getVibrate());
 
+    LinearLayout layoutAutoCloseDelay = findViewById(R.id.layoutAutoCloseDelay);
     SwitchCompat autoCloseSwitch = findViewById(R.id.autoCloseSwitch);
-    autoCloseSwitch.setOnClickListener(view -> st.setCloseIfIdle(autoCloseSwitch.isChecked()));
+    autoCloseSwitch.setOnClickListener(
+        view -> {
+          boolean autoClose = autoCloseSwitch.isChecked();
+          st.setCloseIfIdle(autoClose);
+          if (autoClose) {
+            layoutAutoCloseDelay.setVisibility(View.VISIBLE);
+          } else {
+            layoutAutoCloseDelay.setVisibility(View.GONE);
+          }
+        });
     autoCloseSwitch.setChecked(st.getCloseIfIdle());
+
+    if (!st.getCloseIfIdle()) {
+      layoutAutoCloseDelay.setVisibility(View.GONE);
+    } else {
+      layoutAutoCloseDelay.setVisibility(View.VISIBLE);
+    }
+
+    EditText editAutoCloseDelay = findViewById(R.id.editAutoCloseDelay);
+    editAutoCloseDelay.setOnFocusChangeListener(
+        (view, focus) -> {
+          try {
+            if (focus) return;
+            String delayStr = ((EditText) view).getText().toString();
+            int delay = Integer.parseInt(delayStr);
+            if (delay <= 0 || 10000 <= delay) {
+              ((EditText) view).setText(st.getAutoCloseDelay());
+              Toast.makeText(SettingsActivity.this, "Invalid delay", Toast.LENGTH_SHORT).show();
+              return;
+            }
+            st.setAutoCloseDelay(delay);
+          } catch (Exception ignored) {
+            Toast.makeText(SettingsActivity.this, "Error occurred", Toast.LENGTH_SHORT).show();
+          }
+        });
+    editAutoCloseDelay.setText(String.valueOf(st.getAutoCloseDelay()));
 
     addBtn.setOnClickListener(view -> addRowToTrustList(true, null));
 

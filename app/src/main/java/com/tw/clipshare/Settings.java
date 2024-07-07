@@ -52,6 +52,7 @@ public class Settings implements Serializable {
   private boolean autoSendFiles;
   private boolean vibrate;
   private boolean closeIfIdle;
+  private int autoCloseDelay;
 
   private Settings(ArrayList<String> trustedList) {
     this.secure = false;
@@ -68,6 +69,7 @@ public class Settings implements Serializable {
     this.autoSendFiles = false;
     this.vibrate = true;
     this.closeIfIdle = true;
+    this.autoCloseDelay = 120;
   }
 
   private Settings() {
@@ -213,6 +215,15 @@ public class Settings implements Serializable {
     } catch (Exception ignored) {
     }
 
+    // Set autoCloseDelay
+    try {
+      Object attributeO = map.get("autoCloseDelay");
+      if (attributeO instanceof Integer) {
+        settings.autoCloseDelay = (Integer) attributeO;
+      }
+    } catch (Exception ignored) {
+    }
+
     return settings;
   }
 
@@ -224,7 +235,7 @@ public class Settings implements Serializable {
 
   @NonNull
   public String toString(boolean includePassword) {
-    HashMap<String, Object> map = new HashMap<>(14);
+    HashMap<String, Object> map = new HashMap<>(15);
     try {
       if (this.caCert != null)
         map.put("caCert", Base64.encodeToString(this.caCert, Base64.DEFAULT));
@@ -241,6 +252,7 @@ public class Settings implements Serializable {
       map.put("autoSendFiles", this.autoSendFiles);
       map.put("vibrate", this.vibrate);
       map.put("closeIfIdle", this.closeIfIdle);
+      map.put("autoCloseDelay", this.autoCloseDelay);
     } catch (Exception ignored) {
     }
 
@@ -275,6 +287,7 @@ public class Settings implements Serializable {
         INSTANCE.autoSendFiles = strSet.autoSendFiles;
         INSTANCE.vibrate = strSet.vibrate;
         INSTANCE.closeIfIdle = strSet.closeIfIdle;
+        INSTANCE.autoCloseDelay = strSet.autoCloseDelay;
       } catch (Exception ignored) {
       }
     }
@@ -339,6 +352,10 @@ public class Settings implements Serializable {
 
   public boolean getCloseIfIdle() {
     return closeIfIdle;
+  }
+
+  public int getAutoCloseDelay() {
+    return autoCloseDelay;
   }
 
   public void setSecure(boolean secure) {
@@ -415,5 +432,9 @@ public class Settings implements Serializable {
 
   public void setCloseIfIdle(boolean closeIfIdle) {
     this.closeIfIdle = closeIfIdle;
+  }
+
+  public void setAutoCloseDelay(int autoCloseDelay) {
+    this.autoCloseDelay = autoCloseDelay;
   }
 }

@@ -53,4 +53,6 @@
     <string name="export_settings">Export settings</string>
     <string name="import_settings">Import settings</string>
     <string name="close_app_if_idle">Close app if idle</string>
+    <string name="autoCloseDelayDefault">120</string>
+    <string name="auto_close_delay">Auto-close delay (seconds)</string>
 </resources>

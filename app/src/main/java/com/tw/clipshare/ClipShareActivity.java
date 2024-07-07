@@ -148,7 +148,7 @@ public class ClipShareActivity extends AppCompatActivity {
               int icon_id = st.getSecure() ? R.drawable.ic_secure : R.drawable.ic_insecure;
               menu.findItem(R.id.action_secure)
                   .setIcon(ContextCompat.getDrawable(ClipShareActivity.this, icon_id));
-              if (st.getCloseIfIdle()) closeIfIdle(120000);
+              if (st.getCloseIfIdle()) closeIfIdle(st.getAutoCloseDelay() * 1000);
               else closeIfIdle(-1);
             } catch (Exception ignored) {
             } finally {
@@ -269,7 +269,8 @@ public class ClipShareActivity extends AppCompatActivity {
     } catch (Exception ignored) {
     }
     try {
-      if (settings != null && settings.getCloseIfIdle()) closeIfIdle(120000);
+      if (settings != null && settings.getCloseIfIdle())
+        closeIfIdle(settings.getAutoCloseDelay() * 1000);
     } catch (Exception ignored) {
     }
   }
