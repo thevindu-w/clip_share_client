@@ -1,6 +1,7 @@
 package com.tw.clipshare.proto;
 
 import static com.tw.clipshare.proto.ProtocolSelectorTest.MAX_PROTO;
+import static com.tw.clipshare.proto.ProtocolSelectorTest.PROTOCOL_UNKNOWN;
 import static org.junit.Assert.*;
 
 import android.Manifest;
@@ -28,7 +29,7 @@ public class Proto_v1Test {
 
   private BAOStreamBuilder initProto(boolean methodOk) {
     BAOStreamBuilder builder = new BAOStreamBuilder();
-    builder.addByte(3);
+    builder.addByte(PROTOCOL_UNKNOWN);
     builder.addByte(1);
     if (methodOk) builder.addByte(1);
     return builder;
@@ -37,7 +38,7 @@ public class Proto_v1Test {
   @Test
   public void testInvalidMethod() throws IOException {
     BAOStreamBuilder builder = initProto(false);
-    builder.addByte(3);
+    builder.addByte(4);
     ByteArrayInputStream istream = builder.getStream();
     MockConnection connection;
     Proto proto;

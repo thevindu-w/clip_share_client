@@ -1,7 +1,7 @@
 package com.tw.clipshare.proto;
 
 import static com.tw.clipshare.proto.ProtocolSelectorTest.MAX_PROTO;
-import static com.tw.clipshare.proto.ProtocolSelectorTest.PROTOCOL_UNKNOWN;
+import static com.tw.clipshare.proto.ProtocolSelectorTest.PROTOCOL_SUPPORTED;
 import static org.junit.Assert.*;
 
 import android.Manifest;
@@ -12,6 +12,7 @@ import androidx.test.rule.GrantPermissionRule;
 import com.tw.clipshare.PendingFile;
 import com.tw.clipshare.netConnection.MockConnection;
 import com.tw.clipshare.platformUtils.FSUtils;
+import com.tw.clipshare.platformUtils.directoryTree.Directory;
 import com.tw.clipshare.protocol.Proto;
 import com.tw.clipshare.protocol.ProtocolSelector;
 import java.io.ByteArrayInputStream;
@@ -22,15 +23,14 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith(AndroidJUnit4.class)
-public class Proto_v2Test {
+public class Proto_v3Test {
   @Rule
   public GrantPermissionRule mRuntimePermissionRule =
       GrantPermissionRule.grant(Manifest.permission.WRITE_EXTERNAL_STORAGE);
 
   private BAOStreamBuilder initProto(boolean methodOk) {
     BAOStreamBuilder builder = new BAOStreamBuilder();
-    builder.addByte(PROTOCOL_UNKNOWN);
-    builder.addByte(2);
+    builder.addByte(PROTOCOL_SUPPORTED);
     if (methodOk) builder.addByte(1);
     return builder;
   }
@@ -161,7 +161,6 @@ public class Proto_v2Test {
     builder = new BAOStreamBuilder();
     builder.addByte(MAX_PROTO);
     builder.addByte(2);
-    builder.addByte(2);
     builder.addString(sample);
     byte[] expected = builder.getArray();
     assertArrayEquals(expected, receivedBytes);
@@ -209,11 +208,16 @@ public class Proto_v2Test {
     files[0] = new byte[] {'a', 'b', 'c'};
     files[1] = new byte[] {'1', '2'};
     files[2] = new byte[] {};
+    String[] dirNames = {"dir2/", "dir3/sub"};
     BAOStreamBuilder builder = initProto(true);
     builder.addSize(files.length);
     for (int i = 0; i < files.length; i++) {
       builder.addString(fileNames[i]);
       builder.addData(files[i]);
+    }
+    for (String dirName : dirNames) {
+      builder.addString(dirName);
+      builder.addSize(-1);
     }
     ByteArrayInputStream istream = builder.getStream();
     MockConnection connection = new MockConnection(istream);
@@ -265,7 +269,6 @@ public class Proto_v2Test {
 
     builder = new BAOStreamBuilder();
     builder.addByte(MAX_PROTO);
-    builder.addByte(2);
     builder.addByte(4);
     builder.addSize(files.length);
     for (int i = 0; i < files.length; i++) {
@@ -277,6 +280,38 @@ public class Proto_v2Test {
   }
 
   @Test
+  public void testSendDir() throws IOException {
+    BAOStreamBuilder builder = initProto(true);
+    ByteArrayInputStream istream = builder.getStream();
+    MockConnection connection = new MockConnection(istream);
+
+    Context appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
+    Directory root = new Directory("dir", 2, null);
+    root.children.add(new Directory("dir2", 0, root));
+    Directory dir3 = new Directory("dir3", 1, root);
+    root.children.add(dir3);
+    dir3.children.add(new Directory("sub", 0, dir3));
+    dir3.children.add(new Directory("sub2", 0, dir3));
+    FSUtils utils = new FSUtils(appContext, null, root);
+    Proto proto = ProtocolSelector.getProto(connection, utils, null);
+    assertTrue(proto.sendFile());
+    proto.close();
+
+    String[] dirNames = {"dir/dir2", "dir/dir3/sub", "dir/dir3/sub2"};
+    builder = new BAOStreamBuilder();
+    builder.addByte(MAX_PROTO);
+    builder.addByte(4);
+    builder.addSize(dirNames.length);
+    for (String dirName : dirNames) {
+      builder.addString(dirName);
+      builder.addSize(-1);
+    }
+    byte[] expected = builder.getArray();
+    byte[] received = connection.getOutputBytes();
+    assertArrayEquals(expected, received);
+  }
+
+  @Test
   public void testCheckInfo() throws IOException {
     String info = "ClipShare";
     BAOStreamBuilder builder = initProto(true);
@@ -285,7 +320,7 @@ public class Proto_v2Test {
     MockConnection connection = new MockConnection(istream);
     Proto proto = ProtocolSelector.getProto(connection, null, null);
     assertEquals(info, proto.checkInfo());
-    assertArrayEquals(new byte[] {MAX_PROTO, 2, 125}, connection.getOutputBytes());
+    assertArrayEquals(new byte[] {MAX_PROTO, 125}, connection.getOutputBytes());
     proto.close();
   }
 
