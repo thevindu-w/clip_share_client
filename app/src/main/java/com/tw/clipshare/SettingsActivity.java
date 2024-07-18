@@ -517,7 +517,9 @@ public class SettingsActivity extends AppCompatActivity {
           try {
             Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
             intent.addCategory(Intent.CATEGORY_OPENABLE);
-            intent.setType("application/json");
+            intent.setType("*/*");
+            String[] mimeTypes = {"application/json", "application/octet-stream"};
+            intent.putExtra(Intent.EXTRA_MIME_TYPES, mimeTypes);
             importActivityLauncher.launch(intent);
           } catch (Exception ignored) {
           }
