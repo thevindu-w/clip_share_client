@@ -5,18 +5,29 @@ import static com.tw.clipshare.proto.ProtocolSelectorTest.PROTOCOL_UNKNOWN;
 import static org.junit.Assert.*;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.Context;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
+import androidx.test.core.app.ActivityScenario;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.rule.GrantPermissionRule;
+import com.tw.clipshare.ClipShareActivity;
 import com.tw.clipshare.PendingFile;
+import com.tw.clipshare.R;
 import com.tw.clipshare.netConnection.MockConnection;
+import com.tw.clipshare.platformUtils.AndroidStatusNotifier;
 import com.tw.clipshare.platformUtils.FSUtils;
+import com.tw.clipshare.platformUtils.StatusNotifier;
 import com.tw.clipshare.protocol.Proto;
 import com.tw.clipshare.protocol.ProtocolSelector;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.LinkedList;
+import java.util.Random;
+import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -26,6 +37,46 @@ public class Proto_v2Test {
   @Rule
   public GrantPermissionRule mRuntimePermissionRule =
       GrantPermissionRule.grant(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+
+  private static Context context;
+  private static Activity activity;
+  private StatusNotifier notifier;
+
+  @BeforeClass
+  public static void initialize() throws InterruptedException {
+    context = InstrumentationRegistry.getInstrumentation().getTargetContext();
+    assertNotNull(context);
+
+    Object lock = new Object();
+    try (ActivityScenario<ClipShareActivity> scenario =
+        ActivityScenario.launch(ClipShareActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            synchronized (lock) {
+              Proto_v2Test.activity = activity;
+              lock.notifyAll();
+            }
+          });
+    }
+    synchronized (lock) {
+      if (activity == null) lock.wait(10000);
+    }
+    assertNotNull(activity);
+  }
+
+  @Before
+  public void setNotifier() {
+    NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
+    NotificationCompat.Builder builder =
+        new NotificationCompat.Builder(context, "Test")
+            .setSmallIcon(R.drawable.ic_upload_icon)
+            .setContentTitle("Sending files");
+    Random rnd = new Random();
+    int notificationId = Math.abs(rnd.nextInt(Integer.MAX_VALUE - 1)) + 1;
+    this.notifier =
+        new AndroidStatusNotifier(activity, notificationManager, builder, notificationId);
+    assertNotNull(this.notifier);
+  }
 
   private BAOStreamBuilder initProto(boolean methodOk) {
     BAOStreamBuilder builder = new BAOStreamBuilder();
@@ -42,11 +93,10 @@ public class Proto_v2Test {
     ByteArrayInputStream istream = builder.getStream();
     MockConnection connection;
     Proto proto;
-    Context appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
     PendingFile pendingFile = new PendingFile(new ByteArrayInputStream(new byte[1]), "name", 0);
     LinkedList<PendingFile> files = new LinkedList<>();
     files.push(pendingFile);
-    FSUtils fsUtils = new FSUtils(appContext, null, files);
+    FSUtils fsUtils = new FSUtils(context, activity, files);
 
     connection = new MockConnection(istream);
     proto = ProtocolSelector.getProto(connection, null, null);
@@ -59,17 +109,17 @@ public class Proto_v2Test {
     istream.reset();
 
     connection = new MockConnection(istream);
-    proto = ProtocolSelector.getProto(connection, fsUtils, null);
+    proto = ProtocolSelector.getProto(connection, fsUtils, this.notifier);
     assertFalse(proto.getFile());
     istream.reset();
 
     connection = new MockConnection(istream);
-    proto = ProtocolSelector.getProto(connection, fsUtils, null);
+    proto = ProtocolSelector.getProto(connection, fsUtils, this.notifier);
     assertFalse(proto.sendFile());
     istream.reset();
 
     connection = new MockConnection(istream);
-    proto = ProtocolSelector.getProto(connection, fsUtils, null);
+    proto = ProtocolSelector.getProto(connection, fsUtils, this.notifier);
     assertFalse(proto.getImage());
     istream.reset();
 
@@ -185,9 +235,8 @@ public class Proto_v2Test {
     builder.addData(png);
     ByteArrayInputStream istream = builder.getStream();
     MockConnection connection = new MockConnection(istream);
-    Context appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
-    FSUtils utils = new FSUtils(appContext, null);
-    Proto proto = ProtocolSelector.getProto(connection, utils, null);
+    FSUtils utils = new FSUtils(context, activity);
+    Proto proto = ProtocolSelector.getProto(connection, utils, this.notifier);
     assertTrue(proto.getImage());
     proto.close();
   }
@@ -217,9 +266,8 @@ public class Proto_v2Test {
     }
     ByteArrayInputStream istream = builder.getStream();
     MockConnection connection = new MockConnection(istream);
-    Context appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
-    FSUtils utils = new FSUtils(appContext, null);
-    Proto proto = ProtocolSelector.getProto(connection, utils, null);
+    FSUtils utils = new FSUtils(context, activity);
+    Proto proto = ProtocolSelector.getProto(connection, utils, this.notifier);
     assertTrue(proto.getFile());
     proto.close();
   }
@@ -230,9 +278,8 @@ public class Proto_v2Test {
     builder.addByte(2);
     ByteArrayInputStream istream = builder.getStream();
     MockConnection connection = new MockConnection(istream);
-    Context appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
-    FSUtils utils = new FSUtils(appContext, null);
-    Proto proto = ProtocolSelector.getProto(connection, utils, null);
+    FSUtils utils = new FSUtils(context, activity);
+    Proto proto = ProtocolSelector.getProto(connection, utils, this.notifier);
     assertFalse(proto.getFile());
     proto.close();
   }
@@ -257,9 +304,8 @@ public class Proto_v2Test {
       PendingFile pendingFile = new PendingFile(fileStream, fileNames[i], size);
       pendingFiles.add(pendingFile);
     }
-    Context appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
-    FSUtils utils = new FSUtils(appContext, null, pendingFiles);
-    Proto proto = ProtocolSelector.getProto(connection, utils, null);
+    FSUtils utils = new FSUtils(context, activity, pendingFiles);
+    Proto proto = ProtocolSelector.getProto(connection, utils, this.notifier);
     assertTrue(proto.sendFile());
     proto.close();
 
