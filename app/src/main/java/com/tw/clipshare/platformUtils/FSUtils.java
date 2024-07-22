@@ -157,6 +157,7 @@ public class FSUtils extends AndroidUtils {
       }
       File file = new File(dataDirName + "/" + fileName);
       status &= file.renameTo(newFile);
+      scanMediaFile(newFile.getAbsolutePath());
     }
     status &= dataDir.delete();
     return status;
@@ -199,31 +200,37 @@ public class FSUtils extends AndroidUtils {
   public void getFileDone(String type) {
     if (this.activity == null) return;
     long currTime = System.currentTimeMillis();
-    if (currTime - lastToastTime > 2000) {
-      lastToastTime = currTime;
-      this.activity.runOnUiThread(
-          () ->
-              Toast.makeText(
-                      context,
-                      "Saved " + type + " to " + outFilePath.substring(baseDirName.length() + 1),
-                      Toast.LENGTH_SHORT)
-                  .show());
-    }
-    int dotIndex = outFilePath.lastIndexOf('.');
-    if (dotIndex > 0) {
-      String extension = outFilePath.substring(dotIndex + 1);
-      String[] mediaExtensions = {
-        "png", "jpg", "jpeg", "gif", "bmp", "webp", "heic", "tif", "tiff", "mp4", "mkv", "mov",
-        "webm", "wmv", "flv", "avi"
-      };
-      for (String mediaExtension : mediaExtensions) {
-        if (mediaExtension.equalsIgnoreCase(extension)) {
-          MediaScannerConnection.scanFile(
-              this.activity.getApplicationContext(), new String[] {outFilePath}, null, null);
-          break;
-        }
+    if (currTime - lastToastTime < 2000) return;
+    lastToastTime = currTime;
+    this.activity.runOnUiThread(
+        () ->
+            Toast.makeText(
+                    context,
+                    "Saved " + type + " to " + outFilePath.substring(baseDirName.length() + 1),
+                    Toast.LENGTH_SHORT)
+                .show());
+  }
+
+  public void scanMediaFile(String filePath) {
+    if (this.activity == null) return;
+    int dotIndex = filePath.lastIndexOf('.');
+    if (dotIndex <= 0) return;
+    String extension = filePath.substring(dotIndex + 1);
+    String[] mediaExtensions = {
+      "png", "jpg", "jpeg", "gif", "bmp", "webp", "heic", "tif", "tiff", "mp4", "mkv", "mov",
+      "webm", "wmv", "flv", "avi"
+    };
+    for (String mediaExtension : mediaExtensions) {
+      if (mediaExtension.equalsIgnoreCase(extension)) {
+        MediaScannerConnection.scanFile(
+            this.activity.getApplicationContext(), new String[] {filePath}, null, null);
+        break;
       }
     }
+  }
+
+  public void scanMediaFile() {
+    scanMediaFile(outFilePath);
   }
 
   public String getFileName() {

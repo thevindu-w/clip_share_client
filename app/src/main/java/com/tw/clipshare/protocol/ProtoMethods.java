@@ -173,6 +173,7 @@ public final class ProtoMethods {
     try {
       out.close();
       fsUtils.getFileDone("image");
+      fsUtils.scanMediaFile();
     } catch (IOException ignored) {
     }
     return true;
