@@ -498,6 +498,8 @@ public class SettingsActivity extends AppCompatActivity {
                   autoSendTextSwitch.setChecked(st.getAutoSendText());
                   autoSendFileSwitch.setChecked(st.getAutoSendFiles());
                   vibrateSwitch.setChecked(st.getVibrate());
+                  autoCloseSwitch.setChecked(st.getCloseIfIdle());
+                  editAutoCloseDelay.setText(String.valueOf(st.getAutoCloseDelay()));
                   runOnUiThread(
                       () ->
                           Toast.makeText(
