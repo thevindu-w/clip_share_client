@@ -86,10 +86,10 @@ public class FSUtils extends AndroidUtils {
   private String getDocumentDir() {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
       baseDirName =
-          String.valueOf(
-              Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS));
+          Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS)
+              .getAbsolutePath();
     } else {
-      baseDirName = String.valueOf(Environment.getExternalStorageDirectory());
+      baseDirName = Environment.getExternalStorageDirectory().getAbsolutePath();
     }
     return baseDirName + "/ClipShareDocuments";
   }
