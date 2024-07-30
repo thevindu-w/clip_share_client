@@ -86,7 +86,9 @@ public class Settings implements Serializable {
         int len = jsonArray.length();
         trustedList = new ArrayList<>(len);
         for (int i = 0; i < len; i++) {
-          trustedList.add(jsonArray.getString(i));
+          String item = jsonArray.getString(i);
+          if (item.isEmpty() || item.length() > 256) continue;
+          trustedList.add(item);
         }
       }
     } catch (Exception ignored) {
@@ -101,7 +103,9 @@ public class Settings implements Serializable {
     try {
       Object attributeO = map.get("caCert");
       if (attributeO instanceof String) {
-        settings.caCert = Base64.decode((String) attributeO, Base64.DEFAULT);
+        String value = (String) attributeO;
+        if (!value.isEmpty() && value.length() < 32768)
+          settings.caCert = Base64.decode(value, Base64.DEFAULT);
       }
     } catch (Exception ignored) {
     }
@@ -110,7 +114,9 @@ public class Settings implements Serializable {
     try {
       Object attributeO = map.get("cert");
       if (attributeO instanceof String) {
-        settings.cert = Base64.decode((String) attributeO, Base64.DEFAULT);
+        String value = (String) attributeO;
+        if (!value.isEmpty() && value.length() < 32768)
+          settings.cert = Base64.decode(value, Base64.DEFAULT);
       }
     } catch (Exception ignored) {
     }
@@ -120,7 +126,7 @@ public class Settings implements Serializable {
       Object attributeO = map.get("passwd");
       if (attributeO instanceof String) {
         String pwStr = (String) attributeO;
-        settings.passwd = pwStr.toCharArray();
+        if (!pwStr.isEmpty() && pwStr.length() < 80) settings.passwd = pwStr.toCharArray();
       }
     } catch (Exception ignored) {
     }
@@ -129,7 +135,8 @@ public class Settings implements Serializable {
     try {
       Object attributeO = map.get("caCN");
       if (attributeO instanceof String) {
-        settings.caCN = (String) attributeO;
+        String value = (String) attributeO;
+        if (!value.isEmpty() && value.length() < 256) settings.caCN = value;
       }
     } catch (Exception ignored) {
     }
@@ -138,7 +145,8 @@ public class Settings implements Serializable {
     try {
       Object attributeO = map.get("cn");
       if (attributeO instanceof String) {
-        settings.cn = (String) attributeO;
+        String value = (String) attributeO;
+        if (!value.isEmpty() && value.length() < 256) settings.cn = value;
       }
     } catch (Exception ignored) {
     }
@@ -156,7 +164,8 @@ public class Settings implements Serializable {
     try {
       Object attributeO = map.get("port");
       if (attributeO instanceof Integer) {
-        settings.port = (Integer) attributeO;
+        int value = (Integer) attributeO;
+        if (0 < value && value < 65536) settings.port = value;
       }
     } catch (Exception ignored) {
     }
@@ -165,7 +174,8 @@ public class Settings implements Serializable {
     try {
       Object attributeO = map.get("portSecure");
       if (attributeO instanceof Integer) {
-        settings.portSecure = (Integer) attributeO;
+        int value = (Integer) attributeO;
+        if (0 < value && value < 65536) settings.portSecure = value;
       }
     } catch (Exception ignored) {
     }
@@ -174,7 +184,8 @@ public class Settings implements Serializable {
     try {
       Object attributeO = map.get("portUDP");
       if (attributeO instanceof Integer) {
-        settings.portUDP = (Integer) attributeO;
+        int value = (Integer) attributeO;
+        if (0 < value && value < 65536) settings.portUDP = value;
       }
     } catch (Exception ignored) {
     }
@@ -219,7 +230,8 @@ public class Settings implements Serializable {
     try {
       Object attributeO = map.get("autoCloseDelay");
       if (attributeO instanceof Integer) {
-        settings.autoCloseDelay = (Integer) attributeO;
+        int value = (Integer) attributeO;
+        if (0 < value && value < 10000) settings.autoCloseDelay = value;
       }
     } catch (Exception ignored) {
     }
