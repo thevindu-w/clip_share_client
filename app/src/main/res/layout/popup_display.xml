@@ -1,69 +1,88 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:tools="http://schemas.android.com/tools"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@color/popupOverlayBackground"
-        android:paddingHorizontal="30dp"
-        android:paddingVertical="60dp"
-        android:orientation="vertical">
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/popupOverlayBackground"
+    android:paddingHorizontal="30dp"
+    android:paddingVertical="60dp"
+    android:orientation="vertical">
+
     <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:background="@color/popupBackground"
+        android:orientation="vertical">
+
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
-            android:background="@color/popupBackground"
-            android:orientation="vertical">
-        <LinearLayout
-                android:layout_width="match_parent"
+            android:orientation="horizontal"
+            android:padding="8dp">
+
+            <TextView
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:padding="8dp">
-            <TextView android:layout_width="wrap_content"
-                      android:layout_height="wrap_content"
-                      android:text="@string/display"
-                      android:textColor="?android:textColorPrimary"
-                      android:textSize="16sp"
-                      android:labelFor="@+id/editDisplay"/>
-            <EditText android:id="@+id/editDisplay"
-                      android:layout_width="0dp"
-                      android:layout_height="wrap_content"
-                      android:minHeight="48dp"
-                      android:layout_weight="1"
-                      android:inputType="number"
-                      android:autofillHints="0"
-                      android:layout_marginHorizontal="6dp"/>
+                android:text="@string/display"
+                android:textColor="?android:textColorPrimary"
+                android:textSize="16sp"
+                android:labelFor="@+id/editDisplay" />
+
+            <EditText
+                android:id="@+id/editDisplay"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:minHeight="48dp"
+                android:layout_weight="1"
+                android:inputType="number"
+                android:autofillHints="0"
+                android:layout_marginHorizontal="6dp" />
         </LinearLayout>
+
         <LinearLayout
-                android:layout_width="match_parent"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="8dp">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="0.03"
+                tools:ignore="UselessLeaf" />
+
+            <Button
+                android:id="@+id/btnGetCopiedImg"
+                android:text="@string/copied_image"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:padding="8dp">
-            <LinearLayout android:layout_width="0dp"
-                          android:layout_height="match_parent"
-                          android:layout_weight="0.03" tools:ignore="UselessLeaf"/>
-            <Button android:id="@+id/btnGetCopiedImg"
-                    android:text="@string/copied_image"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="0.45"
-                    android:backgroundTint="#FF00AD00"
-                    android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-                    android:textStyle="bold"/>
-            <LinearLayout android:layout_width="0dp"
-                          android:layout_height="match_parent"
-                          android:layout_weight="0.04" tools:ignore="UselessLeaf"/>
-            <Button android:id="@+id/btnGetScreenshot"
-                    android:text="@string/screenshot"
-                    android:layout_width="0dp"
-                    android:layout_weight="0.45"
-                    android:layout_height="wrap_content"
-                    android:backgroundTint="#FF4444DD"
-                    android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-                    android:textStyle="bold"/>
-            <LinearLayout android:layout_width="0dp"
-                          android:layout_height="match_parent"
-                          android:layout_weight="0.03" tools:ignore="UselessLeaf"/>
+                android:layout_weight="0.45"
+                android:backgroundTint="#FF00AD00"
+                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                android:textStyle="bold" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="0.04"
+                tools:ignore="UselessLeaf" />
+
+            <Button
+                android:id="@+id/btnGetScreenshot"
+                android:text="@string/screenshot"
+                android:layout_width="0dp"
+                android:layout_weight="0.45"
+                android:layout_height="wrap_content"
+                android:backgroundTint="#FF4444DD"
+                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                android:textStyle="bold" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="0.03"
+                tools:ignore="UselessLeaf" />
         </LinearLayout>
     </LinearLayout>
 </RelativeLayout>

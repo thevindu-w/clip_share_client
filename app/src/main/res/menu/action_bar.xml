@@ -1,24 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
-      xmlns:app="http://schemas.android.com/apk/res-auto">
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
-            android:id="@+id/action_tunnel_switch"
-            android:title=""
-            android:checked="false"
-            android:visible="false"
-            android:actionLayout="@layout/tunnel_switch"
-            app:showAsAction="always"/>
+        android:id="@+id/action_tunnel_switch"
+        android:title=""
+        android:checked="false"
+        android:visible="false"
+        android:actionLayout="@layout/tunnel_switch"
+        app:showAsAction="always" />
 
     <item
-            android:id="@+id/action_secure"
-            android:icon="@drawable/ic_insecure"
-            android:title="@string/security"
-            app:showAsAction="ifRoom"/>
+        android:id="@+id/action_secure"
+        android:icon="@drawable/ic_insecure"
+        android:title="@string/security"
+        app:showAsAction="ifRoom" />
 
     <item
-            android:id="@+id/action_settings"
-            android:icon="@android:drawable/ic_menu_manage"
-            android:title="@string/settings"
-            app:showAsAction="always"/>
+        android:id="@+id/action_settings"
+        android:icon="@android:drawable/ic_menu_manage"
+        android:title="@string/settings"
+        app:showAsAction="always" />
 </menu>
