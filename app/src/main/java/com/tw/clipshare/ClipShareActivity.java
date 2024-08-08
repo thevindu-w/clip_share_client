@@ -81,11 +81,7 @@ public class ClipShareActivity extends AppCompatActivity {
   public static final String PREFERENCES = "preferences";
   private static final int AUTO_SEND_TEXT = 1;
   private static final int AUTO_SEND_FILES = 2;
-  private static final Object fileGetCntLock = new Object();
-  private static final Object fileSendCntLock = new Object();
   private static final Object settingsLock = new Object();
-  private static int fileGettingCount = 0;
-  private static int fileSendingCount = 0;
   private static boolean isSettingsLoaded = false;
   private String receivedURI;
   public TextView output;
@@ -783,15 +779,6 @@ public class ClipShareActivity extends AppCompatActivity {
       Random rnd = new Random();
       int notificationId = Math.abs(rnd.nextInt(Integer.MAX_VALUE - 1)) + 1;
       NotificationManagerCompat notificationManager = null;
-      synchronized (fileSendCntLock) {
-        while (fileSendingCount > 1) {
-          try {
-            fileSendCntLock.wait();
-          } catch (InterruptedException ignored) {
-          }
-        }
-        fileSendingCount++;
-      }
       try {
         runOnUiThread(() -> output.setText(R.string.sendingFiles));
         notificationManager = NotificationManagerCompat.from(context);
@@ -821,10 +808,6 @@ public class ClipShareActivity extends AppCompatActivity {
       } catch (Exception e) {
         outputAppend("Error " + e.getMessage());
       } finally {
-        synchronized (fileSendCntLock) {
-          fileSendingCount--;
-          fileSendCntLock.notifyAll();
-        }
         try {
           if (notificationManager != null) {
             NotificationManagerCompat finalNotificationManager = notificationManager;
@@ -890,15 +873,6 @@ public class ClipShareActivity extends AppCompatActivity {
       Random rnd = new Random();
       int notificationId = Math.abs(rnd.nextInt(Integer.MAX_VALUE - 1)) + 1;
       NotificationManagerCompat notificationManager = null;
-      synchronized (fileSendCntLock) {
-        while (fileSendingCount > 1) {
-          try {
-            fileSendCntLock.wait();
-          } catch (InterruptedException ignored) {
-          }
-        }
-        fileSendingCount++;
-      }
       try {
         runOnUiThread(() -> output.setText(R.string.sendingFiles));
         notificationManager = NotificationManagerCompat.from(context);
@@ -938,10 +912,6 @@ public class ClipShareActivity extends AppCompatActivity {
       } catch (Exception e) {
         outputAppend("Error " + e.getMessage());
       } finally {
-        synchronized (fileSendCntLock) {
-          fileSendingCount--;
-          fileSendCntLock.notifyAll();
-        }
         try {
           if (notificationManager != null) {
             NotificationManagerCompat finalNotificationManager = notificationManager;
@@ -1236,15 +1206,6 @@ public class ClipShareActivity extends AppCompatActivity {
               notificationId = Math.abs(rnd.nextInt(Integer.MAX_VALUE - 1)) + 1;
             }
             NotificationManagerCompat notificationManager = null;
-            synchronized (fileGetCntLock) {
-              while (fileGettingCount > 1) {
-                try {
-                  fileGetCntLock.wait();
-                } catch (InterruptedException ignored) {
-                }
-              }
-              fileGettingCount++;
-            }
             try {
               notificationManager = NotificationManagerCompat.from(context);
               NotificationCompat.Builder builder =
@@ -1273,10 +1234,6 @@ public class ClipShareActivity extends AppCompatActivity {
             } catch (Exception e) {
               outputAppend("Error " + e.getMessage());
             } finally {
-              synchronized (fileGetCntLock) {
-                fileGettingCount--;
-                fileGetCntLock.notifyAll();
-              }
               try {
                 if (notificationManager != null) {
                   NotificationManagerCompat finalNotificationManager = notificationManager;
