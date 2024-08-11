@@ -49,7 +49,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SwitchCompat;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
-import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
 import androidx.documentfile.provider.DocumentFile;
 import com.tw.clipshare.netConnection.*;
@@ -778,17 +777,16 @@ public class ClipShareActivity extends AppCompatActivity {
       FSUtils utils = new FSUtils(context, ClipShareActivity.this, dirTree);
       Random rnd = new Random();
       int notificationId = Math.abs(rnd.nextInt(Integer.MAX_VALUE - 1)) + 1;
-      NotificationManagerCompat notificationManager = null;
+      NotificationManager notificationManager = null;
       try {
         runOnUiThread(() -> output.setText(R.string.sendingFiles));
-        notificationManager = NotificationManagerCompat.from(context);
+        notificationManager = (NotificationManager) context.getSystemService(NOTIFICATION_SERVICE);
         NotificationCompat.Builder builder =
             new NotificationCompat.Builder(context, ClipShareActivity.CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_upload_icon)
                 .setContentTitle("Sending files");
         StatusNotifier notifier =
-            new AndroidStatusNotifier(
-                ClipShareActivity.this, notificationManager, builder, notificationId);
+            new AndroidStatusNotifier(notificationManager, builder, notificationId);
         boolean status = true;
         Proto proto = getProtoWrapper(address, utils, notifier);
         if (proto != null) {
@@ -810,14 +808,7 @@ public class ClipShareActivity extends AppCompatActivity {
       } finally {
         try {
           if (notificationManager != null) {
-            NotificationManagerCompat finalNotificationManager = notificationManager;
-            runOnUiThread(
-                () -> {
-                  try {
-                    finalNotificationManager.cancel(notificationId);
-                  } catch (Exception ignored) {
-                  }
-                });
+            notificationManager.cancel(notificationId);
           }
         } catch (Exception ignored) {
         }
@@ -872,17 +863,16 @@ public class ClipShareActivity extends AppCompatActivity {
 
       Random rnd = new Random();
       int notificationId = Math.abs(rnd.nextInt(Integer.MAX_VALUE - 1)) + 1;
-      NotificationManagerCompat notificationManager = null;
+      NotificationManager notificationManager = null;
       try {
         runOnUiThread(() -> output.setText(R.string.sendingFiles));
-        notificationManager = NotificationManagerCompat.from(context);
+        notificationManager = (NotificationManager) context.getSystemService(NOTIFICATION_SERVICE);
         NotificationCompat.Builder builder =
             new NotificationCompat.Builder(context, ClipShareActivity.CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_upload_icon)
                 .setContentTitle("Sending files");
         StatusNotifier notifier =
-            new AndroidStatusNotifier(
-                ClipShareActivity.this, notificationManager, builder, notificationId);
+            new AndroidStatusNotifier(notificationManager, builder, notificationId);
         boolean status = true;
         boolean failedAll = true;
         while (utils.getRemainingFileCount() > 0) {
@@ -914,14 +904,7 @@ public class ClipShareActivity extends AppCompatActivity {
       } finally {
         try {
           if (notificationManager != null) {
-            NotificationManagerCompat finalNotificationManager = notificationManager;
-            runOnUiThread(
-                () -> {
-                  try {
-                    finalNotificationManager.cancel(notificationId);
-                  } catch (Exception ignored) {
-                  }
-                });
+            notificationManager.cancel(notificationId);
           }
         } catch (Exception ignored) {
         }
@@ -1196,28 +1179,28 @@ public class ClipShareActivity extends AppCompatActivity {
           });
       String address = this.getServerAddress();
       if (address == null) return;
-
-      ExecutorService executorService = Executors.newSingleThreadExecutor();
+      NotificationManager notificationManager = null;
+      StatusNotifier notifier = null;
+      int notificationId = 0;
+      try {
+        notificationManager = (NotificationManager) context.getSystemService(NOTIFICATION_SERVICE);
+        NotificationCompat.Builder builder =
+            new NotificationCompat.Builder(context, ClipShareActivity.CHANNEL_ID)
+                .setSmallIcon(R.drawable.ic_download_icon)
+                .setContentTitle("Getting file");
+        Random rnd = new Random();
+        notificationId = Math.abs(rnd.nextInt(Integer.MAX_VALUE - 1)) + 1;
+        notifier = new AndroidStatusNotifier(notificationManager, builder, notificationId);
+      } catch (Exception ignored) {
+      }
+      final NotificationManager finalNotificationManager = notificationManager;
+      final int finalNotificationId = notificationId;
+      final StatusNotifier finalNotifier = notifier;
       Runnable getFile =
           () -> {
-            int notificationId;
-            {
-              Random rnd = new Random();
-              notificationId = Math.abs(rnd.nextInt(Integer.MAX_VALUE - 1)) + 1;
-            }
-            NotificationManagerCompat notificationManager = null;
             try {
-              notificationManager = NotificationManagerCompat.from(context);
-              NotificationCompat.Builder builder =
-                  new NotificationCompat.Builder(context, ClipShareActivity.CHANNEL_ID)
-                      .setSmallIcon(R.drawable.ic_download_icon)
-                      .setContentTitle("Getting file");
-
               FSUtils utils = new FSUtils(context, ClipShareActivity.this);
-              StatusNotifier notifier =
-                  new AndroidStatusNotifier(
-                      ClipShareActivity.this, notificationManager, builder, notificationId);
-              Proto proto = getProtoWrapper(address, utils, notifier);
+              Proto proto = getProtoWrapper(address, utils, finalNotifier);
               if (proto == null) return;
               boolean status = proto.getFile();
               proto.close();
@@ -1235,20 +1218,14 @@ public class ClipShareActivity extends AppCompatActivity {
               outputAppend("Error " + e.getMessage());
             } finally {
               try {
-                if (notificationManager != null) {
-                  NotificationManagerCompat finalNotificationManager = notificationManager;
-                  runOnUiThread(
-                      () -> {
-                        try {
-                          finalNotificationManager.cancel(notificationId);
-                        } catch (Exception ignored) {
-                        }
-                      });
+                if (finalNotificationManager != null) {
+                  finalNotificationManager.cancel(finalNotificationId);
                 }
               } catch (Exception ignored) {
               }
             }
           };
+      ExecutorService executorService = Executors.newSingleThreadExecutor();
       executorService.submit(getFile);
     } catch (Exception e) {
       outputAppend("Error " + e.getMessage());

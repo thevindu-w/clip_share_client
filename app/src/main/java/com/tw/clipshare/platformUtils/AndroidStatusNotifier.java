@@ -25,15 +25,13 @@
 package com.tw.clipshare.platformUtils;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
+import android.app.NotificationManager;
 import androidx.core.app.NotificationCompat;
-import androidx.core.app.NotificationManagerCompat;
 
 public final class AndroidStatusNotifier implements StatusNotifier {
 
   private static final int PROGRESS_MAX = 100;
-  private final NotificationManagerCompat notificationManager;
-  private final Activity activity;
+  private final NotificationManager notificationManager;
   private final NotificationCompat.Builder builder;
   private final int notificationId;
   private int prev;
@@ -41,11 +39,9 @@ public final class AndroidStatusNotifier implements StatusNotifier {
   private boolean finished;
 
   public AndroidStatusNotifier(
-      Activity activity,
-      NotificationManagerCompat notificationManager,
+      NotificationManager notificationManager,
       NotificationCompat.Builder builder,
       int notificationId) {
-    this.activity = activity;
     this.notificationManager = notificationManager;
     this.builder =
         builder
@@ -77,17 +73,9 @@ public final class AndroidStatusNotifier implements StatusNotifier {
       if (value <= this.prev || curTime < this.prevTime + 500) return;
       this.prev = value;
       this.prevTime = curTime;
-      NotificationCompat.Builder finalBuilder = builder;
-      NotificationManagerCompat finalNotificationManager = notificationManager;
       builder.setSilent(true);
-      this.activity.runOnUiThread(
-          () -> {
-            try {
-              finalBuilder.setProgress(PROGRESS_MAX, value, false).setContentText(value + "%");
-              finalNotificationManager.notify(notificationId, finalBuilder.build());
-            } catch (Exception ignored) {
-            }
-          });
+      builder.setProgress(PROGRESS_MAX, value, false).setContentText(value + "%");
+      notificationManager.notify(notificationId, builder.build());
     } catch (Exception ignored) {
     }
   }
@@ -106,14 +94,7 @@ public final class AndroidStatusNotifier implements StatusNotifier {
     }
     try {
       if (this.notificationManager != null) {
-        NotificationManagerCompat finalNotificationManager = this.notificationManager;
-        this.activity.runOnUiThread(
-            () -> {
-              try {
-                finalNotificationManager.cancel(this.notificationId);
-              } catch (Exception ignored) {
-              }
-            });
+        this.notificationManager.cancel(this.notificationId);
       }
     } catch (Exception ignored) {
     }

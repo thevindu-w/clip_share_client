@@ -6,9 +6,9 @@ import static org.junit.Assert.*;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.NotificationManager;
 import android.content.Context;
 import androidx.core.app.NotificationCompat;
-import androidx.core.app.NotificationManagerCompat;
 import androidx.test.core.app.ActivityScenario;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
@@ -66,15 +66,15 @@ public class Proto_v2Test {
 
   @Before
   public void setNotifier() {
-    NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
+    NotificationManager notificationManager =
+        (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
     NotificationCompat.Builder builder =
         new NotificationCompat.Builder(context, "Test")
             .setSmallIcon(R.drawable.ic_upload_icon)
             .setContentTitle("Sending files");
     Random rnd = new Random();
     int notificationId = Math.abs(rnd.nextInt(Integer.MAX_VALUE - 1)) + 1;
-    this.notifier =
-        new AndroidStatusNotifier(activity, notificationManager, builder, notificationId);
+    this.notifier = new AndroidStatusNotifier(notificationManager, builder, notificationId);
     assertNotNull(this.notifier);
   }
 
