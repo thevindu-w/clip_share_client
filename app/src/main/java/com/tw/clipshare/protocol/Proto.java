@@ -35,6 +35,10 @@ public abstract class Proto {
     this.protoMethods = new ProtoMethods(serverConnection, utils, notifier);
   }
 
+  public void setStatusNotifier(StatusNotifier notifier) {
+    this.protoMethods.setStatusNotifier(notifier);
+  }
+
   /** Close the connection used for communicating with the server */
   public void close() {
     this.protoMethods.close();

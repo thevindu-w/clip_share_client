@@ -55,7 +55,7 @@ public final class ProtoMethods {
 
   private final ServerConnection serverConnection;
   private final AndroidUtils utils;
-  private final StatusNotifier notifier;
+  private StatusNotifier notifier;
 
   ProtoMethods(ServerConnection serverConnection, AndroidUtils utils, StatusNotifier notifier) {
     this.serverConnection = serverConnection;
@@ -212,7 +212,6 @@ public final class ProtoMethods {
     try {
       fileCnt = readSize();
     } catch (IOException ignored) {
-      if (this.notifier != null) this.notifier.finish();
       return false;
     }
     boolean status = true;
@@ -279,7 +278,6 @@ public final class ProtoMethods {
       }
       if (!status) break;
     }
-    if (this.notifier != null) this.notifier.finish();
     return status && fsUtils.finish();
   }
 
@@ -489,6 +487,14 @@ public final class ProtoMethods {
     if (len >= 16777216) return true;
     if (this.sendSize(len)) return true;
     return this.serverConnection.send(bytes);
+  }
+
+  public void setStatusNotifier(StatusNotifier notifier) {
+    try {
+      if (this.notifier != null) this.notifier.finish();
+    } catch (Exception ignored) {
+    }
+    this.notifier = notifier;
   }
 
   /** Close the connection used for communicating with the server */

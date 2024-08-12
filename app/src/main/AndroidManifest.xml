@@ -7,6 +7,10 @@
         android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="28" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission
+        android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC"
+        android:minSdkVersion="34" />
     <uses-permission android:name="android.permission.VIBRATE" />
 
     <application
@@ -44,6 +48,11 @@
         <activity
             android:name="com.tw.clipshare.SettingsActivity"
             android:label="Settings" />
+
+        <service
+            android:name="com.tw.clipshare.FileService"
+            android:foregroundServiceType="dataSync"
+            android:exported="false" />
     </application>
 
 </manifest>

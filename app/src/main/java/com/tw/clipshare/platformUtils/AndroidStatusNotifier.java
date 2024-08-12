@@ -25,7 +25,9 @@
 package com.tw.clipshare.platformUtils;
 
 import android.annotation.SuppressLint;
+import android.app.Notification;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import androidx.core.app.NotificationCompat;
 
 public final class AndroidStatusNotifier implements StatusNotifier {
@@ -65,6 +67,30 @@ public final class AndroidStatusNotifier implements StatusNotifier {
     }
   }
 
+  public void setTitle(String title) {
+    if (this.builder == null) return;
+    try {
+      this.builder.setContentTitle(title);
+    } catch (Exception ignored) {
+    }
+  }
+
+  public void setContentIntent(PendingIntent intent) {
+    if (this.builder == null) return;
+    try {
+      this.builder.setContentIntent(intent);
+    } catch (Exception ignored) {
+    }
+  }
+
+  public void setIcon(int icon) {
+    if (this.builder == null) return;
+    try {
+      this.builder.setSmallIcon(icon);
+    } catch (Exception ignored) {
+    }
+  }
+
   @SuppressLint("MissingPermission")
   @Override
   public void setStatus(int value) {
@@ -73,7 +99,6 @@ public final class AndroidStatusNotifier implements StatusNotifier {
       if (value <= this.prev || curTime < this.prevTime + 500) return;
       this.prev = value;
       this.prevTime = curTime;
-      builder.setSilent(true);
       builder.setProgress(PROGRESS_MAX, value, false).setContentText(value + "%");
       notificationManager.notify(notificationId, builder.build());
     } catch (Exception ignored) {
@@ -84,6 +109,14 @@ public final class AndroidStatusNotifier implements StatusNotifier {
   public void reset() {
     this.prev = -1;
     this.prevTime = 0;
+  }
+
+  public Notification getNotification() {
+    return builder.build();
+  }
+
+  public int getId() {
+    return this.notificationId;
   }
 
   @Override

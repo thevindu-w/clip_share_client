@@ -1179,50 +1179,18 @@ public class ClipShareActivity extends AppCompatActivity {
           });
       String address = this.getServerAddress();
       if (address == null) return;
-      NotificationManager notificationManager = null;
-      StatusNotifier notifier = null;
-      int notificationId = 0;
-      try {
-        notificationManager = (NotificationManager) context.getSystemService(NOTIFICATION_SERVICE);
-        NotificationCompat.Builder builder =
-            new NotificationCompat.Builder(context, ClipShareActivity.CHANNEL_ID)
-                .setSmallIcon(R.drawable.ic_download_icon)
-                .setContentTitle("Getting file");
-        Random rnd = new Random();
-        notificationId = Math.abs(rnd.nextInt(Integer.MAX_VALUE - 1)) + 1;
-        notifier = new AndroidStatusNotifier(notificationManager, builder, notificationId);
-      } catch (Exception ignored) {
-      }
-      final NotificationManager finalNotificationManager = notificationManager;
-      final int finalNotificationId = notificationId;
-      final StatusNotifier finalNotifier = notifier;
       Runnable getFile =
           () -> {
             try {
               FSUtils utils = new FSUtils(context, ClipShareActivity.this);
-              Proto proto = getProtoWrapper(address, utils, finalNotifier);
+              Proto proto = getProtoWrapper(address, utils, null);
               if (proto == null) return;
-              boolean status = proto.getFile();
-              proto.close();
-              if (status) {
-                runOnUiThread(
-                    () -> {
-                      try {
-                        output.setText(R.string.receiveAllFiles);
-                      } catch (Exception ignored) {
-                      }
-                    });
-                this.vibrate();
-              }
+              FileService.addPendingTask(new PendingTask(proto, PendingTask.GET_FILES));
+              Intent intent = new Intent(this, FileService.class);
+              ContextCompat.startForegroundService(context, intent);
+              outputAppend("Getting file\n");
             } catch (Exception e) {
               outputAppend("Error " + e.getMessage());
-            } finally {
-              try {
-                if (finalNotificationManager != null) {
-                  finalNotificationManager.cancel(finalNotificationId);
-                }
-              } catch (Exception ignored) {
-              }
             }
           };
       ExecutorService executorService = Executors.newSingleThreadExecutor();
