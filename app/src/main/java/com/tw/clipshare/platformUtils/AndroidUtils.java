@@ -31,6 +31,11 @@ import android.app.Activity;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
+import android.os.Build;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
+import android.os.VibratorManager;
+import com.tw.clipshare.Settings;
 
 public class AndroidUtils {
 
@@ -105,6 +110,30 @@ public class AndroidUtils {
       ClipboardManager clipboard = this.getClipboardManager();
       ClipData clip = ClipData.newPlainText("clip_share", text);
       if (clipboard != null) clipboard.setPrimaryClip(clip);
+    } catch (Exception ignored) {
+    }
+  }
+
+  @SuppressWarnings("deprecation")
+  public void vibrate() {
+    try {
+      if (context == null || !Settings.getInstance().getVibrate()) return;
+      Vibrator vibrator;
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        VibratorManager vibratorManager =
+            (VibratorManager) context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE);
+        vibrator = vibratorManager.getDefaultVibrator();
+      } else {
+        vibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
+      }
+
+      final int duration = 100;
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        vibrator.vibrate(
+            VibrationEffect.createOneShot(duration, VibrationEffect.DEFAULT_AMPLITUDE));
+      } else {
+        vibrator.vibrate(duration);
+      }
     } catch (Exception ignored) {
     }
   }

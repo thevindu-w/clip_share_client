@@ -38,7 +38,13 @@ public class FileService extends Service {
     } catch (Exception ignored) {
     }
 
-    Runnable runnable = new FileShareRunnable();
+    LinkedList<PendingTask> pendingTasksInstance;
+    // noinspection SynchronizeOnNonFinalField
+    synchronized (FileService.pendingTasks) {
+      pendingTasksInstance = new LinkedList<>(pendingTasks);
+      FileService.pendingTasks.clear();
+    }
+    Runnable runnable = new FileShareRunnable(pendingTasksInstance);
     executorService = Executors.newSingleThreadExecutor();
     executorService.submit(runnable);
 
@@ -109,17 +115,20 @@ public class FileService extends Service {
   }
 
   private class FileShareRunnable implements Runnable {
+    private final LinkedList<PendingTask> pendingTasks;
+
+    FileShareRunnable(LinkedList<PendingTask> pendingTasks) {
+      this.pendingTasks = pendingTasks;
+    }
+
     @Override
     public void run() {
       PendingTask pendingTask;
       while (true) {
-        //noinspection SynchronizeOnNonFinalField
-        synchronized (FileService.pendingTasks) {
-          if (FileService.pendingTasks.isEmpty()) {
-            return;
-          }
-          pendingTask = pendingTasks.pop();
+        if (this.pendingTasks.isEmpty()) {
+          return;
         }
+        pendingTask = pendingTasks.pop();
 
         try {
           Proto proto = pendingTask.proto;

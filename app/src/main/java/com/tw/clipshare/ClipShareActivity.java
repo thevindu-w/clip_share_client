@@ -496,30 +496,6 @@ public class ClipShareActivity extends AppCompatActivity {
     autoSendExecutorService.submit(runnableAutoSendText);
   }
 
-  @SuppressWarnings("deprecation")
-  private void vibrate() {
-    try {
-      if (!Settings.getInstance().getVibrate()) return;
-      Vibrator vibrator;
-      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-        VibratorManager vibratorManager =
-            (VibratorManager) getSystemService(Context.VIBRATOR_MANAGER_SERVICE);
-        vibrator = vibratorManager.getDefaultVibrator();
-      } else {
-        vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
-      }
-
-      final int duration = 100;
-      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-        vibrator.vibrate(
-            VibrationEffect.createOneShot(duration, VibrationEffect.DEFAULT_AMPLITUDE));
-      } else {
-        vibrator.vibrate(duration);
-      }
-    } catch (Exception ignored) {
-    }
-  }
-
   /**
    * Opens a ServerConnection. Returns null on error.
    *
@@ -706,7 +682,7 @@ public class ClipShareActivity extends AppCompatActivity {
               if (!status) return;
               if (clipDataString.length() < 16384) outputAppend("Sent: " + clipDataString);
               else outputAppend("Sent: " + clipDataString.substring(0, 1024) + " ... (truncated)");
-              this.vibrate();
+              utils.vibrate();
             } catch (Exception e) {
               outputAppend("Error " + e.getMessage());
             }
@@ -801,7 +777,7 @@ public class ClipShareActivity extends AppCompatActivity {
                 } catch (Exception ignored) {
                 }
               });
-          this.vibrate();
+          utils.vibrate();
         }
       } catch (Exception e) {
         outputAppend("Error " + e.getMessage());
@@ -893,7 +869,7 @@ public class ClipShareActivity extends AppCompatActivity {
                 } catch (Exception ignored) {
                 }
               });
-          this.vibrate();
+          utils.vibrate();
         } else if (failedAll
             && (ClipShareActivity.this.fileURIs == null
                 || ClipShareActivity.this.fileURIs.isEmpty())) {
@@ -951,7 +927,7 @@ public class ClipShareActivity extends AppCompatActivity {
               if (text.length() < 16384) outputAppend("Received: " + text);
               else outputAppend("Received: " + text.substring(0, 1024) + " ... (truncated)");
               checkURL(text);
-              this.vibrate();
+              utils.vibrate();
             } catch (Exception e) {
               outputAppend("Error " + e.getMessage());
             }
@@ -988,7 +964,7 @@ public class ClipShareActivity extends AppCompatActivity {
               boolean status = proto.getImage();
               proto.close();
               if (status) {
-                this.vibrate();
+                utils.vibrate();
               } else {
                 runOnUiThread(
                     () ->
@@ -1085,7 +1061,7 @@ public class ClipShareActivity extends AppCompatActivity {
               boolean status = protoV3.getCopiedImage();
               proto.close();
               if (status) {
-                this.vibrate();
+                utils.vibrate();
               } else {
                 runOnUiThread(
                     () ->
@@ -1146,7 +1122,7 @@ public class ClipShareActivity extends AppCompatActivity {
               boolean status = protoV3.getScreenshot(displayNum);
               proto.close();
               if (status) {
-                this.vibrate();
+                utils.vibrate();
               } else {
                 runOnUiThread(
                     () ->
@@ -1185,7 +1161,7 @@ public class ClipShareActivity extends AppCompatActivity {
               FSUtils utils = new FSUtils(context, ClipShareActivity.this);
               Proto proto = getProtoWrapper(address, utils, null);
               if (proto == null) return;
-              FileService.addPendingTask(new PendingTask(proto, PendingTask.GET_FILES));
+              FileService.addPendingTask(new PendingTask(proto, utils, PendingTask.GET_FILES));
               Intent intent = new Intent(this, FileService.class);
               ContextCompat.startForegroundService(context, intent);
               outputAppend("Getting file\n");
