@@ -835,55 +835,23 @@ public class ClipShareActivity extends AppCompatActivity {
         PendingFile pendingFile = new PendingFile(fileInputStream, fileName, fileSize);
         pendingFiles.add(pendingFile);
       }
-      FSUtils utils = new FSUtils(context, ClipShareActivity.this, pendingFiles);
 
-      Random rnd = new Random();
-      int notificationId = Math.abs(rnd.nextInt(Integer.MAX_VALUE - 1)) + 1;
-      NotificationManager notificationManager = null;
+      boolean status = false;
       try {
-        runOnUiThread(() -> output.setText(R.string.sendingFiles));
-        notificationManager = (NotificationManager) context.getSystemService(NOTIFICATION_SERVICE);
-        NotificationCompat.Builder builder =
-            new NotificationCompat.Builder(context, ClipShareActivity.CHANNEL_ID)
-                .setSmallIcon(R.drawable.ic_upload_icon)
-                .setContentTitle("Sending files");
-        StatusNotifier notifier =
-            new AndroidStatusNotifier(notificationManager, builder, notificationId);
-        boolean status = true;
-        boolean failedAll = true;
-        while (utils.getRemainingFileCount() > 0) {
-          Proto proto = getProtoWrapper(address, utils, notifier);
-          if (proto == null) {
-            status = false;
-            break;
+        FSUtils utils = new FSUtils(context, ClipShareActivity.this, pendingFiles);
+        if (utils.getRemainingFileCount() > 0) {
+          if (handleTaskFromService(address, utils, PendingTask.SEND_FILES)) {
+            status = true;
+            outputAppend("Sending file\n");
           }
-          status &= proto.sendFile();
-          failedAll &= !status;
-          proto.close();
-        }
-        if (status) {
-          runOnUiThread(
-              () -> {
-                try {
-                  output.setText(R.string.sentAllFiles);
-                } catch (Exception ignored) {
-                }
-              });
-          utils.vibrate();
-        } else if (failedAll
-            && (ClipShareActivity.this.fileURIs == null
-                || ClipShareActivity.this.fileURIs.isEmpty())) {
-          ClipShareActivity.this.fileURIs = uris;
         }
       } catch (Exception e) {
         outputAppend("Error " + e.getMessage());
-      } finally {
-        try {
-          if (notificationManager != null) {
-            notificationManager.cancel(notificationId);
-          }
-        } catch (Exception ignored) {
-        }
+      }
+      if (!status
+          && (ClipShareActivity.this.fileURIs == null
+              || ClipShareActivity.this.fileURIs.isEmpty())) {
+        ClipShareActivity.this.fileURIs = uris;
       }
     } catch (Exception e) {
       outputAppend("Error " + e.getMessage());
@@ -1159,12 +1127,9 @@ public class ClipShareActivity extends AppCompatActivity {
           () -> {
             try {
               FSUtils utils = new FSUtils(context, ClipShareActivity.this);
-              Proto proto = getProtoWrapper(address, utils, null);
-              if (proto == null) return;
-              FileService.addPendingTask(new PendingTask(proto, utils, PendingTask.GET_FILES));
-              Intent intent = new Intent(this, FileService.class);
-              ContextCompat.startForegroundService(context, intent);
-              outputAppend("Getting file\n");
+              if (handleTaskFromService(address, utils, PendingTask.GET_FILES)) {
+                outputAppend("Getting file\n");
+              }
             } catch (Exception e) {
               outputAppend("Error " + e.getMessage());
             }
@@ -1176,6 +1141,20 @@ public class ClipShareActivity extends AppCompatActivity {
     } finally {
       this.lastActivityTime = System.currentTimeMillis();
       endActiveTask();
+    }
+  }
+
+  private boolean handleTaskFromService(String address, AndroidUtils utils, int task) {
+    try {
+      Proto proto = getProtoWrapper(address, utils, null);
+      if (proto == null) return false;
+      FileService.addPendingTask(new PendingTask(proto, utils, task));
+      Intent intent = new Intent(this, FileService.class);
+      ContextCompat.startForegroundService(context, intent);
+      return true;
+    } catch (Exception e) {
+      outputAppend("Error occurred: " + e.getMessage());
+      return false;
     }
   }
 

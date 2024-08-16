@@ -75,8 +75,8 @@ public class FileService extends Service {
       if (FileService.pendingTasks == null) FileService.pendingTasks = new LinkedList<>();
     }
     //noinspection SynchronizeOnNonFinalField
-    synchronized (pendingTasks) {
-      pendingTasks.add(pendingTask);
+    synchronized (FileService.pendingTasks) {
+      FileService.pendingTasks.add(pendingTask);
     }
   }
 
@@ -124,14 +124,11 @@ public class FileService extends Service {
     @Override
     public void run() {
       PendingTask pendingTask;
-      while (true) {
-        if (this.pendingTasks.isEmpty()) {
-          return;
-        }
-        pendingTask = pendingTasks.pop();
+      while (!this.pendingTasks.isEmpty()) {
+        pendingTask = this.pendingTasks.pop();
 
+        Proto proto = pendingTask.proto;
         try {
-          Proto proto = pendingTask.proto;
           proto.setStatusNotifier(statusNotifier);
           switch (pendingTask.task) {
             case PendingTask.GET_FILES:
@@ -139,19 +136,19 @@ public class FileService extends Service {
                 statusNotifier.reset();
                 statusNotifier.setTitle("Getting file");
                 statusNotifier.setIcon(R.drawable.ic_download_icon);
-                this.getFiles(proto);
+                proto.getFile();
+              }
+            case PendingTask.SEND_FILES:
+              {
+                statusNotifier.reset();
+                statusNotifier.setTitle("Sending file");
+                statusNotifier.setIcon(R.drawable.ic_upload_icon);
+                proto.sendFile();
               }
           }
-          proto.close();
         } catch (Exception ignored) {
         }
-      }
-    }
-
-    private void getFiles(Proto proto) {
-      try {
-        proto.getFile();
-      } catch (Exception ignored) {
+        proto.close();
       }
     }
   }
