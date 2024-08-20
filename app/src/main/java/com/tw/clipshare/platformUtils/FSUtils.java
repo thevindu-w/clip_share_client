@@ -262,8 +262,7 @@ public class FSUtils extends AndroidUtils {
         this.inFileName = node.getFullName();
         this.fileSize = node.getFileSize();
         Uri uri = node.getUri();
-        if (uri != null)
-          this.inStream = activity.getContentResolver().openInputStream(node.getUri());
+        if (uri != null) this.inStream = activity.getContentResolver().openInputStream(uri);
         else this.inStream = null;
         return true;
       }
@@ -271,7 +270,9 @@ public class FSUtils extends AndroidUtils {
         PendingFile pendingFile = this.pendingFiles.pop();
         this.inFileName = pendingFile.name;
         this.fileSize = pendingFile.size;
-        this.inStream = pendingFile.inputStream;
+        if (pendingFile.uri != null)
+          this.inStream = activity.getContentResolver().openInputStream(pendingFile.uri);
+        else this.inStream = null;
         return true;
       }
     } catch (Exception ignored) {

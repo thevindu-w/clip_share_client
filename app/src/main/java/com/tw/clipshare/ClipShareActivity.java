@@ -830,9 +830,8 @@ public class ClipShareActivity extends AppCompatActivity {
         String fileSizeStr = cursor.getString(cursor.getColumnIndexOrThrow(OpenableColumns.SIZE));
         cursor.close();
 
-        InputStream fileInputStream = getContentResolver().openInputStream(uri);
         long fileSize = fileSizeStr != null ? Long.parseLong(fileSizeStr) : -1;
-        PendingFile pendingFile = new PendingFile(fileInputStream, fileName, fileSize);
+        PendingFile pendingFile = new PendingFile(uri, fileName, fileSize);
         pendingFiles.add(pendingFile);
       }
 

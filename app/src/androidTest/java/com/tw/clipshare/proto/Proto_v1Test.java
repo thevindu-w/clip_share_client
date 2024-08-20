@@ -8,6 +8,7 @@ import android.Manifest;
 import android.app.Activity;
 import android.app.NotificationManager;
 import android.content.Context;
+import android.net.Uri;
 import androidx.core.app.NotificationCompat;
 import androidx.test.core.app.ActivityScenario;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -23,6 +24,8 @@ import com.tw.clipshare.platformUtils.StatusNotifier;
 import com.tw.clipshare.protocol.Proto;
 import com.tw.clipshare.protocol.ProtocolSelector;
 import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.Random;
@@ -30,6 +33,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 
 @RunWith(AndroidJUnit4.class)
@@ -41,6 +45,8 @@ public class Proto_v1Test {
   private static Context context;
   private static Activity activity;
   private StatusNotifier notifier;
+
+  @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
   @BeforeClass
   public static void initialize() throws InterruptedException {
@@ -93,7 +99,8 @@ public class Proto_v1Test {
     ByteArrayInputStream istream = builder.getStream();
     MockConnection connection;
     Proto proto;
-    PendingFile pendingFile = new PendingFile(new ByteArrayInputStream(new byte[1]), "name", 0);
+
+    PendingFile pendingFile = new PendingFile(null, "name", 0);
     LinkedList<PendingFile> files = new LinkedList<>();
     files.push(pendingFile);
     FSUtils fsUtils = new FSUtils(context, activity, files);
@@ -286,13 +293,17 @@ public class Proto_v1Test {
   @Test
   public void testSendFile() throws IOException {
     String fileName = "file.txt";
-    byte[] file = {'a', 'b', 'c'};
+    byte[] fileContent = {'a', 'b', 'c'};
     BAOStreamBuilder builder = initProto(true);
     ByteArrayInputStream istream = builder.getStream();
     MockConnection connection = new MockConnection(istream);
 
-    ByteArrayInputStream fileStream = new ByteArrayInputStream(file);
-    PendingFile pendingFile = new PendingFile(fileStream, fileName, file.length);
+    File tmpFile = temporaryFolder.newFile(fileName);
+    FileOutputStream fileOutputStream = new FileOutputStream(tmpFile);
+    fileOutputStream.write(fileContent);
+    fileOutputStream.close();
+    Uri uri = Uri.fromFile(tmpFile);
+    PendingFile pendingFile = new PendingFile(uri, fileName, fileContent.length);
     LinkedList<PendingFile> files = new LinkedList<>();
     files.push(pendingFile);
     FSUtils utils = new FSUtils(context, activity, files);
@@ -305,7 +316,7 @@ public class Proto_v1Test {
     builder.addByte(1);
     builder.addByte(4);
     builder.addString(fileName);
-    builder.addData(file);
+    builder.addData(fileContent);
     byte[] expected = builder.getArray();
     assertArrayEquals(expected, connection.getOutputBytes());
   }

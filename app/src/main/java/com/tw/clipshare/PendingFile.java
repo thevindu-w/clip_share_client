@@ -24,15 +24,15 @@
 
 package com.tw.clipshare;
 
-import java.io.InputStream;
+import android.net.Uri;
 
 public class PendingFile {
-  public final InputStream inputStream;
+  public final Uri uri;
   public final String name;
   public final long size;
 
-  public PendingFile(InputStream inputStream, String name, long size) {
-    this.inputStream = inputStream;
+  public PendingFile(Uri uri, String name, long size) {
+    this.uri = uri;
     this.name = name;
     this.size = size;
   }
