@@ -751,42 +751,10 @@ public class ClipShareActivity extends AppCompatActivity {
       String address = this.getServerAddress();
       if (address == null) return;
       FSUtils utils = new FSUtils(context, ClipShareActivity.this, dirTree);
-      Random rnd = new Random();
-      int notificationId = Math.abs(rnd.nextInt(Integer.MAX_VALUE - 1)) + 1;
-      NotificationManager notificationManager = null;
-      try {
-        runOnUiThread(() -> output.setText(R.string.sendingFiles));
-        notificationManager = (NotificationManager) context.getSystemService(NOTIFICATION_SERVICE);
-        NotificationCompat.Builder builder =
-            new NotificationCompat.Builder(context, ClipShareActivity.CHANNEL_ID)
-                .setSmallIcon(R.drawable.ic_upload_icon)
-                .setContentTitle("Sending files");
-        StatusNotifier notifier =
-            new AndroidStatusNotifier(notificationManager, builder, notificationId);
-        boolean status = true;
-        Proto proto = getProtoWrapper(address, utils, notifier);
-        if (proto != null) {
-          status &= proto.sendFile();
-          proto.close();
-        } else status = false;
-        if (status) {
-          runOnUiThread(
-              () -> {
-                try {
-                  output.setText(R.string.sentAllFiles);
-                } catch (Exception ignored) {
-                }
-              });
-          utils.vibrate();
-        }
-      } catch (Exception e) {
-        outputAppend("Error " + e.getMessage());
-      } finally {
-        try {
-          if (notificationManager != null) {
-            notificationManager.cancel(notificationId);
-          }
-        } catch (Exception ignored) {
+      runOnUiThread(() -> output.setText(R.string.sendingFiles));
+      if (utils.getRemainingFileCount() > 0) {
+        if (handleTaskFromService(address, utils, PendingTask.SEND_FILES)) {
+          outputAppend("Sending files\n");
         }
       }
     } catch (Exception e) {
@@ -841,7 +809,7 @@ public class ClipShareActivity extends AppCompatActivity {
         if (utils.getRemainingFileCount() > 0) {
           if (handleTaskFromService(address, utils, PendingTask.SEND_FILES)) {
             status = true;
-            outputAppend("Sending file\n");
+            outputAppend("Sending files\n");
           }
         }
       } catch (Exception e) {
