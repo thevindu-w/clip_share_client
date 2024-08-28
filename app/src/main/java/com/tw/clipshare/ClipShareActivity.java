@@ -53,7 +53,6 @@ import androidx.documentfile.provider.DocumentFile;
 import com.tw.clipshare.netConnection.*;
 import com.tw.clipshare.platformUtils.AndroidUtils;
 import com.tw.clipshare.platformUtils.FSUtils;
-import com.tw.clipshare.platformUtils.StatusNotifier;
 import com.tw.clipshare.platformUtils.directoryTree.Directory;
 import com.tw.clipshare.platformUtils.directoryTree.DirectoryTreeNode;
 import com.tw.clipshare.platformUtils.directoryTree.RegularFile;
@@ -536,18 +535,16 @@ public class ClipShareActivity extends AppCompatActivity {
    *
    * @param address of the server
    * @param utils object or null
-   * @param notifier object or null
    * @return a Proto object if success, or null otherwise
    */
   @Nullable
-  private Proto getProtoWrapper(
-      @NonNull String address, AndroidUtils utils, StatusNotifier notifier) {
+  private Proto getProtoWrapper(@NonNull String address, AndroidUtils utils) {
     int retries = 1;
     do {
       try {
         ServerConnection connection = getServerConnection(address);
         if (connection == null) continue;
-        Proto proto = ProtocolSelector.getProto(connection, utils, notifier);
+        Proto proto = ProtocolSelector.getProto(connection, utils, null);
         if (proto != null) return proto;
         connection.close();
       } catch (ProtocolException ex) {
@@ -672,7 +669,7 @@ public class ClipShareActivity extends AppCompatActivity {
               AndroidUtils utils = new AndroidUtils(context, ClipShareActivity.this);
               String clipDataString = utils.getClipboardText();
               if (clipDataString == null) return;
-              Proto proto = getProtoWrapper(address, utils, null);
+              Proto proto = getProtoWrapper(address, utils);
               if (proto == null) return;
               boolean status = proto.sendText(clipDataString);
               proto.close();
@@ -850,7 +847,7 @@ public class ClipShareActivity extends AppCompatActivity {
           () -> {
             try {
               AndroidUtils utils = new AndroidUtils(context, ClipShareActivity.this);
-              Proto proto = getProtoWrapper(address, utils, null);
+              Proto proto = getProtoWrapper(address, utils);
               if (proto == null) return;
               String text = proto.getText();
               proto.close();
@@ -891,7 +888,7 @@ public class ClipShareActivity extends AppCompatActivity {
           () -> {
             try {
               FSUtils utils = new FSUtils(context, ClipShareActivity.this);
-              Proto proto = getProtoWrapper(address, utils, null);
+              Proto proto = getProtoWrapper(address, utils);
               if (proto == null) return;
               boolean status = proto.getImage();
               proto.close();
@@ -976,7 +973,7 @@ public class ClipShareActivity extends AppCompatActivity {
           () -> {
             try {
               FSUtils utils = new FSUtils(context, ClipShareActivity.this);
-              Proto proto = getProtoWrapper(address, utils, null);
+              Proto proto = getProtoWrapper(address, utils);
               if (proto == null) return;
               if (!(proto instanceof Proto_v3)) {
                 runOnUiThread(
@@ -1037,7 +1034,7 @@ public class ClipShareActivity extends AppCompatActivity {
           () -> {
             try {
               FSUtils utils = new FSUtils(context, ClipShareActivity.this);
-              Proto proto = getProtoWrapper(address, utils, null);
+              Proto proto = getProtoWrapper(address, utils);
               if (proto == null) return;
               if (!(proto instanceof Proto_v3)) {
                 runOnUiThread(
@@ -1110,7 +1107,7 @@ public class ClipShareActivity extends AppCompatActivity {
 
   private boolean handleTaskFromService(String address, AndroidUtils utils, int task) {
     try {
-      Proto proto = getProtoWrapper(address, utils, null);
+      Proto proto = getProtoWrapper(address, utils);
       if (proto == null) return false;
       FileService.addPendingTask(new PendingTask(proto, utils, task));
       Intent intent = new Intent(this, FileService.class);

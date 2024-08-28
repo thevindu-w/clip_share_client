@@ -27,7 +27,6 @@ package com.tw.clipshare.platformUtils;
 import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.app.NotificationManager;
-import android.app.PendingIntent;
 import androidx.core.app.NotificationCompat;
 
 public final class AndroidStatusNotifier implements StatusNotifier {
@@ -71,14 +70,6 @@ public final class AndroidStatusNotifier implements StatusNotifier {
     if (this.builder == null) return;
     try {
       this.builder.setContentTitle(title);
-    } catch (Exception ignored) {
-    }
-  }
-
-  public void setContentIntent(PendingIntent intent) {
-    if (this.builder == null) return;
-    try {
-      this.builder.setContentIntent(intent);
     } catch (Exception ignored) {
     }
   }

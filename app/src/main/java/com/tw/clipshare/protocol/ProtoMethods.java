@@ -133,7 +133,6 @@ public final class ProtoMethods {
       progressCurrent = (int) ((sent_sz * 100) / (sent_sz + fileSize));
       if (this.notifier != null) this.notifier.setStatus(progressCurrent);
     }
-    if (this.notifier != null) this.notifier.finish();
     return true;
   }
 
@@ -373,7 +372,6 @@ public final class ProtoMethods {
     } catch (Exception ignored) {
       return false;
     }
-    if (this.notifier != null) this.notifier.finish();
     return true;
   }
 

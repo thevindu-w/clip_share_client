@@ -17,8 +17,6 @@
         <item quantity="other">%d files selected. Press send file button.</item>
     </plurals>
     <string name="noFilesTxt" translatable="false">No files selected</string>
-    <string name="receiveAllFiles" translatable="false">Received all files</string>
-    <string name="sentAllFiles" translatable="false">Sent all files</string>
     <string name="settings" translatable="false">Settings</string>
     <string name="secure_mode" translatable="false">Secure mode</string>
     <string name="vibrate" translatable="false">Vibration alerts</string>

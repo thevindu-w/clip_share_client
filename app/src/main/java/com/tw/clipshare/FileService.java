@@ -146,6 +146,7 @@ public class FileService extends Service {
                 proto.sendFile();
               }
           }
+          pendingTask.utils.vibrate();
         } catch (Exception ignored) {
         }
         proto.close();
