@@ -7,6 +7,7 @@ import android.os.IBinder;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 import com.tw.clipshare.platformUtils.AndroidStatusNotifier;
+import com.tw.clipshare.platformUtils.AndroidUtils;
 import com.tw.clipshare.protocol.Proto;
 import java.util.LinkedList;
 import java.util.Random;
@@ -128,6 +129,7 @@ public class FileService extends Service {
         pendingTask = this.pendingTasks.pop();
 
         Proto proto = pendingTask.proto;
+        AndroidUtils utils = pendingTask.utils;
         try {
           proto.setStatusNotifier(statusNotifier);
           switch (pendingTask.task) {
@@ -136,17 +138,18 @@ public class FileService extends Service {
                 statusNotifier.reset();
                 statusNotifier.setTitle("Getting file");
                 statusNotifier.setIcon(R.drawable.ic_download_icon);
-                proto.getFile();
+                if (!proto.getFile()) utils.showToast("Failed getting files");
               }
             case PendingTask.SEND_FILES:
               {
                 statusNotifier.reset();
                 statusNotifier.setTitle("Sending file");
                 statusNotifier.setIcon(R.drawable.ic_upload_icon);
-                proto.sendFile();
+                if (proto.sendFile()) utils.showToast("Sent all files");
+                else utils.showToast("Failed sending files");
               }
           }
-          pendingTask.utils.vibrate();
+          utils.vibrate();
         } catch (Exception ignored) {
         }
         proto.close();

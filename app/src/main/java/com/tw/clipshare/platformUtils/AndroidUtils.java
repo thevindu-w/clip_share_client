@@ -31,13 +31,12 @@ import android.app.Activity;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
-import android.os.Build;
-import android.os.VibrationEffect;
-import android.os.Vibrator;
-import android.os.VibratorManager;
+import android.os.*;
+import android.widget.Toast;
 import com.tw.clipshare.Settings;
 
 public class AndroidUtils {
+  private static long lastToastTime = 0;
 
   protected final Context context;
   protected final Activity activity;
@@ -110,6 +109,18 @@ public class AndroidUtils {
       ClipboardManager clipboard = this.getClipboardManager();
       ClipData clip = ClipData.newPlainText("clip_share", text);
       if (clipboard != null) clipboard.setPrimaryClip(clip);
+    } catch (Exception ignored) {
+    }
+  }
+
+  public void showToast(String message) {
+    if (this.context == null) return;
+    try {
+      long currTime = System.currentTimeMillis();
+      if (currTime - lastToastTime < 2000) return;
+      lastToastTime = currTime;
+      Handler handler = new Handler(Looper.getMainLooper());
+      handler.post(() -> Toast.makeText(context, message, Toast.LENGTH_SHORT).show());
     } catch (Exception ignored) {
     }
   }

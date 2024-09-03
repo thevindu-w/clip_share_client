@@ -272,11 +272,11 @@ public final class ProtoMethods {
       }
       try {
         out.close();
-        if (status) fsUtils.getFileDone("file");
       } catch (IOException ignored) {
       }
       if (!status) break;
     }
+    if (status) fsUtils.getFileDone("files");
     return status && fsUtils.finish();
   }
 
@@ -289,19 +289,13 @@ public final class ProtoMethods {
     FSUtils fsUtils = (FSUtils) this.utils;
     int fileCnt = fsUtils.getRemainingFileCount(version >= 3);
     if (fileCnt <= 0) return false;
-    if (methodInit(SEND_FILE)) {
-      return false;
-    }
+    if (methodInit(SEND_FILE)) return false;
     try {
-      if (sendSize(fileCnt)) {
-        return false;
-      }
+      if (sendSize(fileCnt)) return false;
       for (int fileNum = 0; fileNum < fileCnt; fileNum++) {
         fsUtils.prepareNextFile(version >= 3);
         String fileName = fsUtils.getFileName();
-        if (fileName == null || fileName.isEmpty()) {
-          return false;
-        }
+        if (fileName == null || fileName.isEmpty()) return false;
         long fileSize = fsUtils.getFileSize();
         InputStream inStream = fsUtils.getFileInStream();
         if (fileSize == -1 && inStream != null) {
@@ -332,15 +326,9 @@ public final class ProtoMethods {
             continue;
           }
         }
-        if (inStream == null) {
-          return false;
-        }
-        if (sendString(fileName)) {
-          return false;
-        }
-        if (sendSize(fileSize)) {
-          return false;
-        }
+        if (inStream == null) return false;
+        if (sendString(fileName)) return false;
+        if (sendSize(fileSize)) return false;
         byte[] buf = new byte[BUF_SZ];
         long sent_sz = 0;
         int progressCurrent;
@@ -355,16 +343,12 @@ public final class ProtoMethods {
           } catch (IOException ex) {
             return false;
           }
-          if (read_sz < 0) {
-            return false;
-          } else if (read_sz == 0) {
-            continue;
-          }
+          if (read_sz < 0) return false;
+          else if (read_sz == 0) continue;
           fileSize -= read_sz;
           sent_sz += read_sz;
-          if (this.serverConnection.send(buf, 0, read_sz)) {
-            return false;
-          }
+          if (this.serverConnection.send(buf, 0, read_sz)) return false;
+
           progressCurrent = (int) ((sent_sz * 100) / (sent_sz + fileSize));
           if (this.notifier != null) this.notifier.setStatus(progressCurrent);
         }

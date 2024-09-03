@@ -30,7 +30,6 @@ import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
-import android.widget.Toast;
 import com.tw.clipshare.PendingFile;
 import com.tw.clipshare.platformUtils.directoryTree.DirectoryTreeNode;
 import java.io.*;
@@ -47,7 +46,6 @@ public class FSUtils extends AndroidUtils {
   private String baseDirName;
   private final LinkedList<PendingFile> pendingFiles;
   private final DirectoryTreeNode directoryTree;
-  private static long lastToastTime = 0;
 
   private FSUtils(
       Context context,
@@ -198,17 +196,14 @@ public class FSUtils extends AndroidUtils {
   }
 
   public void getFileDone(String type) {
-    if (this.activity == null) return;
-    long currTime = System.currentTimeMillis();
-    if (currTime - lastToastTime < 2000) return;
-    lastToastTime = currTime;
-    this.activity.runOnUiThread(
-        () ->
-            Toast.makeText(
-                    context,
-                    "Saved " + type + " to " + outFilePath.substring(baseDirName.length() + 1),
-                    Toast.LENGTH_SHORT)
-                .show());
+    String path;
+    if ("image".equals(type)) {
+      path = outFilePath;
+    } else {
+      path = getDocumentDir();
+    }
+    path = path.replaceFirst("^/storage/emulated/0", "Internal Storage");
+    showToast("Saved " + type + " to " + path);
   }
 
   public void scanMediaFile(String filePath) {

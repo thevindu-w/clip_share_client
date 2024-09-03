@@ -92,47 +92,45 @@ public class ClipShareActivity extends AppCompatActivity {
   private final ActivityResultLauncher<Intent> fileSelectActivityLauncher =
       registerForActivityResult(
           new ActivityResultContracts.StartActivityForResult(),
-          result -> {
-            new Thread() {
-              @Override
-              public void run() {
-                try {
-                  if (result.getResultCode() != Activity.RESULT_OK) return;
-                  Intent intent1 = result.getData();
-                  if (intent1 == null) return;
-                  ClipShareActivity.this.fileURIs = getFileUris(intent1);
-                  clkSendFile();
-                } catch (Exception e) {
-                  outputAppend("Error " + e.getMessage());
-                } finally {
-                  ClipShareActivity.this.lastActivityTime = System.currentTimeMillis();
-                  endActiveTask();
+          result ->
+              new Thread() {
+                @Override
+                public void run() {
+                  try {
+                    if (result.getResultCode() != Activity.RESULT_OK) return;
+                    Intent intent1 = result.getData();
+                    if (intent1 == null) return;
+                    ClipShareActivity.this.fileURIs = getFileUris(intent1);
+                    clkSendFile();
+                  } catch (Exception e) {
+                    outputAppend("Error " + e.getMessage());
+                  } finally {
+                    ClipShareActivity.this.lastActivityTime = System.currentTimeMillis();
+                    endActiveTask();
+                  }
                 }
-              }
-            }.start();
-          });
+              }.start());
   private final ActivityResultLauncher<Intent> folderSelectActivityLauncher =
       registerForActivityResult(
           new ActivityResultContracts.StartActivityForResult(),
-          result -> {
-            new Thread() {
-              @Override
-              public void run() {
-                try {
-                  if (result.getResultCode() != Activity.RESULT_OK) return;
-                  Intent intent1 = result.getData();
-                  if (intent1 == null) return;
-                  DirectoryTreeNode root = ClipShareActivity.this.getDirectoryTree(intent1);
-                  clkSendFolder(root);
-                } catch (Exception e) {
-                  outputAppend("Error " + e.getMessage());
-                } finally {
-                  ClipShareActivity.this.lastActivityTime = System.currentTimeMillis();
-                  endActiveTask();
+          result ->
+              new Thread() {
+                @Override
+                public void run() {
+                  try {
+                    if (result.getResultCode() != Activity.RESULT_OK) return;
+                    Intent intent1 = result.getData();
+                    if (intent1 == null) return;
+                    DirectoryTreeNode root = ClipShareActivity.this.getDirectoryTree(intent1);
+                    clkSendFolder(root);
+                  } catch (Exception e) {
+                    outputAppend("Error " + e.getMessage());
+                  } finally {
+                    ClipShareActivity.this.lastActivityTime = System.currentTimeMillis();
+                    endActiveTask();
+                  }
                 }
-              }
-            }.start();
-          });
+              }.start());
   private final ActivityResultLauncher<Intent> settingsActivityLauncher =
       registerForActivityResult(
           new ActivityResultContracts.StartActivityForResult(),
@@ -411,12 +409,13 @@ public class ClipShareActivity extends AppCompatActivity {
           if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             uri = intent.getParcelableExtra(Intent.EXTRA_STREAM, Uri.class);
           } else {
+            //noinspection deprecation
             uri = intent.getParcelableExtra(Intent.EXTRA_STREAM);
           }
           if (uri != null) {
             this.fileURIs = new ArrayList<>(1);
             this.fileURIs.add(uri);
-            runOnUiThread(() -> output.setText(R.string.fileSelectedTxt));
+            outputSetText(R.string.fileSelectedTxt);
             autoSend(AUTO_SEND_FILES);
             return;
           }
@@ -425,17 +424,14 @@ public class ClipShareActivity extends AppCompatActivity {
           if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             uris = intent.getParcelableArrayListExtra(Intent.EXTRA_STREAM, Uri.class);
           } else {
+            //noinspection deprecation
             uris = intent.getParcelableArrayListExtra(Intent.EXTRA_STREAM);
           }
           if (uris != null && !uris.isEmpty()) {
             this.fileURIs = uris;
             int count = this.fileURIs.size();
-            runOnUiThread(
-                () ->
-                    output.setText(
-                        context
-                            .getResources()
-                            .getQuantityString(R.plurals.filesSelectedTxt, count, count)));
+            outputSetText(
+                context.getResources().getQuantityString(R.plurals.filesSelectedTxt, count, count));
             autoSend(AUTO_SEND_FILES);
             return;
           }
@@ -445,15 +441,15 @@ public class ClipShareActivity extends AppCompatActivity {
           if (text != null) {
             AndroidUtils utils = new AndroidUtils(context, ClipShareActivity.this);
             utils.setClipboardText(text);
-            runOnUiThread(() -> output.setText(R.string.textSelected));
+            outputSetText(R.string.textSelected);
             autoSend(AUTO_SEND_TEXT);
           }
         } else {
           this.fileURIs = null;
-          runOnUiThread(() -> output.setText(R.string.noFilesTxt));
+          outputSetText(R.string.noFilesTxt);
         }
       } catch (Exception e) {
-        runOnUiThread(() -> output.setText(e.getMessage()));
+        outputAppend("Error " + e.getMessage());
       }
     } else {
       this.fileURIs = null;
@@ -680,8 +676,8 @@ public class ClipShareActivity extends AppCompatActivity {
               boolean status = proto.sendText(clipDataString);
               proto.close();
               if (!status) return;
-              if (clipDataString.length() < 16384) outputAppend("Sent: " + clipDataString);
-              else outputAppend("Sent: " + clipDataString.substring(0, 1024) + " ... (truncated)");
+              if (clipDataString.length() < 16384) outputSetText("Sent: " + clipDataString);
+              else outputSetText("Sent: " + clipDataString.substring(0, 1024) + " ... (truncated)");
               utils.vibrate();
             } catch (Exception e) {
               outputAppend("Error " + e.getMessage());
@@ -751,10 +747,9 @@ public class ClipShareActivity extends AppCompatActivity {
       String address = this.getServerAddress();
       if (address == null) return;
       FSUtils utils = new FSUtils(context, ClipShareActivity.this, dirTree);
-      runOnUiThread(() -> output.setText(R.string.sendingFiles));
       if (utils.getRemainingFileCount() > 0) {
         if (handleTaskFromService(address, utils, PendingTask.SEND_FILES)) {
-          outputAppend("Sending files\n");
+          outputSetText(R.string.sendingFiles);
         }
       }
     } catch (Exception e) {
@@ -809,7 +804,7 @@ public class ClipShareActivity extends AppCompatActivity {
         if (utils.getRemainingFileCount() > 0) {
           if (handleTaskFromService(address, utils, PendingTask.SEND_FILES)) {
             status = true;
-            outputAppend("Sending files\n");
+            outputSetText(R.string.sendingFiles);
           }
         }
       } catch (Exception e) {
@@ -859,8 +854,8 @@ public class ClipShareActivity extends AppCompatActivity {
               proto.close();
               if (text == null) return;
               utils.setClipboardText(text);
-              if (text.length() < 16384) outputAppend("Received: " + text);
-              else outputAppend("Received: " + text.substring(0, 1024) + " ... (truncated)");
+              if (text.length() < 16384) outputSetText("Received: " + text);
+              else outputSetText("Received: " + text.substring(0, 1024) + " ... (truncated)");
               checkURL(text);
               utils.vibrate();
             } catch (Exception e) {
@@ -1095,7 +1090,7 @@ public class ClipShareActivity extends AppCompatActivity {
             try {
               FSUtils utils = new FSUtils(context, ClipShareActivity.this);
               if (handleTaskFromService(address, utils, PendingTask.GET_FILES)) {
-                outputAppend("Getting file\n");
+                outputAppend("Getting files\n");
               }
             } catch (Exception e) {
               outputAppend("Error " + e.getMessage());
@@ -1120,7 +1115,7 @@ public class ClipShareActivity extends AppCompatActivity {
       ContextCompat.startForegroundService(context, intent);
       return true;
     } catch (Exception e) {
-      outputAppend("Error occurred: " + e.getMessage());
+      outputAppend("Error " + e.getMessage());
       return false;
     }
   }
@@ -1171,11 +1166,28 @@ public class ClipShareActivity extends AppCompatActivity {
     }
   }
 
+  private void outputSetText(CharSequence text) {
+    try {
+      runOnUiThread(() -> output.setText(text));
+    } catch (Exception ignored) {
+    }
+  }
+
+  private void outputSetText(int resId) {
+    try {
+      runOnUiThread(() -> output.setText(resId));
+    } catch (Exception ignored) {
+    }
+  }
+
   private void outputAppend(CharSequence text) {
     runOnUiThread(
         () -> {
-          String newText = output.getText().toString() + text;
-          output.setText(newText);
+          try {
+            String newText = output.getText().toString() + text;
+            output.setText(newText);
+          } catch (Exception ignored) {
+          }
         });
   }
 }

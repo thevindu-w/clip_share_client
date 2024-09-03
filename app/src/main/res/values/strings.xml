@@ -34,7 +34,7 @@
     <string name="auto_send" translatable="false">Auto send</string>
     <string name="auto_send_text" translatable="false">Auto send text</string>
     <string name="auto_send_file" translatable="false">Auto send files</string>
-    <string name="sendingFiles" translatable="false">Sending files …</string>
+    <string name="sendingFiles" translatable="false">Sending files\n</string>
     <string name="tunnel" translatable="false">Tunnel</string>
     <string name="textSelected" translatable="false">Text is selected. Press the Send button.\nEnable auto-send text in
         Settings to automatically send.
@@ -45,12 +45,12 @@
     <string name="UDP_port" translatable="false">UDP Port</string>
     <string name="port_number" translatable="false">4337</string>
     <string name="secure_port_number" translatable="false">4338</string>
-    <string name="display">Display :</string>
-    <string name="copied_image">Copied Image</string>
-    <string name="screenshot">Screenshot</string>
-    <string name="export_settings">Export settings</string>
-    <string name="import_settings">Import settings</string>
-    <string name="close_app_if_idle">Close app if idle</string>
-    <string name="autoCloseDelayDefault">120</string>
-    <string name="auto_close_delay">Auto-close delay (seconds)</string>
+    <string name="display" translatable="false">Display :</string>
+    <string name="copied_image" translatable="false">Copied Image</string>
+    <string name="screenshot" translatable="false">Screenshot</string>
+    <string name="export_settings" translatable="false">Export settings</string>
+    <string name="import_settings" translatable="false">Import settings</string>
+    <string name="close_app_if_idle" translatable="false">Close app if idle</string>
+    <string name="autoCloseDelayDefault" translatable="false">120</string>
+    <string name="auto_close_delay" translatable="false">Auto-close delay (seconds)</string>
 </resources>
