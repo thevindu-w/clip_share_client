@@ -45,6 +45,8 @@ app. You can find more information on running the server on Windows, macOS, or L
 
 ## How to use
 
+### Main screen
+
 <p align="center">
 <img src="https://raw.githubusercontent.com/thevindu-w/clip_share_client/master/fastlane/metadata/android/en-US/images/phoneScreenshots/3.jpg"
 alt="help image" height="500">
@@ -53,50 +55,49 @@ alt="help image" height="500">
 - **Get text**: To get copied text from the server (ex: laptop) to the phone.
 
   _Steps_:
-  - Copy any text on the laptop.
-  - Press the green colored _GET_ button.
-  - Now, the copied text is received and copied to the phone. Paste it anywhere on the phone (possibly in a different
-    app).
-  
+    - Copy any text on the laptop.
+    - Press the green colored _GET_ button.
+    - Now, the copied text is received and copied to the phone. Paste it anywhere on the phone (possibly in a different
+      app).
+
 
 - **Send text**: To send copied text from the phone to the server (ex: laptop).
 
   _Steps_:
-  - Copy any text on the phone (possibly in a different app).
-  - Press the red colored _SEND_ button.
-  - Now, the copied text is sent and copied to the laptop. Paste it anywhere on the laptop.
+    - Copy any text on the phone (possibly in a different app).
+    - Press the red colored _SEND_ button.
+    - Now, the copied text is sent and copied to the laptop. Paste it anywhere on the laptop.
 
 
 - **Get files**: To get copied files from the server (ex: laptop) to the phone.
 
   _Steps_:
-  - Copy any file(s) and/or folder(s) on the laptop.
-  - Press the green colored _FILE_ button.
-  - The copied files and folders are now received and saved on the phone.
+    - Copy any file(s) and/or folder(s) on the laptop.
+    - Press the green colored _FILE_ button.
+    - The copied files and folders are now received and saved on the phone.
 
 
 - **Send files**: To send files from the phone to the server (ex: laptop).
 
   _Method 1 Steps_:
-  - Press the red colored _FILE_ button.
-  - Select the file(s) to send.
-  - The files are now sent to the laptop.
-  
+    - Press the red colored _FILE_ button.
+    - Select the file(s) to send.
+    - The files are now sent to the laptop.
+
   _Method 2 Steps_:
-  - Share any file(s) with ClipShare from any other app.
-  - Press the red colored _FILE_ button.
-  - The files are now sent to the laptop.
+    - Share any file(s) with ClipShare from any other app.
+    - Press the red colored _FILE_ button.
+    - The files are now sent to the laptop.
 
 
 - **Send folder**: To send a folder from the phone to the server (ex: laptop).
 
   _Steps_:
-  - Press the red colored _FOLDER_ button.
-  - Select the folder to send.
-  - The folder is now sent to the laptop.
+    - Press the red colored _FOLDER_ button.
+    - Select the folder to send.
+    - The folder is now sent to the laptop.
 
 &emsp; Note: Sending folders requires a server version 2.x or later.
-
 
 - **Get image/screenshot**: To get a copied image or screenshot from the server (ex: laptop) to the phone.
 
@@ -105,11 +106,11 @@ alt="help image" height="500">
     - Press the green colored _IMAGE_ button.
     - If there is an image copied on the laptop, it will be received and saved on the phone.
       Otherwise, a screenshot of the laptop will be received and saved on the phone.
-<br><br>
-  Long pressing the _IMAGE_ button gives more options.
-  - Get only a copied image without a screenshot.
-  - Get only a screenshot, even when there is an image, copied to the clipboard of the laptop.
-  - Select the display to get the screenshot.
+      <br><br>
+      Long pressing the _IMAGE_ button gives more options.
+    - Get only a copied image without a screenshot.
+    - Get only a screenshot, even when there is an image, copied to the clipboard of the laptop.
+    - Select the display to get the screenshot.
 
 
 - **Scan**: To scan the network to find available servers in the network.
@@ -117,3 +118,63 @@ alt="help image" height="500">
   If there is any server in the network, scanning will find that. If the scan finds only one server, its address will be
   placed in the _Server_ address input area. If the scan finds many servers, a popup will appear to select any server
   out of them, and the selected address will be placed in the _Server_ address input area.
+
+### Settings
+
+#### Auto send
+
+- **Auto send text:** When this setting is enabled, ClipShare will automatically send the text shared with it from other
+  apps (ex: when sharing a link from the web browser) without requiring to tap the _Send_ button.
+- **Auto send files:** When this setting is enabled, ClipShare will automatically send the files shared with it
+  (ex: sharing documents or photos from the file manager or gallery) without requiring to tap the _Send File_ button.
+
+#### Close app if idle
+
+- **Close app if idle:** When this setting is enabled, the ClipShare app will automatically close if it is kept idle
+  without interacting with it for some time. This time duration can be changed from the _Auto-close delay_ setting
+  described below.
+- **Auto-close delay:** This is the time duration, in seconds, for which the app is kept idle before automatically
+  closing. This setting is visible only when the _Close app if idle_ setting is enabled.
+
+#### Vibration alerts
+
+- **Vibration alerts:** When this setting is enabled, the phone will give a short vibration pulse after each successful
+  operation (ex: _Get Files_) as feedback to the user.
+
+#### Secure mode
+
+- **Secure mode:** When this setting is enabled, the connections with the server (ex: your laptop) will be secured with
+  TLS. Enabling this setting can prevent others on the same network from spying on or modifying the data you share with
+  your laptop. To enable this setting, you need to select the CA certificate, client TLS certificate, and add at least
+  one trusted server. Additionally, you need to configure the server on your laptop to have a server certificate.
+  Refer to the
+  [TLS certificates](https://github.com/thevindu-w/clip_share_server#create-ssltls-certificate-and-key-files) and
+  [Configuration](https://github.com/thevindu-w/clip_share_server#configuration) sections of the
+  [ClipShare server](https://github.com/thevindu-w/clip_share_server) for more information.
+- **CA Certificate:** This is the self-signed TLS certificate of the certification authority that signed the client and
+  server's TLS certificates. Select the certificate file using the _Browse_ button.
+- **Client Certificate:** This is the TLS key and certificate _p12_ or _pfx_ file of the client. Before selecting the
+  file using the _Browse_ button, you must enter the password for the _pfx_ file.
+- **Trusted servers:** This is the list of trusted servers to which the client is allowed to connect. Add the _Common
+  Name_ of each server using the `+` button. Tap on the name to edit it, and tap on the `X` button to remove the entry
+  from the list. The client app will refuse to connect to servers having TLS certificates with their _Common Name_ not
+  listed under this list when secure mode is enabled.
+
+#### Ports
+
+- **Port:** This is the port on which the server on your laptop listens for plaintext TCP connections. The default value
+  for this port is `4337`. If a different port is assigned for the server according to the
+  [server configuration](https://github.com/thevindu-w/clip_share_server#configuration), enter the same port here.
+- **Secure Port:** This is the port on which the server on your laptop listens for TLS-encrypted connections. The
+  default value for this port is `4338`. If a different port is assigned for the server according to the
+  [server configuration](https://github.com/thevindu-w/clip_share_server#configuration), enter the same port here.
+- **UDP Port:** This is the port on which the server on your laptop listens for UDP scanning requests. The default value
+  for this port is `4337`. If a different port is assigned for the server according to the
+  [server configuration](https://github.com/thevindu-w/clip_share_server#configuration), enter the same port here.
+
+#### Import/Export settings
+
+- **Import settings:** Use this to import settings from a _JSON_ file exported before. Note that the current settings
+  will be discarded when importing settings from a file.
+- **Export settings:** Use this to export settings to a _JSON_ file that can be imported later. Settings can be exported
+  to preserve settings after reinstalling the app or moving app settings to another device.
