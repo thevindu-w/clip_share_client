@@ -15,6 +15,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.rule.GrantPermissionRule;
 import com.tw.clipshare.ClipShareActivity;
+import com.tw.clipshare.FileService;
 import com.tw.clipshare.PendingFile;
 import com.tw.clipshare.R;
 import com.tw.clipshare.netConnection.MockConnection;
@@ -75,7 +76,7 @@ public class Proto_v2Test {
     NotificationManager notificationManager =
         (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
     NotificationCompat.Builder builder =
-        new NotificationCompat.Builder(context, "Test")
+        new NotificationCompat.Builder(context, FileService.CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_upload_icon)
             .setContentTitle("Sending files");
     Random rnd = new Random();

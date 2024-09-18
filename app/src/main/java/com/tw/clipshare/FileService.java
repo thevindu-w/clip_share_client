@@ -16,7 +16,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 public class FileService extends Service {
-  private static final String CHANNEL_ID = "notification_channel";
+  public static final String CHANNEL_ID = "notification_channel";
   private static LinkedList<PendingTask> pendingTasks = null;
   private ExecutorService executorService;
   private AndroidStatusNotifier statusNotifier;
