@@ -904,14 +904,14 @@ public class ClipShareActivity extends AppCompatActivity {
               }
             } catch (Exception e) {
               outputAppend("Error " + e.getMessage());
+            } finally {
+              endActiveTask();
+              this.lastActivityTime = System.currentTimeMillis();
             }
           };
       executorService.submit(getImg);
     } catch (Exception e) {
       outputAppend("Error " + e.getMessage());
-    } finally {
-      this.lastActivityTime = System.currentTimeMillis();
-      endActiveTask();
     }
   }
 
@@ -951,9 +951,6 @@ public class ClipShareActivity extends AppCompatActivity {
 
       popupView.setOnClickListener(v -> popupWindow.dismiss());
     } catch (Exception ignored) {
-    } finally {
-      this.lastActivityTime = System.currentTimeMillis();
-      endActiveTask();
     }
     return true;
   }
@@ -1001,14 +998,14 @@ public class ClipShareActivity extends AppCompatActivity {
               }
             } catch (Exception e) {
               outputAppend("Error " + e.getMessage());
+            } finally {
+              this.lastActivityTime = System.currentTimeMillis();
+              endActiveTask();
             }
           };
       executorService.submit(getImg);
     } catch (Exception e) {
       outputAppend("Error " + e.getMessage());
-    } finally {
-      this.lastActivityTime = System.currentTimeMillis();
-      endActiveTask();
     }
   }
 
@@ -1062,14 +1059,14 @@ public class ClipShareActivity extends AppCompatActivity {
               }
             } catch (Exception e) {
               outputAppend("Error " + e.getMessage());
+            } finally {
+              this.lastActivityTime = System.currentTimeMillis();
+              endActiveTask();
             }
           };
       executorService.submit(getImg);
     } catch (Exception e) {
       outputAppend("Error " + e.getMessage());
-    } finally {
-      this.lastActivityTime = System.currentTimeMillis();
-      endActiveTask();
     }
   }
 
