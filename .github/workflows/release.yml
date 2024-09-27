@@ -12,6 +12,8 @@ jobs:
     timeout-minutes: 20
     permissions:
       contents: write
+      id-token: write
+      attestations: write
 
     steps:
     - name: Check out repository code
@@ -68,6 +70,11 @@ jobs:
         chmod +x gradlew
         ./gradlew assembleRelease
         mv app/build/outputs/apk/release/app-release.apk "${{env.APK_FILE}}"
+
+    - name: Generate artifact attestation
+      uses: actions/attest-build-provenance@v1
+      with:
+        subject-path: "${{env.APK_FILE}}"
 
     - name: Create release
       env:
