@@ -77,7 +77,7 @@ public class ClipShareActivity extends AppCompatActivity {
   private static final int AUTO_SEND_TEXT = 1;
   private static final int AUTO_SEND_FILES = 2;
   private static final Object settingsLock = new Object();
-  private static boolean isSettingsLoaded = false;
+  private static volatile boolean isSettingsLoaded = false;
   private String receivedURI;
   public TextView output;
   private EditText editAddress;
@@ -209,9 +209,6 @@ public class ClipShareActivity extends AppCompatActivity {
     this.output = findViewById(R.id.txtOutput);
     this.context = getApplicationContext();
 
-    Intent intent = getIntent();
-    if (intent != null) extractIntent(intent);
-
     output.setMovementMethod(new ScrollingMovementMethod());
     Button btnGet = findViewById(R.id.btnGetTxt);
     btnGet.setOnClickListener(view -> clkGetTxt());
@@ -241,15 +238,17 @@ public class ClipShareActivity extends AppCompatActivity {
     SharedPreferences sharedPref =
         context.getSharedPreferences(ClipShareActivity.PREFERENCES, Context.MODE_PRIVATE);
     editAddress.setText(sharedPref.getString("serverIP", ""));
-    Settings settings = null;
     try {
-      settings = Settings.getInstance(sharedPref.getString("settings", null));
+      Settings.loadInstance(sharedPref.getString("settings", null));
     } catch (Exception ignored) {
     }
     isSettingsLoaded = true;
     synchronized (settingsLock) {
       settingsLock.notifyAll();
     }
+
+    Intent intent = getIntent();
+    if (intent != null) extractIntent(intent);
 
     try {
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -264,6 +263,7 @@ public class ClipShareActivity extends AppCompatActivity {
     } catch (Exception ignored) {
     }
     try {
+      Settings settings = Settings.getInstance();
       if (settings != null && settings.getCloseIfIdle())
         closeIfIdle(settings.getAutoCloseDelay() * 1000);
     } catch (Exception ignored) {
@@ -475,15 +475,16 @@ public class ClipShareActivity extends AppCompatActivity {
               }
             }
             Settings st = Settings.getInstance();
+            String address = this.getServerAddress();
             switch (type) {
               case AUTO_SEND_TEXT:
                 {
-                  if (st.getAutoSendText()) clkSendTxt();
+                  if (st.getAutoSendText(address)) clkSendTxt();
                   break;
                 }
               case AUTO_SEND_FILES:
                 {
-                  if (st.getAutoSendFiles()) clkSendFile();
+                  if (st.getAutoSendFiles(address)) clkSendFile();
                   break;
                 }
             }

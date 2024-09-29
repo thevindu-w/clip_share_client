@@ -56,8 +56,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class SettingsActivity extends AppCompatActivity {
   private SwitchCompat secureSwitch;
   private Intent intent;
-  private AtomicInteger id;
+  private AtomicInteger idTLS;
+  private AtomicInteger idAutoSend;
   private LinearLayout trustList;
+  private LinearLayout autoSendTrustList;
   private EditText editPass;
   private TextView cnTxt;
   private TextView caCnTxt;
@@ -132,9 +134,9 @@ public class SettingsActivity extends AppCompatActivity {
     try {
       View trustServer = View.inflate(getApplicationContext(), R.layout.trusted_server, null);
       ImageButton delBtn = trustServer.findViewById(R.id.delBtn);
-      TextView cnTxt = trustServer.findViewById(R.id.cnTxt);
-      EditText cnEdit = trustServer.findViewById(R.id.cnEdit);
-      trustServer.setId(id.getAndIncrement());
+      TextView cnTxt = trustServer.findViewById(R.id.viewTxt);
+      EditText cnEdit = trustServer.findViewById(R.id.editTxt);
+      trustServer.setId(idTLS.getAndIncrement());
       Settings st = Settings.getInstance();
       List<String> servers = st.getTrustedList();
       if (name != null) cnTxt.setText(name);
@@ -147,10 +149,10 @@ public class SettingsActivity extends AppCompatActivity {
             try {
               if (servers.remove(cnTxt.getText().toString())) {
                 trustList.removeView(trustServer);
-                if (servers.isEmpty()) {
-                  st.setSecure(false);
-                  SettingsActivity.this.secureSwitch.setChecked(false);
-                }
+              }
+              if (servers.isEmpty()) {
+                st.setSecure(false);
+                SettingsActivity.this.secureSwitch.setChecked(false);
               }
             } catch (Exception ignored) {
             }
@@ -178,15 +180,71 @@ public class SettingsActivity extends AppCompatActivity {
     }
   }
 
+  private void addRowToAutoSendTrustList(boolean addToList, String address) {
+    try {
+      View trustServer = View.inflate(getApplicationContext(), R.layout.trusted_server, null);
+      ImageButton delBtn = trustServer.findViewById(R.id.delBtn);
+      TextView addressTxt = trustServer.findViewById(R.id.viewTxt);
+      EditText addressEdit = trustServer.findViewById(R.id.editTxt);
+      trustServer.setId(idAutoSend.getAndIncrement());
+      Settings st = Settings.getInstance();
+      List<String> servers = st.getAutoSendTrustedList();
+      if (address != null
+          && address.matches("^\\*|((25[0-5]|(2[0-4]|1\\d|[1-9]|)\\d)(\\.(?!$)|$)){4}$"))
+        addressTxt.setText(address);
+      else addressTxt.setText("*");
+      if (addToList) servers.add(addressTxt.getText().toString());
+      autoSendTrustList.addView(trustServer, 0);
+      addressTxt.setTextColor(caCnTxt.getTextColors());
+      addressEdit.setTextColor(caCnTxt.getTextColors());
+      delBtn.setOnClickListener(
+          view1 -> {
+            try {
+              if (servers.remove(addressTxt.getText().toString())) {
+                autoSendTrustList.removeView(trustServer);
+              }
+            } catch (Exception ignored) {
+            }
+          });
+      addressTxt.setOnClickListener(
+          view1 -> {
+            addressEdit.setText(addressTxt.getText());
+            addressTxt.setVisibility(View.GONE);
+            addressEdit.setVisibility(View.VISIBLE);
+            addressEdit.requestFocus();
+          });
+      addressEdit.setOnFocusChangeListener(
+          (view1, hasFocus) -> {
+            if (!hasFocus) {
+              CharSequence oldText = addressTxt.getText();
+              String newText = addressEdit.getText().toString();
+              boolean isValid =
+                  newText.matches("^\\*|((25[0-5]|(2[0-4]|1\\d|[1-9]|)\\d)(\\.(?!$)|$)){4}$");
+              if (isValid) addressTxt.setText(newText);
+              else
+                Toast.makeText(SettingsActivity.this, "Invalid IPv4 address", Toast.LENGTH_SHORT)
+                    .show();
+              addressEdit.setVisibility(View.GONE);
+              addressTxt.setVisibility(View.VISIBLE);
+              if (isValid && servers.remove(oldText.toString())) servers.add(newText);
+            }
+          });
+    } catch (Exception ignored) {
+    }
+  }
+
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.settings_activity);
     Settings st = Settings.getInstance();
     this.intent = getIntent();
-    this.id = new AtomicInteger();
+    this.idTLS = new AtomicInteger(10000);
+    this.idAutoSend = new AtomicInteger(20000);
     this.trustList = findViewById(R.id.trustedList);
-    ImageButton addBtn = findViewById(R.id.addServerBtn);
+    this.autoSendTrustList = findViewById(R.id.autoSendTrustedList);
+    ImageButton addTrustedCNBtn = findViewById(R.id.addServerBtn);
+    ImageButton addAutoSendServerBtn = findViewById(R.id.addAutoSendServerBtn);
     Button clientBrowseBtn = findViewById(R.id.btnImportCert);
     Button caBrowseBtn = findViewById(R.id.btnImportCACert);
     this.secureSwitch = findViewById(R.id.secureSwitch);
@@ -288,10 +346,12 @@ public class SettingsActivity extends AppCompatActivity {
     String certCN = st.getCertCN();
     if (certCN != null) this.cnTxt.setText(certCN);
 
-    List<String> servers = st.getTrustedList();
-
-    for (String server : servers) {
+    for (String server : st.getTrustedList()) {
       addRowToTrustList(false, server);
+    }
+
+    for (String server : st.getAutoSendTrustedList()) {
+      addRowToAutoSendTrustList(false, server);
     }
 
     SwitchCompat autoSendTextSwitch = findViewById(R.id.autoSendTextSwitch);
@@ -303,6 +363,8 @@ public class SettingsActivity extends AppCompatActivity {
     autoSendFileSwitch.setOnClickListener(
         view -> st.setAutoSendFiles(autoSendFileSwitch.isChecked()));
     autoSendFileSwitch.setChecked(st.getAutoSendFiles());
+
+    addAutoSendServerBtn.setOnClickListener(view -> addRowToAutoSendTrustList(true, null));
 
     SwitchCompat vibrateSwitch = findViewById(R.id.vibrateSwitch);
     vibrateSwitch.setOnClickListener(view -> st.setVibrate(vibrateSwitch.isChecked()));
@@ -347,7 +409,7 @@ public class SettingsActivity extends AppCompatActivity {
         });
     editAutoCloseDelay.setText(String.valueOf(st.getAutoCloseDelay()));
 
-    addBtn.setOnClickListener(view -> addRowToTrustList(true, null));
+    addTrustedCNBtn.setOnClickListener(view -> addRowToTrustList(true, null));
 
     caBrowseBtn.setOnClickListener(
         view -> {
@@ -481,7 +543,7 @@ public class SettingsActivity extends AppCompatActivity {
                   byte[] data = new byte[size];
                   if (fileInputStream.read(data) < size) return;
                   String jsonStr = new String(data, StandardCharsets.UTF_8);
-                  Settings.getInstance(jsonStr);
+                  Settings.loadInstance(jsonStr);
                   editPort.setText(String.valueOf(st.getPort()));
                   editPortSecure.setText(String.valueOf(st.getPortSecure()));
                   editPortUDP.setText(String.valueOf(st.getPortUDP()));
@@ -497,6 +559,11 @@ public class SettingsActivity extends AppCompatActivity {
                   this.secureSwitch.setChecked(st.getSecure());
                   autoSendTextSwitch.setChecked(st.getAutoSendText());
                   autoSendFileSwitch.setChecked(st.getAutoSendFiles());
+                  List<String> autoSendServers = st.getAutoSendTrustedList();
+                  autoSendTrustList.removeAllViews();
+                  for (String server : autoSendServers) {
+                    addRowToAutoSendTrustList(false, server);
+                  }
                   vibrateSwitch.setChecked(st.getVibrate());
                   autoCloseSwitch.setChecked(st.getCloseIfIdle());
                   editAutoCloseDelay.setText(String.valueOf(st.getAutoCloseDelay()));

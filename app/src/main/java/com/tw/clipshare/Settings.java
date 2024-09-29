@@ -39,6 +39,7 @@ public class Settings implements Serializable {
   private static final Object LOCK = new Object();
   private static volatile Settings INSTANCE = null;
   private final List<String> trustedList;
+  private final List<String> autoSendTrustedList;
   private boolean secure;
   private byte[] caCert;
   private byte[] cert;
@@ -54,9 +55,9 @@ public class Settings implements Serializable {
   private boolean closeIfIdle;
   private int autoCloseDelay;
 
-  private Settings(ArrayList<String> trustedList) {
+  private Settings() {
     this.secure = false;
-    this.trustedList = trustedList;
+    this.trustedList = new ArrayList<>(1);
     this.caCert = null;
     this.cert = null;
     this.passwd = null;
@@ -67,19 +68,20 @@ public class Settings implements Serializable {
     this.portUDP = 4337;
     this.autoSendText = false;
     this.autoSendFiles = false;
+    this.autoSendTrustedList = new ArrayList<>(1);
     this.vibrate = true;
     this.closeIfIdle = true;
     this.autoCloseDelay = 120;
   }
 
-  private Settings() {
-    this(new ArrayList<>(1));
-  }
-
   private static Settings fromString(String s) throws JSONException {
     JSONObject map = new JSONObject(s);
-    ArrayList<String> trustedList = null;
+
+    Settings settings = new Settings();
+
+    // Set trustedList
     try {
+      ArrayList<String> trustedList = null;
       Object trustedListO = map.get("trustedList");
       if (trustedListO instanceof JSONArray) {
         JSONArray jsonArray = (JSONArray) trustedListO;
@@ -91,13 +93,33 @@ public class Settings implements Serializable {
           trustedList.add(item);
         }
       }
+      if (trustedList != null && !trustedList.isEmpty()) {
+        settings.trustedList.clear();
+        settings.trustedList.addAll(trustedList);
+      }
     } catch (Exception ignored) {
-      trustedList = null;
     }
 
-    Settings settings;
-    if (trustedList != null) settings = new Settings(trustedList);
-    else settings = new Settings();
+    // Set autoSendTrustedList
+    try {
+      ArrayList<String> autoSendTrustedList = null;
+      Object autoSendTrustedListO = map.get("autoSendTrustedList");
+      if (autoSendTrustedListO instanceof JSONArray) {
+        JSONArray jsonArray = (JSONArray) autoSendTrustedListO;
+        int len = jsonArray.length();
+        autoSendTrustedList = new ArrayList<>(len);
+        for (int i = 0; i < len; i++) {
+          String item = jsonArray.getString(i);
+          if (item.isEmpty() || item.length() > 256) continue;
+          autoSendTrustedList.add(item);
+        }
+      }
+      if (autoSendTrustedList != null && !autoSendTrustedList.isEmpty()) {
+        settings.autoSendTrustedList.clear();
+        settings.autoSendTrustedList.addAll(autoSendTrustedList);
+      }
+    } catch (Exception ignored) {
+    }
 
     // Set caCert
     try {
@@ -247,7 +269,7 @@ public class Settings implements Serializable {
 
   @NonNull
   public String toString(boolean includePassword) {
-    HashMap<String, Object> map = new HashMap<>(15);
+    HashMap<String, Object> map = new HashMap<>(16);
     try {
       if (this.caCert != null)
         map.put("caCert", Base64.encodeToString(this.caCert, Base64.DEFAULT));
@@ -262,6 +284,7 @@ public class Settings implements Serializable {
       map.put("portUDP", this.portUDP);
       map.put("autoSendText", this.autoSendText);
       map.put("autoSendFiles", this.autoSendFiles);
+      map.put("autoSendTrustedList", this.autoSendTrustedList);
       map.put("vibrate", this.vibrate);
       map.put("closeIfIdle", this.closeIfIdle);
       map.put("autoCloseDelay", this.autoCloseDelay);
@@ -272,7 +295,7 @@ public class Settings implements Serializable {
     return jsonObject.toString();
   }
 
-  public static Settings getInstance(String data) {
+  public static void loadInstance(String data) {
     if (Settings.INSTANCE == null) {
       synchronized (Settings.LOCK) {
         if (Settings.INSTANCE == null) {
@@ -288,26 +311,27 @@ public class Settings implements Serializable {
         INSTANCE.cert = strSet.cert;
         INSTANCE.passwd = strSet.passwd;
         INSTANCE.cn = strSet.cn;
-        List<String> thisList = INSTANCE.trustedList;
-        thisList.clear();
-        thisList.addAll(strSet.trustedList);
+        INSTANCE.trustedList.clear();
+        INSTANCE.trustedList.addAll(strSet.trustedList);
         INSTANCE.secure = strSet.secure;
         INSTANCE.port = strSet.port;
         INSTANCE.portSecure = strSet.portSecure;
         INSTANCE.portUDP = strSet.portUDP;
         INSTANCE.autoSendText = strSet.autoSendText;
         INSTANCE.autoSendFiles = strSet.autoSendFiles;
+        INSTANCE.autoSendTrustedList.clear();
+        INSTANCE.autoSendTrustedList.addAll(strSet.autoSendTrustedList);
         INSTANCE.vibrate = strSet.vibrate;
         INSTANCE.closeIfIdle = strSet.closeIfIdle;
         INSTANCE.autoCloseDelay = strSet.autoCloseDelay;
       } catch (Exception ignored) {
       }
     }
-    return Settings.INSTANCE;
   }
 
   public static Settings getInstance() {
-    return Settings.getInstance(null);
+    Settings.loadInstance(null);
+    return INSTANCE;
   }
 
   public List<String> getTrustedList() {
@@ -354,8 +378,22 @@ public class Settings implements Serializable {
     return autoSendText;
   }
 
+  public boolean getAutoSendText(String address) {
+    return autoSendText
+        && (autoSendTrustedList.contains(address) || autoSendTrustedList.contains("*"));
+  }
+
   public boolean getAutoSendFiles() {
     return autoSendFiles;
+  }
+
+  public boolean getAutoSendFiles(String address) {
+    return autoSendFiles
+        && (autoSendTrustedList.contains(address) || autoSendTrustedList.contains("*"));
+  }
+
+  public List<String> getAutoSendTrustedList() {
+    return this.autoSendTrustedList;
   }
 
   public boolean getVibrate() {
