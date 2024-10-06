@@ -80,6 +80,7 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
+        sed -i "s/<VERSION>/${{env.VERSION}}/g" .github/workflows/resources/release_notes.md
         gh release create "${{env.TAG}}" --latest --verify-tag \
         --notes-file .github/workflows/resources/release_notes.md \
         --title "${{env.TITLE}}" "${{env.APK_FILE}}"
