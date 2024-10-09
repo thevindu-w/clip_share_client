@@ -38,7 +38,7 @@ and a desktop.
 
 <br>
 
-This repository is the Android client of ClipShare. You will need the server on your desktop to connect with it.
+Thisis the Android client of ClipShare. You will need the server on your desktop to connect with it.
 ClipShare is lightweight and easy to use. Run the server on your Windows, macOS, or Linux machine to use the ClipShare
 app. You can find more information on running the server on Windows, macOS, or Linux at
 [github.com/thevindu-w/clip_share_server](https://github.com/thevindu-w/clip_share_server#how-to-use).
@@ -127,6 +127,9 @@ alt="help image" height="500">
   apps (ex: when sharing a link from the web browser) without requiring to tap the _Send_ button.
 - **Auto send files:** When this setting is enabled, ClipShare will automatically send the files shared with it
   (ex: sharing documents or photos from the file manager or gallery) without requiring to tap the _Send File_ button.
+- **Auto send to:** This is the list of trusted servers to auto-send. Add the IP address of each server using the `+`
+  button. Setting the address to `*` will allow auto-sending to any server. Tap on the address to edit it, and tap on
+  the `X` button to remove the entry from the list.
 
 #### Close app if idle
 
