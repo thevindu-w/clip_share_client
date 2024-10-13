@@ -53,6 +53,7 @@
             android:name="com.tw.clipshare.FileService"
             android:foregroundServiceType="dataSync"
             android:exported="false" />
+        <receiver android:name="com.tw.clipshare.FileService$StopEventReceiver"/>
     </application>
 
 </manifest>

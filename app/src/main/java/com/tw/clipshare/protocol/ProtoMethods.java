@@ -56,11 +56,13 @@ public final class ProtoMethods {
   private final ServerConnection serverConnection;
   private final AndroidUtils utils;
   private StatusNotifier notifier;
+  private volatile boolean isRunning;
 
   ProtoMethods(ServerConnection serverConnection, AndroidUtils utils, StatusNotifier notifier) {
     this.serverConnection = serverConnection;
     this.utils = utils;
     this.notifier = notifier;
+    this.isRunning = true;
   }
 
   String v1_getText() {
@@ -113,7 +115,7 @@ public final class ProtoMethods {
     long sent_sz = 0;
     int progressCurrent;
     if (this.notifier != null) this.notifier.setName("Sending file " + fileName);
-    while (fileSize > 0) {
+    while (fileSize > 0 && isRunning) {
       int read_sz = (int) Math.min(fileSize, BUF_SZ);
       try {
         read_sz = inStream.read(buf, 0, read_sz);
@@ -133,7 +135,7 @@ public final class ProtoMethods {
       progressCurrent = (int) ((sent_sz * 100) / (sent_sz + fileSize));
       if (this.notifier != null) this.notifier.setStatus(progressCurrent);
     }
-    return true;
+    return isRunning;
   }
 
   private boolean getImageCommon(byte method, int display) {
@@ -214,7 +216,7 @@ public final class ProtoMethods {
       return false;
     }
     boolean status = true;
-    for (long fileNum = 0; fileNum < fileCnt; fileNum++) {
+    for (long fileNum = 0; fileNum < fileCnt && isRunning; fileNum++) {
       String fileName = readString(MAX_FILE_NAME_LENGTH);
       if (fileName == null || fileName.isEmpty()) {
         status = false;
@@ -254,7 +256,7 @@ public final class ProtoMethods {
         this.notifier.reset();
         this.notifier.setName("Getting file " + fileName);
       }
-      while (file_size > 0) {
+      while (file_size > 0 && isRunning) {
         int read_sz = (int) Math.min(file_size, BUF_SZ);
         if (this.serverConnection.receive(buf, 0, read_sz)) {
           status = false;
@@ -276,8 +278,8 @@ public final class ProtoMethods {
       }
       if (!status) break;
     }
-    if (status) fsUtils.getFileDone("files");
-    return status && fsUtils.finish();
+    if (status && isRunning) fsUtils.getFileDone("files");
+    return status && isRunning && fsUtils.finish() && isRunning;
   }
 
   boolean v2_getFiles() {
@@ -292,7 +294,7 @@ public final class ProtoMethods {
     if (methodInit(SEND_FILE)) return false;
     try {
       if (sendSize(fileCnt)) return false;
-      for (int fileNum = 0; fileNum < fileCnt; fileNum++) {
+      for (int fileNum = 0; fileNum < fileCnt && isRunning; fileNum++) {
         fsUtils.prepareNextFile(version >= 3);
         String fileName = fsUtils.getFileName();
         if (fileName == null || fileName.isEmpty()) return false;
@@ -336,7 +338,7 @@ public final class ProtoMethods {
           this.notifier.reset();
           this.notifier.setName("Sending file " + fileName);
         }
-        while (fileSize > 0) {
+        while (fileSize > 0 && isRunning) {
           int read_sz = (int) Math.min(fileSize, BUF_SZ);
           try {
             read_sz = inStream.read(buf, 0, read_sz);
@@ -356,7 +358,7 @@ public final class ProtoMethods {
     } catch (Exception ignored) {
       return false;
     }
-    return true;
+    return isRunning;
   }
 
   boolean v2_sendFiles() {
@@ -477,6 +479,14 @@ public final class ProtoMethods {
     } catch (Exception ignored) {
     }
     this.notifier = notifier;
+  }
+
+  public void requestStop() {
+    this.isRunning = false;
+  }
+
+  public boolean isStopped() {
+    return !isRunning;
   }
 
   /** Close the connection used for communicating with the server */

@@ -55,4 +55,12 @@ public abstract class Proto {
   public abstract boolean getImage();
 
   public abstract String checkInfo();
+
+  public void requestStop() {
+    this.protoMethods.requestStop();
+  }
+
+  public boolean isStopped() {
+    return this.protoMethods.isStopped();
+  }
 }
