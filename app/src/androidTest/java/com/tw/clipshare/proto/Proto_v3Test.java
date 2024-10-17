@@ -26,6 +26,7 @@ import com.tw.clipshare.platformUtils.StatusNotifier;
 import com.tw.clipshare.platformUtils.directoryTree.Directory;
 import com.tw.clipshare.platformUtils.directoryTree.RegularFile;
 import com.tw.clipshare.protocol.Proto;
+import com.tw.clipshare.protocol.Proto_v3;
 import com.tw.clipshare.protocol.ProtocolSelector;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -247,7 +248,88 @@ public class Proto_v3Test {
     FSUtils utils = new FSUtils(context, activity);
     Proto proto = ProtocolSelector.getProto(connection, utils, notifier);
     assertTrue(proto.getImage());
+    byte[] receivedBytes = connection.getOutputBytes();
     proto.close();
+
+    builder = new BAOStreamBuilder();
+    builder.addByte(MAX_PROTO);
+    builder.addByte(5);
+    byte[] expected = builder.getArray();
+    assertArrayEquals(expected, receivedBytes);
+    assertEquals(-1, istream.read());
+  }
+
+  @Test
+  public void testGetCopiedImage() throws IOException {
+    byte[] png = {(byte) 137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0};
+    BAOStreamBuilder builder = initProto(true);
+    builder.addData(png);
+    ByteArrayInputStream istream = builder.getStream();
+    MockConnection connection = new MockConnection(istream);
+    FSUtils utils = new FSUtils(context, activity);
+    Proto proto = ProtocolSelector.getProto(connection, utils, notifier);
+    if (!(proto instanceof Proto_v3)) fail();
+    Proto_v3 protoV3 = (Proto_v3) proto;
+    assertTrue(protoV3.getCopiedImage());
+    byte[] receivedBytes = connection.getOutputBytes();
+    proto.close();
+
+    builder = new BAOStreamBuilder();
+    builder.addByte(MAX_PROTO);
+    builder.addByte(6);
+    byte[] expected = builder.getArray();
+    assertArrayEquals(expected, receivedBytes);
+    assertEquals(-1, istream.read());
+  }
+
+  @Test
+  public void testGetScreenshot() throws IOException {
+    byte[] png = {(byte) 137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0};
+    int display = 1;
+    BAOStreamBuilder builder = initProto(true);
+    builder.addByte(1);
+    builder.addData(png);
+    ByteArrayInputStream istream = builder.getStream();
+    MockConnection connection = new MockConnection(istream);
+    FSUtils utils = new FSUtils(context, activity);
+    Proto proto = ProtocolSelector.getProto(connection, utils, notifier);
+    if (!(proto instanceof Proto_v3)) fail();
+    Proto_v3 protoV3 = (Proto_v3) proto;
+    assertTrue(protoV3.getScreenshot(display));
+    byte[] receivedBytes = connection.getOutputBytes();
+    proto.close();
+
+    builder = new BAOStreamBuilder();
+    builder.addByte(MAX_PROTO);
+    builder.addByte(7);
+    builder.addSize(display);
+    byte[] expected = builder.getArray();
+    assertArrayEquals(expected, receivedBytes);
+    assertEquals(-1, istream.read());
+  }
+
+  @Test
+  public void testGetScreenshotNoData() throws IOException {
+    int display = 2;
+    BAOStreamBuilder builder = initProto(true);
+    builder.addByte(2);
+    ByteArrayInputStream istream = builder.getStream();
+    MockConnection connection = new MockConnection(istream);
+    FSUtils utils = new FSUtils(context, activity);
+    Proto proto = ProtocolSelector.getProto(connection, utils, notifier);
+    if (!(proto instanceof Proto_v3)) fail();
+    Proto_v3 protoV3 = (Proto_v3) proto;
+    assertFalse(protoV3.getScreenshot(display));
+    byte[] receivedBytes = connection.getOutputBytes();
+    proto.close();
+
+    builder = new BAOStreamBuilder();
+    builder.addByte(MAX_PROTO);
+    builder.addByte(7);
+    builder.addSize(display);
+    byte[] expected = builder.getArray();
+    assertArrayEquals(expected, receivedBytes);
+    assertEquals(-1, istream.read());
   }
 
   @Test
