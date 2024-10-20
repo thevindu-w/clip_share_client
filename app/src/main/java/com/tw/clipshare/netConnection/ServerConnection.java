@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.net.SocketException;
 
 public abstract class ServerConnection {
 
@@ -35,14 +36,20 @@ public abstract class ServerConnection {
   protected InputStream inStream;
   protected Socket socket;
   private boolean closed;
+  private boolean lastOperationSend;
 
   protected ServerConnection() {
-    this.socket = null;
-    this.closed = false;
+    this(null);
   }
 
   protected ServerConnection(Socket socket) {
     this.socket = socket;
+    this.closed = false;
+    this.lastOperationSend = false;
+    try {
+      if (this.socket != null) this.socket.setSoTimeout(10000);
+    } catch (RuntimeException | SocketException ignored) {
+    }
   }
 
   /**
@@ -54,6 +61,7 @@ public abstract class ServerConnection {
    * @return false on success or true on failure
    */
   public boolean send(byte[] buffer, int offset, int length) {
+    this.lastOperationSend = true;
     try {
       outStream.write(buffer, offset, length);
       return false;
@@ -71,6 +79,7 @@ public abstract class ServerConnection {
    * @return false on success or true on failure
    */
   public boolean receive(byte[] buffer, int offset, int length) {
+    this.lastOperationSend = false;
     int remaining = length;
     try {
       while (remaining > 0) {
@@ -112,6 +121,13 @@ public abstract class ServerConnection {
     synchronized (this) {
       if (this.closed) return;
       this.closed = true;
+    }
+    if (this.lastOperationSend) {
+      try {
+        this.socket.setSoTimeout(1000);
+        int ignored = this.inStream.read(); // wait for peer to receive all data
+      } catch (RuntimeException | IOException ignored) {
+      }
     }
     try {
       this.socket.close();
