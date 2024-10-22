@@ -25,7 +25,7 @@
 package com.tw.clipshare.platformUtils;
 
 public interface StatusNotifier {
-  void setName(String name);
+  void setTitle(String name);
 
   void setStatus(int value);
 

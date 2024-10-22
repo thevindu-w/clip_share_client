@@ -114,7 +114,7 @@ public final class ProtoMethods {
     byte[] buf = new byte[BUF_SZ];
     long sent_sz = 0;
     int progressCurrent;
-    if (this.notifier != null) this.notifier.setName("Sending file " + fileName);
+    if (this.notifier != null) this.notifier.setTitle("Sending file " + fileName);
     while (fileSize > 0 && isRunning) {
       int read_sz = (int) Math.min(fileSize, BUF_SZ);
       try {
@@ -254,7 +254,7 @@ public final class ProtoMethods {
       long tot_sz = file_size;
       if (this.notifier != null) {
         this.notifier.reset();
-        this.notifier.setName("Getting file " + fileName);
+        this.notifier.setTitle("Getting file " + fileName);
       }
       while (file_size > 0 && isRunning) {
         int read_sz = (int) Math.min(file_size, BUF_SZ);
@@ -336,7 +336,7 @@ public final class ProtoMethods {
         int progressCurrent;
         if (this.notifier != null) {
           this.notifier.reset();
-          this.notifier.setName("Sending file " + fileName);
+          this.notifier.setTitle("Sending file " + fileName);
         }
         while (fileSize > 0 && isRunning) {
           int read_sz = (int) Math.min(fileSize, BUF_SZ);

@@ -58,14 +58,6 @@ public final class AndroidStatusNotifier implements StatusNotifier {
   }
 
   @Override
-  public void setName(String name) {
-    if (this.builder == null) return;
-    try {
-      this.builder.setContentTitle(name);
-    } catch (Exception ignored) {
-    }
-  }
-
   public void setTitle(String title) {
     if (this.builder == null) return;
     try {
