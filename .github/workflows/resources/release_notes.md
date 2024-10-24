@@ -4,8 +4,7 @@ You will need the ClipShare server running on a Windows, macOS, or Linux machine
 Refer to the [README](https://github.com/thevindu-w/clip_share_client/#how-to-use) for usage information.
 <br>
 **Changes:**
-- Features
-  - Settings option to specify a list of servers to auto-send text and files.
-- Bug fixes
-  - Prevent the auto-close feature from closing the app while getting an image.
-- Other code improvements
+- Feature:
+  - A Stop button in file transfer (get or send) notification to terminate the file transfer.
+- Fix Send Files failure when the app goes to the background while sending a large file.
+- Other code improvements.
