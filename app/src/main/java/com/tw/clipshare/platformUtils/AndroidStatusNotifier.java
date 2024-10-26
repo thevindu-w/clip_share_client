@@ -63,7 +63,7 @@ public final class AndroidStatusNotifier implements StatusNotifier {
     try {
       int len = title.length();
       if (len > 45) {
-        title = title.substring(0,30) + "..." + title.substring(len-12);
+        title = title.substring(0, 30) + "..." + title.substring(len - 12);
       }
       this.builder.setContentTitle(title);
     } catch (Exception ignored) {
