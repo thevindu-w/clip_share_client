@@ -1,5 +1,4 @@
-![Build and Test](https://github.com/thevindu-w/clip_share_client/actions/workflows/build_and_test.yml/badge.svg?branch=master)
-![Check Style](https://github.com/thevindu-w/clip_share_client/actions/workflows/check_style.yml/badge.svg?branch=master)
+![Build and Check](https://github.com/thevindu-w/clip_share_client/actions/workflows/check.yml/badge.svg?branch=master)
 ![Last commit](https://img.shields.io/github/last-commit/thevindu-w/clip_share_client.svg?color=yellow)
 ![License](https://img.shields.io/github/license/thevindu-w/clip_share_client.svg?color=blue)
 
@@ -38,7 +37,7 @@ and a desktop.
 
 <br>
 
-Thisis the Android client of ClipShare. You will need the server on your desktop to connect with it.
+This is the Android client of ClipShare. You will need the server on your desktop to connect with it.
 ClipShare is lightweight and easy to use. Run the server on your Windows, macOS, or Linux machine to use the ClipShare
 app. You can find more information on running the server on Windows, macOS, or Linux at
 [github.com/thevindu-w/clip_share_server](https://github.com/thevindu-w/clip_share_server#how-to-use).
@@ -112,6 +111,7 @@ alt="help image" height="500">
     - Get only a screenshot, even when there is an image, copied to the clipboard of the laptop.
     - Select the display to get the screenshot.
 
+&emsp; Note: These options require a server version 3.x or later to work.
 
 - **Scan**: To scan the network to find available servers in the network.
 

@@ -1,4 +1,4 @@
-name: Run Checks
+name: Build and Check
 run-name: Check ${{ github.sha }}
 
 on:
