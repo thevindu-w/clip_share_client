@@ -19,7 +19,6 @@ import com.tw.clipshare.FileService;
 import com.tw.clipshare.PendingFile;
 import com.tw.clipshare.R;
 import com.tw.clipshare.netConnection.MockConnection;
-import com.tw.clipshare.platformUtils.AndroidStatusNotifier;
 import com.tw.clipshare.platformUtils.FSUtils;
 import com.tw.clipshare.platformUtils.StatusNotifier;
 import com.tw.clipshare.protocol.Proto;
@@ -81,7 +80,7 @@ public class Proto_v2Test {
             .setContentTitle("Sending files");
     Random rnd = new Random();
     int notificationId = Math.abs(rnd.nextInt(Integer.MAX_VALUE - 1)) + 1;
-    this.notifier = new AndroidStatusNotifier(notificationManager, builder, notificationId);
+    this.notifier = new StatusNotifier(notificationManager, builder, notificationId);
     assertNotNull(this.notifier);
   }
 

@@ -8,8 +8,8 @@ import android.os.IBinder;
 import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
-import com.tw.clipshare.platformUtils.AndroidStatusNotifier;
 import com.tw.clipshare.platformUtils.AndroidUtils;
+import com.tw.clipshare.platformUtils.StatusNotifier;
 import com.tw.clipshare.protocol.Proto;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -22,7 +22,7 @@ public class FileService extends Service {
   public static final String CHANNEL_ID = "notification_channel";
   private static LinkedList<PendingTask> pendingTasks = null;
   private ExecutorService executorService;
-  private AndroidStatusNotifier statusNotifier;
+  private StatusNotifier statusNotifier;
 
   @Nullable
   @Override
@@ -131,7 +131,7 @@ public class FileService extends Service {
         new NotificationCompat.Builder(context, FileService.CHANNEL_ID)
             .setContentIntent(pendingIntent)
             .addAction(0, "Stop", pendingIntentStop);
-    this.statusNotifier = new AndroidStatusNotifier(notificationManager, builder, notificationId);
+    this.statusNotifier = new StatusNotifier(notificationManager, builder, notificationId);
     return notificationId;
   }
 
