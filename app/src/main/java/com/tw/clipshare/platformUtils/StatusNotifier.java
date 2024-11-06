@@ -27,6 +27,7 @@ package com.tw.clipshare.platformUtils;
 import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.app.NotificationManager;
+import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
 
 public final class StatusNotifier {
@@ -35,7 +36,12 @@ public final class StatusNotifier {
   private final NotificationManager notificationManager;
   private final NotificationCompat.Builder builder;
   private final int notificationId;
-  private int prev;
+  private long fileSize;
+  private long prevNotifyTime;
+  private int prevProgress;
+  private long prevSize;
+  private long prevSpeed;
+  private TimeContainer prevTimeRemaining;
   private long prevTime;
   private boolean finished;
 
@@ -52,8 +58,13 @@ public final class StatusNotifier {
             .setVibrate(new long[] {0L})
             .setSilent(true);
     this.notificationId = notificationId;
-    this.prev = -1;
+    this.fileSize = -1;
+    this.prevNotifyTime = 0;
+    this.prevProgress = -1;
     this.prevTime = 0;
+    this.prevSize = -1;
+    this.prevSpeed = -1;
+    this.prevTimeRemaining = null;
     this.finished = false;
   }
 
@@ -77,22 +88,65 @@ public final class StatusNotifier {
     }
   }
 
+  long getSpeed(long curSize, long curTime) {
+    if (prevSize < 0) {
+      prevSize = curSize;
+      prevTime = curTime;
+      return -1;
+    }
+    long dur = curTime - prevTime;
+    if (dur >= 100) { // smaller durations cause less precision
+      long speed = ((curSize - prevSize) * 1000) / dur; // Bytes per second
+      if (prevSpeed > 0)
+        speed = (speed + 2 * prevSpeed) / 3; // prevent too large fluctuations in speed value
+      prevSpeed = speed;
+      prevSize = curSize;
+      prevTime = curTime;
+    }
+    return prevSpeed;
+  }
+
+  TimeContainer getRemainingTime(long curSize, long speed) {
+    long remSize = fileSize - curSize;
+    long remSeconds;
+    if (speed >= 100) { // smaller values cause less precision
+      remSeconds = remSize / speed;
+    } else {
+      remSeconds = -1;
+    }
+    return TimeContainer.initBySeconds(remSeconds);
+  }
+
   @SuppressLint("MissingPermission")
-  public void setStatus(int value) {
+  public void setProgress(long current) {
     try {
       long curTime = System.currentTimeMillis();
-      if (value <= this.prev || curTime < this.prevTime + 500) return;
-      this.prev = value;
-      this.prevTime = curTime;
-      builder.setProgress(PROGRESS_MAX, value, false).setContentText(value + "%");
+      long speed = getSpeed(current, curTime);
+      if (curTime < this.prevNotifyTime + 500) return;
+      int progress = (int) ((current * 100) / fileSize);
+      TimeContainer timeRemaining = getRemainingTime(current, speed);
+      if (progress == prevProgress && timeRemaining.equals(prevTimeRemaining)) return;
+      this.prevProgress = progress;
+      this.prevTimeRemaining = timeRemaining;
+      this.prevNotifyTime = curTime;
+      builder.setProgress(PROGRESS_MAX, progress, false).setContentText(progress + "%");
+      if (timeRemaining.time >= 0) builder.setSubText(timeRemaining.toString());
       notificationManager.notify(notificationId, builder.build());
     } catch (Exception ignored) {
     }
   }
 
+  public void setFileSize(long fileSize) {
+    this.fileSize = fileSize;
+  }
+
   public void reset() {
-    this.prev = -1;
+    this.prevNotifyTime = 0;
+    this.prevProgress = -1;
     this.prevTime = 0;
+    this.prevSize = -1;
+    this.prevSpeed = -1;
+    this.prevTimeRemaining = null;
   }
 
   public Notification getNotification() {
@@ -120,5 +174,55 @@ public final class StatusNotifier {
   protected void finalize() throws Throwable {
     this.finish();
     super.finalize();
+  }
+}
+
+class TimeContainer {
+  static final String SECOND = "sec";
+  static final String MINUTE = "min";
+  static final String HOUR = "hour";
+  static final String DAY = "day";
+  final short time;
+  final String unit;
+
+  private TimeContainer(short time, String unit) {
+    this.time = time;
+    this.unit = unit;
+  }
+
+  static TimeContainer initBySeconds(long seconds) {
+    if (seconds < 0) { // Undefined time
+      return new TimeContainer((short) -1, TimeContainer.SECOND);
+    }
+    if (seconds < 60) {
+      return new TimeContainer((short) seconds, TimeContainer.SECOND);
+    }
+    if (seconds < 3600) {
+      return new TimeContainer((short) ((seconds + 30) / 60), TimeContainer.MINUTE);
+    }
+    if (seconds < 86400) {
+      return new TimeContainer((short) ((seconds + 1800) / 3600), TimeContainer.HOUR);
+    }
+    if (seconds < 5184000) {
+      return new TimeContainer((short) ((seconds + 43200) / 86400), TimeContainer.DAY);
+    }
+    return new TimeContainer((short) -1, TimeContainer.SECOND);
+  }
+
+  @Override
+  public boolean equals(Object other) {
+    if (!(other instanceof TimeContainer)) return false;
+    TimeContainer otherContainer = (TimeContainer) other;
+    return (this.time == otherContainer.time
+        && (this.time < 0 || this.unit.equals(otherContainer.unit)));
+  }
+
+  @Override
+  @NonNull
+  public String toString() {
+    if (this.time == 1) {
+      return this.time + " " + this.unit;
+    }
+    return this.time + " " + this.unit + 's';
   }
 }

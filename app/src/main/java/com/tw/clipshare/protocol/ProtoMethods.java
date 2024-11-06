@@ -113,8 +113,10 @@ public final class ProtoMethods {
     }
     byte[] buf = new byte[BUF_SZ];
     long sent_sz = 0;
-    int progressCurrent;
-    if (this.notifier != null) this.notifier.setTitle(fileName);
+    if (this.notifier != null) {
+      this.notifier.setTitle(fileName);
+      this.notifier.setFileSize(fileSize);
+    }
     while (fileSize > 0 && isRunning) {
       int read_sz = (int) Math.min(fileSize, BUF_SZ);
       try {
@@ -128,12 +130,11 @@ public final class ProtoMethods {
         continue;
       }
       fileSize -= read_sz;
-      sent_sz += read_sz;
       if (this.serverConnection.send(buf, 0, read_sz)) {
         return false;
       }
-      progressCurrent = (int) ((sent_sz * 100) / (sent_sz + fileSize));
-      if (this.notifier != null) this.notifier.setStatus(progressCurrent);
+      sent_sz += read_sz;
+      if (this.notifier != null) this.notifier.setProgress(sent_sz);
     }
     return isRunning;
   }
@@ -145,13 +146,13 @@ public final class ProtoMethods {
       return false;
     }
     if (method == GET_SCREENSHOT && selectDisplay(display)) return false;
-    long file_size;
+    long fileSize;
     try {
-      file_size = readSize();
+      fileSize = readSize();
     } catch (IOException ignored) {
       return false;
     }
-    if (file_size <= 0 || file_size > MAX_IMAGE_SIZE) {
+    if (fileSize <= 0 || fileSize > MAX_IMAGE_SIZE) {
       return false;
     }
     OutputStream out = fsUtils.getImageOutStream();
@@ -159,12 +160,12 @@ public final class ProtoMethods {
       return false;
     }
     byte[] buf = new byte[BUF_SZ];
-    while (file_size > 0) {
-      int read_sz = (int) Math.min(file_size, BUF_SZ);
+    while (fileSize > 0) {
+      int read_sz = (int) Math.min(fileSize, BUF_SZ);
       if (this.serverConnection.receive(buf, 0, read_sz)) {
         return false;
       }
-      file_size -= read_sz;
+      fileSize -= read_sz;
       try {
         out.write(buf, 0, read_sz);
       } catch (IOException ex) {
@@ -216,67 +217,71 @@ public final class ProtoMethods {
       return false;
     }
     boolean status = true;
-    for (long fileNum = 0; fileNum < fileCnt && isRunning; fileNum++) {
-      String fileName = readString(MAX_FILE_NAME_LENGTH);
-      if (fileName == null || fileName.isEmpty()) {
-        status = false;
-        break;
-      }
-      if (version == 1 && fileName.contains("/")) {
-        status = false;
-        break;
-      }
-      long file_size;
-      try {
-        file_size = readSize();
-      } catch (IOException ignored) {
-        status = false;
-        break;
-      }
-      if (file_size > MAX_FILE_SIZE) {
-        status = false;
-        break;
-      }
-      if (version == 3 && file_size < 0) {
-        status &= fsUtils.createDirectory(fileName);
-        continue;
-      } else if (file_size < 0) {
-        status = false;
-        break;
-      }
-      OutputStream out = fsUtils.getFileOutStream(fileName);
-      if (out == null) {
-        status = false;
-        break;
-      }
-      byte[] buf = new byte[BUF_SZ];
-      int progressCurrent;
-      long tot_sz = file_size;
-      if (this.notifier != null) {
-        this.notifier.reset();
-        this.notifier.setTitle(fileName);
-      }
-      while (file_size > 0 && isRunning) {
-        int read_sz = (int) Math.min(file_size, BUF_SZ);
-        if (this.serverConnection.receive(buf, 0, read_sz)) {
+    try {
+      for (long fileNum = 0; fileNum < fileCnt && isRunning; fileNum++) {
+        String fileName = readString(MAX_FILE_NAME_LENGTH);
+        if (fileName == null || fileName.isEmpty()) {
           status = false;
           break;
         }
-        file_size -= read_sz;
-        progressCurrent = (int) (((tot_sz - file_size) * 100) / tot_sz);
-        if (this.notifier != null) this.notifier.setStatus(progressCurrent);
+        if (version == 1 && fileName.contains("/")) {
+          status = false;
+          break;
+        }
+        long fileSize;
         try {
-          out.write(buf, 0, read_sz);
-        } catch (IOException ex) {
+          fileSize = readSize();
+        } catch (IOException ignored) {
           status = false;
           break;
         }
+        if (fileSize > MAX_FILE_SIZE) {
+          status = false;
+          break;
+        }
+        if (version == 3 && fileSize < 0) {
+          status &= fsUtils.createDirectory(fileName);
+          continue;
+        } else if (fileSize < 0) {
+          status = false;
+          break;
+        }
+        OutputStream out = fsUtils.getFileOutStream(fileName);
+        if (out == null) {
+          status = false;
+          break;
+        }
+        byte[] buf = new byte[BUF_SZ];
+        long received = 0;
+        if (this.notifier != null) {
+          this.notifier.reset();
+          this.notifier.setTitle(fileName);
+          this.notifier.setFileSize(fileSize);
+        }
+        while (fileSize > 0 && isRunning) {
+          int read_sz = (int) Math.min(fileSize, BUF_SZ);
+          if (this.serverConnection.receive(buf, 0, read_sz)) {
+            status = false;
+            break;
+          }
+          fileSize -= read_sz;
+          received += read_sz;
+          try {
+            out.write(buf, 0, read_sz);
+          } catch (IOException ex) {
+            status = false;
+            break;
+          }
+          if (this.notifier != null) this.notifier.setProgress(received);
+        }
+        try {
+          out.close();
+        } catch (IOException ignored) {
+        }
+        if (!status) break;
       }
-      try {
-        out.close();
-      } catch (IOException ignored) {
-      }
-      if (!status) break;
+    } catch (Exception ignored) {
+      status = false;
     }
     if (status && isRunning) fsUtils.getFileDone("files");
     return status && isRunning && fsUtils.finish() && isRunning;
@@ -333,10 +338,10 @@ public final class ProtoMethods {
         if (sendSize(fileSize)) return false;
         byte[] buf = new byte[BUF_SZ];
         long sent_sz = 0;
-        int progressCurrent;
         if (this.notifier != null) {
           this.notifier.reset();
           this.notifier.setTitle(fileName);
+          this.notifier.setFileSize(fileSize);
         }
         while (fileSize > 0 && isRunning) {
           int read_sz = (int) Math.min(fileSize, BUF_SZ);
@@ -350,9 +355,7 @@ public final class ProtoMethods {
           fileSize -= read_sz;
           sent_sz += read_sz;
           if (this.serverConnection.send(buf, 0, read_sz)) return false;
-
-          progressCurrent = (int) ((sent_sz * 100) / (sent_sz + fileSize));
-          if (this.notifier != null) this.notifier.setStatus(progressCurrent);
+          if (this.notifier != null) this.notifier.setProgress(sent_sz);
         }
       }
     } catch (Exception ignored) {
