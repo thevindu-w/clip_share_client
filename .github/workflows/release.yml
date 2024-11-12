@@ -26,6 +26,7 @@ jobs:
         echo TAG="v${version}" >> $GITHUB_ENV
         echo TITLE="Version ${version}" >> $GITHUB_ENV
         echo APK_FILE="clip_share_client.apk" >> $GITHUB_ENV
+        echo APK_FILE_LEGACY="clip_share_client-legacy.apk" >> $GITHUB_ENV
 
     - name: Check version
       run: |
@@ -69,18 +70,23 @@ jobs:
       run: |
         chmod +x gradlew
         ./gradlew assembleRelease
-        mv app/build/outputs/apk/release/app-release.apk "${{env.APK_FILE}}"
+        mkdir release
+        mv app/build/outputs/apk/latest/release/*.apk "release/${{env.APK_FILE}}"
+        mv app/build/outputs/apk/legacy/release/*.apk "release/${{env.APK_FILE_LEGACY}}"
+        cd release/
+        sha256sum -b * >SHA2-256SUM
 
     - name: Generate artifact attestation
       uses: actions/attest-build-provenance@v1
       with:
-        subject-path: "${{env.APK_FILE}}"
+        subject-path: "release/SHA2-256SUM"
 
     - name: Create release
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         sed -i "s/<VERSION>/${{env.VERSION}}/g" .github/workflows/resources/release_notes.md
+        cd release
         gh release create "${{env.TAG}}" --latest --verify-tag \
-        --notes-file .github/workflows/resources/release_notes.md \
-        --title "${{env.TITLE}}" "${{env.APK_FILE}}"
+        --notes-file ../.github/workflows/resources/release_notes.md \
+        --title "${{env.TITLE}}" *
