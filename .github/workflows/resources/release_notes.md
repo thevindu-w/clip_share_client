@@ -5,6 +5,7 @@ Refer to the [README](https://github.com/thevindu-w/clip_share_client/#how-to-us
 <br>
 **Changes:**
 - Feature:
-  - A Stop button in file transfer (get or send) notification to terminate the file transfer.
-- Fix Send Files failure when the app goes to the background while sending a large file.
+  - Show the estimated time remaining to complete the file transfer in the notification.
+- Truncate the notification to prevent it from overflowing.
+- Remove unused permissions.
 - Other code improvements.
