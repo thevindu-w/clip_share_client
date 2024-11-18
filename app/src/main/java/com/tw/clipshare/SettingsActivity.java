@@ -565,8 +565,14 @@ public class SettingsActivity extends AppCompatActivity {
                     addRowToAutoSendTrustList(false, server);
                   }
                   vibrateSwitch.setChecked(st.getVibrate());
-                  autoCloseSwitch.setChecked(st.getCloseIfIdle());
+                  boolean autoClose = st.getCloseIfIdle();
+                  autoCloseSwitch.setChecked(autoClose);
                   editAutoCloseDelay.setText(String.valueOf(st.getAutoCloseDelay()));
+                  if (autoClose) {
+                    layoutAutoCloseDelay.setVisibility(View.VISIBLE);
+                  } else {
+                    layoutAutoCloseDelay.setVisibility(View.GONE);
+                  }
                   runOnUiThread(
                       () ->
                           Toast.makeText(
