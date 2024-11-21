@@ -47,8 +47,8 @@ app. You can find more information on running the server on Windows, macOS, or L
 ### Main screen
 
 <p align="center">
-<img src="https://raw.githubusercontent.com/thevindu-w/clip_share_client/master/fastlane/metadata/android/en-US/images/phoneScreenshots/3.jpg"
-alt="help image" height="500">
+<img src="https://raw.githubusercontent.com/thevindu-w/clip_share_client/master/fastlane/metadata/android/en-US/images/phoneScreenshots/3.jpg" alt="help image" height="500">
+<img src="https://raw.githubusercontent.com/thevindu-w/clip_share_client/master/fastlane/metadata/android/en-US/images/phoneScreenshots/2.jpg" alt="dark theme" height="500">
 </p>
 
 - **Get text**: To get copied text from the server (ex: laptop) to the phone.
