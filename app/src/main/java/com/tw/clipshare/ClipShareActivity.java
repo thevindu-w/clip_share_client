@@ -84,7 +84,6 @@ public class ClipShareActivity extends AppCompatActivity {
   private Context context;
   private ArrayList<Uri> fileURIs;
   private Menu menu;
-  private SwitchCompat tunnelSwitch;
   private LinearLayout openBrowserLayout;
   private int activeTasks = 0;
   private long lastActivityTime;
@@ -170,18 +169,6 @@ public class ClipShareActivity extends AppCompatActivity {
       int icon_id = st.getSecure() ? R.drawable.ic_secure : R.drawable.ic_insecure;
       menu.findItem(R.id.action_secure)
           .setIcon(ContextCompat.getDrawable(ClipShareActivity.this, icon_id));
-
-      MenuItem tunnelSwitch = menu.findItem(R.id.action_tunnel_switch);
-      tunnelSwitch.setActionView(R.layout.tunnel_switch);
-      this.tunnelSwitch = tunnelSwitch.getActionView().findViewById(R.id.tunnelSwitch);
-      this.tunnelSwitch.setOnCheckedChangeListener(
-          (switchView, isChecked) -> {
-            if (isChecked) {
-              TunnelManager.start();
-            } else {
-              TunnelManager.stop();
-            }
-          });
     } catch (Exception ignored) {
     }
     return true;
@@ -507,9 +494,7 @@ public class ClipShareActivity extends AppCompatActivity {
     do {
       try {
         Settings settings = Settings.getInstance();
-        if (tunnelSwitch != null && tunnelSwitch.isChecked()) {
-          return new TunnelConnection(addressStr);
-        } else if (settings.getSecure()) {
+        if (settings.getSecure()) {
           InputStream caCertIn = settings.getCACertInputStream();
           InputStream clientCertKeyIn = settings.getCertInputStream();
           char[] clientPass = settings.getPasswd();
