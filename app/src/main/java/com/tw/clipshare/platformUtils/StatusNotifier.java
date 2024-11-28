@@ -88,6 +88,13 @@ public final class StatusNotifier {
     }
   }
 
+  /**
+   * Get the data transfer speed in Bytes per seconds.
+   *
+   * @param curSize current transfer amount in Bytes
+   * @param curTime current time in milliseconds since a fixed time (ex: Unix epoch)
+   * @return time averaged data transfer speed in Bytes/sec
+   */
   long getSpeed(long curSize, long curTime) {
     if (prevSize < 0) {
       prevSize = curSize;
@@ -95,10 +102,10 @@ public final class StatusNotifier {
       return -1;
     }
     long dur = curTime - prevTime;
-    if (dur >= 100) { // smaller durations cause less precision
+    if (dur >= 400) { // smaller durations cause less precision and high fluctuations
       long speed = ((curSize - prevSize) * 1000) / dur; // Bytes per second
       if (prevSpeed > 0)
-        speed = (speed + 2 * prevSpeed) / 3; // prevent too large fluctuations in speed value
+        speed = (speed + 3 * prevSpeed) / 4; // prevent too large fluctuations in speed value
       prevSpeed = speed;
       prevSize = curSize;
       prevTime = curTime;
@@ -106,10 +113,17 @@ public final class StatusNotifier {
     return prevSpeed;
   }
 
+  /**
+   * Get estimated time remaining to complete the data transfer.
+   *
+   * @param curSize current transfer amount in Bytes
+   * @param speed data transfer speed in Bytes/sec
+   * @return estimated remaining time
+   */
   TimeContainer getRemainingTime(long curSize, long speed) {
     long remSize = fileSize - curSize;
     long remSeconds;
-    if (speed >= 100) { // smaller values cause less precision
+    if (speed >= 500) { // smaller values cause less precision
       remSeconds = remSize / speed;
     } else {
       remSeconds = -1;
