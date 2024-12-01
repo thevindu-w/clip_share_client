@@ -4,4 +4,6 @@
     <color name="popupOverlayBackground">#5FFF</color>
     <color name="popupBackground">#F000</color>
     <color name="popupTextBackground">#F333</color>
+    <color name="settingsTopic1BG">#F115</color>
+    <color name="settingsTopic2BG">#F223</color>
 </resources>

@@ -233,6 +233,19 @@ public class SettingsActivity extends AppCompatActivity {
     }
   }
 
+  private void toggleLayout(ImageButton btn, LinearLayout layout) {
+    Object tag = btn.getTag();
+    if (tag instanceof Boolean && (Boolean) tag) {
+      btn.setTag(false);
+      layout.setVisibility(View.GONE);
+      btn.setImageResource(android.R.drawable.arrow_down_float);
+    } else {
+      btn.setTag(true);
+      layout.setVisibility(View.VISIBLE);
+      btn.setImageResource(android.R.drawable.arrow_up_float);
+    }
+  }
+
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
@@ -254,6 +267,31 @@ public class SettingsActivity extends AppCompatActivity {
     EditText editPort = findViewById(R.id.editPort);
     EditText editPortSecure = findViewById(R.id.editPortSecure);
     EditText editPortUDP = findViewById(R.id.editPortUDP);
+
+    LinearLayout autoSendLayout = findViewById(R.id.autoSendLayout);
+    autoSendLayout.setVisibility(View.GONE);
+    ImageButton expandAutoSendBtn = findViewById(R.id.expandAutoSendBtn);
+    expandAutoSendBtn.setImageResource(android.R.drawable.arrow_down_float);
+    expandAutoSendBtn.setTag(false);
+    expandAutoSendBtn.setOnClickListener(
+        view -> toggleLayout((ImageButton) view, autoSendLayout));
+
+    LinearLayout secureModeLayout = findViewById(R.id.secureModeLayout);
+    secureModeLayout.setVisibility(View.GONE);
+    ImageButton expandSecureModeBtn = findViewById(R.id.expandSecureModeBtn);
+    expandSecureModeBtn.setImageResource(android.R.drawable.arrow_down_float);
+    expandSecureModeBtn.setTag(false);
+    expandSecureModeBtn.setOnClickListener(
+        view -> toggleLayout((ImageButton) view, secureModeLayout));
+
+    LinearLayout otherSettingsLayout = findViewById(R.id.otherSettingsLayout);
+    secureModeLayout.setVisibility(View.GONE);
+    ImageButton expandOtherSettingsBtn = findViewById(R.id.expandOtherSettingsBtn);
+    expandOtherSettingsBtn.setImageResource(android.R.drawable.arrow_down_float);
+    expandOtherSettingsBtn.setTag(false);
+    expandOtherSettingsBtn.setOnClickListener(
+        view -> toggleLayout((ImageButton) view, otherSettingsLayout));
+
     this.secureSwitch.setOnClickListener(
         view -> {
           if (!SettingsActivity.this.secureSwitch.isChecked()) {

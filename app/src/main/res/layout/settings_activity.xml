@@ -11,431 +11,517 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:padding="9dp"
-            android:textSize="20sp"
-            android:textColor="?android:textColorPrimary"
-            android:text="@string/auto_send"
-            android:background="#303f3fff" />
-
-        <androidx.appcompat.widget.SwitchCompat
-            android:id="@+id/autoSendTextSwitch"
-            android:text="@string/auto_send_text"
-            android:padding="12dp"
-            android:textSize="18sp"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:checked="false" />
-
-        <androidx.appcompat.widget.SwitchCompat
-            android:id="@+id/autoSendFileSwitch"
-            android:text="@string/auto_send_file"
-            android:padding="12dp"
-            android:textSize="18sp"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:checked="false" />
-
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
+            android:orientation="horizontal"
+            android:background="@color/settingsTopic1BG">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.8"
+                android:layout_margin="12dp"
+                android:textSize="20sp"
+                android:textColor="?android:textColorPrimary"
+                android:text="@string/auto_send" />
+
+            <ImageButton
+                android:id="@+id/expandAutoSendBtn"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:src="@android:drawable/arrow_down_float"
+                android:layout_marginEnd="20dp"
+                android:background="#0000"
+                android:contentDescription="@string/expand" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/autoSendLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
             android:orientation="vertical">
+
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/autoSendTextSwitch"
+                android:text="@string/auto_send_text"
+                android:padding="12dp"
+                android:textSize="18sp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:checked="false" />
+
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/autoSendFileSwitch"
+                android:text="@string/auto_send_file"
+                android:padding="12dp"
+                android:textSize="18sp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:checked="false" />
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:background="#205f5fbf">
+                android:layout_marginTop="6dp"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:background="@color/settingsTopic2BG">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="0.8"
+                        android:layout_margin="12dp"
+                        android:textSize="20sp"
+                        android:textColor="?android:textColorPrimary"
+                        android:text="@string/auto_send_trusted_servers" />
+
+                    <ImageButton
+                        android:id="@+id/addAutoSendServerBtn"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:src="@android:drawable/ic_input_add"
+                        android:layout_margin="10dp"
+                        android:background="#00000000"
+                        android:contentDescription="@string/add" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/autoSendTrustedList"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:minHeight="15dp"
+                    android:orientation="vertical" />
+
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="5dp"
+            android:background="@color/settingsTopic1BG">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.8"
+                android:layout_margin="12dp"
+                android:textSize="20sp"
+                android:textColor="?android:textColorPrimary"
+                android:text="@string/secure_mode" />
+
+            <ImageButton
+                android:id="@+id/expandSecureModeBtn"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:src="@android:drawable/arrow_down_float"
+                android:layout_marginEnd="20dp"
+                android:background="#0000"
+                android:contentDescription="@string/expand" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/secureModeLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="9dp"
+                android:textSize="20sp"
+                android:textColor="?android:textColorPrimary"
+                android:text="@string/ca_certificate"
+                android:background="@color/settingsTopic2BG" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="12dp"
+                    android:layout_marginEnd="2dp"
+                    android:textSize="16sp"
+                    android:textColor="?android:textColorPrimary"
+                    android:text="@string/name"
+                    android:layout_gravity="center_vertical" />
+
+                <TextView
+                    android:id="@+id/txtCACertName"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.8"
+                    android:layout_marginEnd="12dp"
+                    android:layout_marginStart="2dp"
+                    android:textSize="13sp"
+                    android:textColor="?android:textColorPrimary"
+                    android:text=""
+                    android:maxLines="1"
+                    android:layout_gravity="center_vertical" />
+
+                <Button
+                    android:id="@+id/btnImportCACert"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="5dp"
+                    android:text="@string/browse"
+                    android:textAllCaps="false"
+                    android:backgroundTint="#88999999" />
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="9dp"
+                android:textSize="20sp"
+                android:textColor="?android:textColorPrimary"
+                android:text="@string/client_certificate"
+                android:background="@color/settingsTopic2BG"
+                android:layout_marginBottom="6dp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="12dp"
+                    android:layout_marginEnd="2dp"
+                    android:textSize="16sp"
+                    android:textColor="?android:textColorPrimary"
+                    android:text="@string/password"
+                    android:layout_gravity="center_vertical"
+                    android:labelFor="@+id/editCertPass" />
+
+                <EditText
+                    android:id="@+id/editCertPass"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.8"
+                    android:layout_marginTop="4dp"
+                    android:layout_marginEnd="12dp"
+                    android:layout_marginStart="2dp"
+                    android:textSize="16sp"
+                    android:textColor="?android:textColorPrimary"
+                    android:text=""
+                    android:inputType="textPassword"
+                    android:maxLines="1"
+                    android:layout_gravity="center_vertical"
+                    android:autofillHints="Password of key file" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="12dp"
+                    android:layout_marginEnd="2dp"
+                    android:textSize="16sp"
+                    android:textColor="?android:textColorPrimary"
+                    android:text="@string/name"
+                    android:layout_gravity="center_vertical" />
+
+                <TextView
+                    android:id="@+id/txtCertName"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.8"
+                    android:layout_marginEnd="12dp"
+                    android:layout_marginStart="2dp"
+                    android:textSize="13sp"
+                    android:textColor="?android:textColorPrimary"
+                    android:text=""
+                    android:maxLines="1"
+                    android:layout_gravity="center_vertical" />
+
+                <Button
+                    android:id="@+id/btnImportCert"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="5dp"
+                    android:text="@string/browse"
+                    android:textAllCaps="false"
+                    android:backgroundTint="#88999999" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:background="@color/settingsTopic2BG">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="0.8"
+                        android:layout_margin="12dp"
+                        android:textSize="20sp"
+                        android:textColor="?android:textColorPrimary"
+                        android:text="@string/trusted_servers" />
+
+                    <ImageButton
+                        android:id="@+id/addServerBtn"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:src="@android:drawable/ic_input_add"
+                        android:layout_margin="10dp"
+                        android:background="#00000000"
+                        android:contentDescription="@string/add" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/trustedList"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:minHeight="20dp"
+                    android:orientation="vertical" />
+            </LinearLayout>
+
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/secureSwitch"
+                android:text="@string/secure_mode"
+                android:padding="12dp"
+                android:textSize="20sp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:checked="false"
+                android:background="@color/settingsTopic2BG" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="5dp"
+            android:background="@color/settingsTopic1BG">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.8"
+                android:layout_margin="12dp"
+                android:textSize="20sp"
+                android:textColor="?android:textColorPrimary"
+                android:text="@string/other_settings" />
+
+            <ImageButton
+                android:id="@+id/expandOtherSettingsBtn"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:src="@android:drawable/arrow_down_float"
+                android:layout_marginEnd="20dp"
+                android:background="#0000"
+                android:contentDescription="@string/expand" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/otherSettingsLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            android:orientation="vertical">
+
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/autoCloseSwitch"
+                android:text="@string/close_app_if_idle"
+                android:padding="12dp"
+                android:textSize="20sp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:checked="true"
+                android:background="@color/settingsTopic2BG" />
+
+            <LinearLayout
+                android:id="@+id/layoutAutoCloseDelay"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
 
                 <TextView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_weight="0.8"
-                    android:layout_margin="12dp"
-                    android:textSize="20sp"
+                    android:layout_weight="0.7"
+                    android:layout_marginStart="12dp"
+                    android:layout_marginEnd="2dp"
+                    android:layout_marginVertical="10dp"
+                    android:textSize="18sp"
                     android:textColor="?android:textColorPrimary"
-                    android:text="@string/auto_send_trusted_servers" />
+                    android:text="@string/auto_close_delay"
+                    android:layout_gravity="center_vertical"
+                    android:labelFor="@+id/editAutoCloseDelay" />
 
-                <ImageButton
-                    android:id="@+id/addAutoSendServerBtn"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:src="@android:drawable/ic_input_add"
-                    android:layout_margin="10dp"
-                    android:background="#00000000"
-                    android:contentDescription="@string/add" />
+                <EditText
+                    android:id="@+id/editAutoCloseDelay"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.3"
+                    android:layout_marginTop="4dp"
+                    android:layout_marginEnd="12dp"
+                    android:layout_marginStart="2dp"
+                    android:textSize="16sp"
+                    android:textColor="?android:textColorPrimary"
+                    android:text="@string/autoCloseDelayDefault"
+                    android:inputType="number"
+                    android:maxLines="1"
+                    android:maxLength="4"
+                    android:layout_gravity="center_vertical"
+                    android:autofillHints="App port (TCP)" />
             </LinearLayout>
 
-            <LinearLayout
-                android:id="@+id/autoSendTrustedList"
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/vibrateSwitch"
+                android:text="@string/vibrate"
+                android:padding="12dp"
+                android:textSize="20sp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical" />
+                android:checked="true"
+                android:background="@color/settingsTopic2BG"
+                android:layout_marginTop="1dp" />
 
-            <LinearLayout
+            <TextView
                 android:layout_width="match_parent"
-                android:layout_height="20dp"
-                tools:ignore="UselessLeaf" />
-        </LinearLayout>
-
-        <androidx.appcompat.widget.SwitchCompat
-            android:id="@+id/autoCloseSwitch"
-            android:text="@string/close_app_if_idle"
-            android:padding="12dp"
-            android:textSize="20sp"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:checked="true"
-            android:background="#303f3fff" />
-
-        <LinearLayout
-            android:id="@+id/layoutAutoCloseDelay"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <TextView
-                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="0.7"
-                android:layout_marginStart="12dp"
-                android:layout_marginEnd="2dp"
-                android:layout_marginVertical="10dp"
-                android:textSize="18sp"
+                android:padding="9dp"
+                android:textSize="20sp"
                 android:textColor="?android:textColorPrimary"
-                android:text="@string/auto_close_delay"
-                android:layout_gravity="center_vertical"
-                android:labelFor="@+id/editAutoCloseDelay" />
-
-            <EditText
-                android:id="@+id/editAutoCloseDelay"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="0.3"
-                android:layout_marginTop="4dp"
-                android:layout_marginEnd="12dp"
-                android:layout_marginStart="2dp"
-                android:textSize="16sp"
-                android:textColor="?android:textColorPrimary"
-                android:text="@string/autoCloseDelayDefault"
-                android:inputType="number"
-                android:maxLines="1"
-                android:maxLength="4"
-                android:layout_gravity="center_vertical"
-                android:autofillHints="App port (TCP)" />
-        </LinearLayout>
-
-        <androidx.appcompat.widget.SwitchCompat
-            android:id="@+id/vibrateSwitch"
-            android:text="@string/vibrate"
-            android:padding="12dp"
-            android:textSize="20sp"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:checked="true"
-            android:background="#303f3fff"
-            android:layout_marginTop="1dp" />
-
-        <androidx.appcompat.widget.SwitchCompat
-            android:id="@+id/secureSwitch"
-            android:text="@string/secure_mode"
-            android:padding="12dp"
-            android:textSize="20sp"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:checked="false"
-            android:background="#303f3fff"
-            android:layout_marginTop="1dp" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:padding="9dp"
-            android:textSize="20sp"
-            android:textColor="?android:textColorPrimary"
-            android:text="@string/ca_certificate"
-            android:background="#205f5fbf" />
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="12dp"
-                android:layout_marginEnd="2dp"
-                android:textSize="16sp"
-                android:textColor="?android:textColorPrimary"
-                android:text="@string/name"
-                android:layout_gravity="center_vertical" />
-
-            <TextView
-                android:id="@+id/txtCACertName"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="0.8"
-                android:layout_marginEnd="12dp"
-                android:layout_marginStart="2dp"
-                android:textSize="13sp"
-                android:textColor="?android:textColorPrimary"
-                android:text=""
-                android:maxLines="1"
-                android:layout_gravity="center_vertical" />
-
-            <Button
-                android:id="@+id/btnImportCACert"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_margin="5dp"
-                android:text="@string/browse"
-                android:textAllCaps="false"
-                android:backgroundTint="#88999999" />
-        </LinearLayout>
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:padding="9dp"
-            android:textSize="20sp"
-            android:textColor="?android:textColorPrimary"
-            android:text="@string/client_certificate"
-            android:background="#205f5fbf"
-            android:layout_marginTop="6dp" />
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="12dp"
-                android:layout_marginEnd="2dp"
-                android:textSize="16sp"
-                android:textColor="?android:textColorPrimary"
-                android:text="@string/password"
-                android:layout_gravity="center_vertical"
-                android:labelFor="@+id/editCertPass" />
-
-            <EditText
-                android:id="@+id/editCertPass"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="0.8"
-                android:layout_marginTop="4dp"
-                android:layout_marginEnd="12dp"
-                android:layout_marginStart="2dp"
-                android:textSize="16sp"
-                android:textColor="?android:textColorPrimary"
-                android:text=""
-                android:inputType="textPassword"
-                android:maxLines="1"
-                android:layout_gravity="center_vertical"
-                android:autofillHints="Password of key file" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="12dp"
-                android:layout_marginEnd="2dp"
-                android:textSize="16sp"
-                android:textColor="?android:textColorPrimary"
-                android:text="@string/name"
-                android:layout_gravity="center_vertical" />
-
-            <TextView
-                android:id="@+id/txtCertName"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="0.8"
-                android:layout_marginEnd="12dp"
-                android:layout_marginStart="2dp"
-                android:textSize="13sp"
-                android:textColor="?android:textColorPrimary"
-                android:text=""
-                android:maxLines="1"
-                android:layout_gravity="center_vertical" />
-
-            <Button
-                android:id="@+id/btnImportCert"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_margin="5dp"
-                android:text="@string/browse"
-                android:textAllCaps="false"
-                android:backgroundTint="#88999999" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
-            android:orientation="vertical">
+                android:text="@string/ports"
+                android:background="@color/settingsTopic2BG"
+                android:layout_marginTop="1dp" />
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:background="#205f5fbf">
+                android:orientation="horizontal">
 
                 <TextView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_weight="0.8"
-                    android:layout_margin="12dp"
-                    android:textSize="20sp"
+                    android:layout_weight="0.5"
+                    android:layout_marginStart="12dp"
+                    android:layout_marginEnd="2dp"
+                    android:layout_marginVertical="10dp"
+                    android:textSize="18sp"
                     android:textColor="?android:textColorPrimary"
-                    android:text="@string/trusted_servers" />
+                    android:text="@string/port"
+                    android:layout_gravity="center_vertical"
+                    android:labelFor="@+id/editPort" />
 
-                <ImageButton
-                    android:id="@+id/addServerBtn"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:src="@android:drawable/ic_input_add"
-                    android:layout_margin="10dp"
-                    android:background="#00000000"
-                    android:contentDescription="@string/add" />
+                <EditText
+                    android:id="@+id/editPort"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.5"
+                    android:layout_marginTop="4dp"
+                    android:layout_marginEnd="12dp"
+                    android:layout_marginStart="2dp"
+                    android:textSize="16sp"
+                    android:textColor="?android:textColorPrimary"
+                    android:text="@string/port_number"
+                    android:inputType="number"
+                    android:maxLines="1"
+                    android:maxLength="5"
+                    android:layout_gravity="center_vertical"
+                    android:autofillHints="App port (TCP)" />
             </LinearLayout>
 
             <LinearLayout
-                android:id="@+id/trustedList"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical" />
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.5"
+                    android:layout_marginStart="12dp"
+                    android:layout_marginEnd="2dp"
+                    android:layout_marginVertical="10dp"
+                    android:textSize="18sp"
+                    android:textColor="?android:textColorPrimary"
+                    android:text="@string/secure_port"
+                    android:layout_gravity="center_vertical"
+                    android:labelFor="@+id/editPortSecure" />
+
+                <EditText
+                    android:id="@+id/editPortSecure"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.5"
+                    android:layout_marginTop="4dp"
+                    android:layout_marginEnd="12dp"
+                    android:layout_marginStart="2dp"
+                    android:textSize="16sp"
+                    android:textColor="?android:textColorPrimary"
+                    android:text="@string/secure_port_number"
+                    android:inputType="number"
+                    android:maxLines="1"
+                    android:maxLength="5"
+                    android:layout_gravity="center_vertical"
+                    android:autofillHints="Secure port for SSL/TLS" />
+            </LinearLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="20dp"
-                tools:ignore="UselessLeaf" />
-        </LinearLayout>
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:padding="9dp"
-            android:textSize="20sp"
-            android:textColor="?android:textColorPrimary"
-            android:text="@string/ports"
-            android:background="#303f3fff" />
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <TextView
-                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="0.5"
-                android:layout_marginStart="12dp"
-                android:layout_marginEnd="2dp"
-                android:layout_marginVertical="10dp"
-                android:textSize="18sp"
-                android:textColor="?android:textColorPrimary"
-                android:text="@string/port"
-                android:layout_gravity="center_vertical"
-                android:labelFor="@+id/editPort" />
+                android:orientation="horizontal">
 
-            <EditText
-                android:id="@+id/editPort"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="0.5"
-                android:layout_marginTop="4dp"
-                android:layout_marginEnd="12dp"
-                android:layout_marginStart="2dp"
-                android:textSize="16sp"
-                android:textColor="?android:textColorPrimary"
-                android:text="@string/port_number"
-                android:inputType="number"
-                android:maxLines="1"
-                android:maxLength="5"
-                android:layout_gravity="center_vertical"
-                android:autofillHints="App port (TCP)" />
-        </LinearLayout>
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.5"
+                    android:layout_marginStart="12dp"
+                    android:layout_marginEnd="2dp"
+                    android:layout_marginVertical="10dp"
+                    android:textSize="18sp"
+                    android:textColor="?android:textColorPrimary"
+                    android:text="@string/UDP_port"
+                    android:layout_gravity="center_vertical"
+                    android:labelFor="@+id/editPort" />
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="0.5"
-                android:layout_marginStart="12dp"
-                android:layout_marginEnd="2dp"
-                android:layout_marginVertical="10dp"
-                android:textSize="18sp"
-                android:textColor="?android:textColorPrimary"
-                android:text="@string/secure_port"
-                android:layout_gravity="center_vertical"
-                android:labelFor="@+id/editPortSecure" />
-
-            <EditText
-                android:id="@+id/editPortSecure"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="0.5"
-                android:layout_marginTop="4dp"
-                android:layout_marginEnd="12dp"
-                android:layout_marginStart="2dp"
-                android:textSize="16sp"
-                android:textColor="?android:textColorPrimary"
-                android:text="@string/secure_port_number"
-                android:inputType="number"
-                android:maxLines="1"
-                android:maxLength="5"
-                android:layout_gravity="center_vertical"
-                android:autofillHints="Secure port for SSL/TLS" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="0.5"
-                android:layout_marginStart="12dp"
-                android:layout_marginEnd="2dp"
-                android:layout_marginVertical="10dp"
-                android:textSize="18sp"
-                android:textColor="?android:textColorPrimary"
-                android:text="@string/UDP_port"
-                android:layout_gravity="center_vertical"
-                android:labelFor="@+id/editPort" />
-
-            <EditText
-                android:id="@+id/editPortUDP"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="0.5"
-                android:layout_marginTop="4dp"
-                android:layout_marginEnd="12dp"
-                android:layout_marginStart="2dp"
-                android:textSize="16sp"
-                android:textColor="?android:textColorPrimary"
-                android:text="@string/port_number"
-                android:inputType="number"
-                android:maxLines="1"
-                android:maxLength="5"
-                android:layout_gravity="center_vertical"
-                android:autofillHints="Scan port (UDP)" />
+                <EditText
+                    android:id="@+id/editPortUDP"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.5"
+                    android:layout_marginTop="4dp"
+                    android:layout_marginEnd="12dp"
+                    android:layout_marginStart="2dp"
+                    android:textSize="16sp"
+                    android:textColor="?android:textColorPrimary"
+                    android:text="@string/port_number"
+                    android:inputType="number"
+                    android:maxLines="1"
+                    android:maxLength="5"
+                    android:layout_gravity="center_vertical"
+                    android:autofillHints="Scan port (UDP)" />
+            </LinearLayout>
         </LinearLayout>
 
         <LinearLayout

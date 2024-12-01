@@ -54,4 +54,6 @@
     <string name="close_app_if_idle" translatable="false">Close app if idle</string>
     <string name="autoCloseDelayDefault" translatable="false">120</string>
     <string name="auto_close_delay" translatable="false">Auto-close delay (seconds)</string>
+    <string name="other_settings">Other settings</string>
+    <string name="expand">Expand</string>
 </resources>
