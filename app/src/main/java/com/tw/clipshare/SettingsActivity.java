@@ -273,8 +273,7 @@ public class SettingsActivity extends AppCompatActivity {
     ImageButton expandAutoSendBtn = findViewById(R.id.expandAutoSendBtn);
     expandAutoSendBtn.setImageResource(android.R.drawable.arrow_down_float);
     expandAutoSendBtn.setTag(false);
-    expandAutoSendBtn.setOnClickListener(
-        view -> toggleLayout((ImageButton) view, autoSendLayout));
+    expandAutoSendBtn.setOnClickListener(view -> toggleLayout((ImageButton) view, autoSendLayout));
 
     LinearLayout secureModeLayout = findViewById(R.id.secureModeLayout);
     secureModeLayout.setVisibility(View.GONE);
