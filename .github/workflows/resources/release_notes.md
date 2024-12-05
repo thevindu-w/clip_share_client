@@ -4,8 +4,7 @@ You will need the ClipShare server running on a Windows, macOS, or Linux machine
 Refer to the [README](https://github.com/thevindu-w/clip_share_client/#how-to-use) for usage information.
 <br>
 **Changes:**
-- Feature:
-  - Show the estimated time remaining to complete the file transfer in the notification.
-- Truncate the notification to prevent it from overflowing.
-- Remove unused permissions.
+- Group settings options into categories.
+- Bug fix: hide auto-close delay if auto-close is disabled after importing settings.
+- Reduce fluctuations in estimated file transfer time.
 - Other code improvements.
