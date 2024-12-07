@@ -34,6 +34,7 @@ import java.util.HashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+/** @noinspection unused */
 public class TunnelManager {
 
   private static final HashMap<String, Tunnel> tunnels = new HashMap<>(1);

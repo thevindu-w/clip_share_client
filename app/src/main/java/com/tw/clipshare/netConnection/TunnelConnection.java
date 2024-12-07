@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.net.Socket;
 import java.net.SocketException;
 
+/** @noinspection unused */
 public class TunnelConnection extends ServerConnection {
   public TunnelConnection(String address) throws IOException {
     super();

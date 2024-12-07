@@ -91,44 +91,42 @@ public class ClipShareActivity extends AppCompatActivity {
       registerForActivityResult(
           new ActivityResultContracts.StartActivityForResult(),
           result ->
-              new Thread() {
-                @Override
-                public void run() {
-                  try {
-                    if (result.getResultCode() != Activity.RESULT_OK) return;
-                    Intent intent1 = result.getData();
-                    if (intent1 == null) return;
-                    ClipShareActivity.this.fileURIs = getFileUris(intent1);
-                    clkSendFile();
-                  } catch (Exception e) {
-                    outputAppend("Error " + e.getMessage());
-                  } finally {
-                    ClipShareActivity.this.lastActivityTime = System.currentTimeMillis();
-                    endActiveTask();
-                  }
-                }
-              }.start());
+              new Thread(
+                      () -> {
+                        try {
+                          if (result.getResultCode() != Activity.RESULT_OK) return;
+                          Intent intent1 = result.getData();
+                          if (intent1 == null) return;
+                          ClipShareActivity.this.fileURIs = getFileUris(intent1);
+                          clkSendFile();
+                        } catch (Exception e) {
+                          outputAppend("Error " + e.getMessage());
+                        } finally {
+                          ClipShareActivity.this.lastActivityTime = System.currentTimeMillis();
+                          endActiveTask();
+                        }
+                      })
+                  .start());
   private final ActivityResultLauncher<Intent> folderSelectActivityLauncher =
       registerForActivityResult(
           new ActivityResultContracts.StartActivityForResult(),
           result ->
-              new Thread() {
-                @Override
-                public void run() {
-                  try {
-                    if (result.getResultCode() != Activity.RESULT_OK) return;
-                    Intent intent1 = result.getData();
-                    if (intent1 == null) return;
-                    DirectoryTreeNode root = ClipShareActivity.this.getDirectoryTree(intent1);
-                    clkSendFolder(root);
-                  } catch (Exception e) {
-                    outputAppend("Error " + e.getMessage());
-                  } finally {
-                    ClipShareActivity.this.lastActivityTime = System.currentTimeMillis();
-                    endActiveTask();
-                  }
-                }
-              }.start());
+              new Thread(
+                      () -> {
+                        try {
+                          if (result.getResultCode() != Activity.RESULT_OK) return;
+                          Intent intent1 = result.getData();
+                          if (intent1 == null) return;
+                          DirectoryTreeNode root = ClipShareActivity.this.getDirectoryTree(intent1);
+                          clkSendFolder(root);
+                        } catch (Exception e) {
+                          outputAppend("Error " + e.getMessage());
+                        } finally {
+                          ClipShareActivity.this.lastActivityTime = System.currentTimeMillis();
+                          endActiveTask();
+                        }
+                      })
+                  .start());
   private final ActivityResultLauncher<Intent> settingsActivityLauncher =
       registerForActivityResult(
           new ActivityResultContracts.StartActivityForResult(),

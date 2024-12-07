@@ -60,22 +60,20 @@ public class FileService extends Service {
     executorService.submit(runnable);
 
     // Stop service when executorService completes
-    (new Thread() {
-          @Override
-          public void run() {
-            try {
-              executorService.shutdown();
-              while (true) {
-                try {
-                  if (executorService.awaitTermination(1, TimeUnit.HOURS)) break;
-                } catch (Exception ignored) {
+    (new Thread(
+            () -> {
+              try {
+                executorService.shutdown();
+                while (true) {
+                  try {
+                    if (executorService.awaitTermination(1, TimeUnit.HOURS)) break;
+                  } catch (Exception ignored) {
+                  }
                 }
+                endService();
+              } catch (Exception ignored) {
               }
-              endService();
-            } catch (Exception ignored) {
-            }
-          }
-        })
+            }))
         .start();
 
     return START_REDELIVER_INTENT;
