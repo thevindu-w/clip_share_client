@@ -40,6 +40,7 @@ public class Settings implements Serializable {
   private static volatile Settings INSTANCE = null;
   private final List<String> trustedList;
   private final List<String> autoSendTrustedList;
+  private final List<String> savedServersList;
   private boolean secure;
   private byte[] caCert;
   private byte[] cert;
@@ -69,9 +70,31 @@ public class Settings implements Serializable {
     this.autoSendText = false;
     this.autoSendFiles = false;
     this.autoSendTrustedList = new ArrayList<>(1);
+    this.savedServersList = new ArrayList<>(1);
     this.vibrate = true;
     this.closeIfIdle = true;
     this.autoCloseDelay = 120;
+  }
+
+  private static ArrayList<String> objectToArrayList(Object listO) {
+    try {
+      ArrayList<String> list = null;
+      if (listO instanceof JSONArray) {
+        JSONArray jsonArray = (JSONArray) listO;
+        int len = jsonArray.length();
+        list = new ArrayList<>(len);
+        for (int i = 0; i < len; i++) {
+          String item = jsonArray.getString(i);
+          if (item.isEmpty() || item.length() > 256) continue;
+          list.add(item);
+        }
+      }
+      if (list != null && !list.isEmpty()) {
+        return list;
+      }
+    } catch (Exception ignored) {
+    }
+    return null;
   }
 
   private static Settings fromString(String s) throws JSONException {
@@ -81,19 +104,8 @@ public class Settings implements Serializable {
 
     // Set trustedList
     try {
-      ArrayList<String> trustedList = null;
-      Object trustedListO = map.get("trustedList");
-      if (trustedListO instanceof JSONArray) {
-        JSONArray jsonArray = (JSONArray) trustedListO;
-        int len = jsonArray.length();
-        trustedList = new ArrayList<>(len);
-        for (int i = 0; i < len; i++) {
-          String item = jsonArray.getString(i);
-          if (item.isEmpty() || item.length() > 256) continue;
-          trustedList.add(item);
-        }
-      }
-      if (trustedList != null && !trustedList.isEmpty()) {
+      ArrayList<String> trustedList = objectToArrayList(map.get("trustedList"));
+      if (trustedList != null) {
         settings.trustedList.clear();
         settings.trustedList.addAll(trustedList);
       }
@@ -102,21 +114,20 @@ public class Settings implements Serializable {
 
     // Set autoSendTrustedList
     try {
-      ArrayList<String> autoSendTrustedList = null;
-      Object autoSendTrustedListO = map.get("autoSendTrustedList");
-      if (autoSendTrustedListO instanceof JSONArray) {
-        JSONArray jsonArray = (JSONArray) autoSendTrustedListO;
-        int len = jsonArray.length();
-        autoSendTrustedList = new ArrayList<>(len);
-        for (int i = 0; i < len; i++) {
-          String item = jsonArray.getString(i);
-          if (item.isEmpty() || item.length() > 256) continue;
-          autoSendTrustedList.add(item);
-        }
-      }
-      if (autoSendTrustedList != null && !autoSendTrustedList.isEmpty()) {
+      ArrayList<String> autoSendTrustedList = objectToArrayList(map.get("autoSendTrustedList"));
+      if (autoSendTrustedList != null) {
         settings.autoSendTrustedList.clear();
         settings.autoSendTrustedList.addAll(autoSendTrustedList);
+      }
+    } catch (Exception ignored) {
+    }
+
+    // Set savedServersList
+    try {
+      ArrayList<String> savedServersList = objectToArrayList(map.get("savedServersList"));
+      if (savedServersList != null) {
+        settings.savedServersList.clear();
+        settings.savedServersList.addAll(savedServersList);
       }
     } catch (Exception ignored) {
     }
@@ -269,7 +280,7 @@ public class Settings implements Serializable {
 
   @NonNull
   public String toString(boolean includePassword) {
-    HashMap<String, Object> map = new HashMap<>(16);
+    HashMap<String, Object> map = new HashMap<>(17);
     try {
       if (this.caCert != null)
         map.put("caCert", Base64.encodeToString(this.caCert, Base64.DEFAULT));
@@ -288,6 +299,7 @@ public class Settings implements Serializable {
       map.put("vibrate", this.vibrate);
       map.put("closeIfIdle", this.closeIfIdle);
       map.put("autoCloseDelay", this.autoCloseDelay);
+      map.put("savedServersList", this.savedServersList);
     } catch (Exception ignored) {
     }
 
@@ -324,6 +336,8 @@ public class Settings implements Serializable {
         INSTANCE.vibrate = strSet.vibrate;
         INSTANCE.closeIfIdle = strSet.closeIfIdle;
         INSTANCE.autoCloseDelay = strSet.autoCloseDelay;
+        INSTANCE.savedServersList.clear();
+        INSTANCE.savedServersList.addAll(strSet.savedServersList);
       } catch (Exception ignored) {
       }
     }
@@ -406,6 +420,10 @@ public class Settings implements Serializable {
 
   public int getAutoCloseDelay() {
     return autoCloseDelay;
+  }
+
+  public List<String> getSavedServersList() {
+    return this.savedServersList;
   }
 
   public void setSecure(boolean secure) {

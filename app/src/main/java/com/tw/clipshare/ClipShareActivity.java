@@ -81,6 +81,7 @@ public class ClipShareActivity extends AppCompatActivity {
   public TextView output;
   private EditText editAddress;
   private Context context;
+  private SharedPreferences sharedPref;
   private ArrayList<Uri> fileURIs;
   private Menu menu;
   private LinearLayout openBrowserLayout;
@@ -154,15 +155,7 @@ public class ClipShareActivity extends AppCompatActivity {
     inflater.inflate(R.menu.action_bar, menu);
     this.menu = menu;
     try {
-      synchronized (settingsLock) {
-        while (!isSettingsLoaded) {
-          try {
-            settingsLock.wait();
-          } catch (InterruptedException ignored) {
-          }
-        }
-      }
-      Settings st = Settings.getInstance();
+      Settings st = getSettings();
       int icon_id = st.getSecure() ? R.drawable.ic_secure : R.drawable.ic_insecure;
       menu.findItem(R.id.action_secure)
           .setIcon(ContextCompat.getDrawable(ClipShareActivity.this, icon_id));
@@ -192,6 +185,8 @@ public class ClipShareActivity extends AppCompatActivity {
     this.editAddress = findViewById(R.id.hostTxt);
     this.output = findViewById(R.id.txtOutput);
     this.context = getApplicationContext();
+    this.sharedPref =
+        context.getSharedPreferences(ClipShareActivity.PREFERENCES, Context.MODE_PRIVATE);
 
     output.setMovementMethod(new ScrollingMovementMethod());
     Button btnGet = findViewById(R.id.btnGetTxt);
@@ -219,9 +214,6 @@ public class ClipShareActivity extends AppCompatActivity {
     btnOpenLink.setOnClickListener(view -> openInBrowser());
     openBrowserLayout = findViewById(R.id.layoutOpenBrowser);
 
-    SharedPreferences sharedPref =
-        context.getSharedPreferences(ClipShareActivity.PREFERENCES, Context.MODE_PRIVATE);
-    editAddress.setText(sharedPref.getString("serverIP", ""));
     try {
       Settings.loadInstance(sharedPref.getString("settings", null));
     } catch (Exception ignored) {
@@ -229,6 +221,11 @@ public class ClipShareActivity extends AppCompatActivity {
     isSettingsLoaded = true;
     synchronized (settingsLock) {
       settingsLock.notifyAll();
+    }
+    try {
+      List<String> servers = getSettings().getSavedServersList();
+      if (!servers.isEmpty()) editAddress.setText(servers.get(servers.size() - 1));
+    } catch (Exception ignored) {
     }
 
     Intent intent = getIntent();
@@ -252,6 +249,19 @@ public class ClipShareActivity extends AppCompatActivity {
         closeIfIdle(settings.getAutoCloseDelay() * 1000);
     } catch (Exception ignored) {
     }
+  }
+
+  private Settings getSettings() {
+    if (isSettingsLoaded) return Settings.getInstance();
+    synchronized (settingsLock) {
+      while (!isSettingsLoaded) {
+        try {
+          settingsLock.wait();
+        } catch (InterruptedException ignored) {
+        }
+      }
+    }
+    return Settings.getInstance();
   }
 
   private void closeIfIdle(int delay) {
@@ -450,15 +460,7 @@ public class ClipShareActivity extends AppCompatActivity {
     Runnable runnableAutoSendText =
         () -> {
           try {
-            synchronized (settingsLock) {
-              while (!isSettingsLoaded) {
-                try {
-                  settingsLock.wait();
-                } catch (InterruptedException ignored) {
-                }
-              }
-            }
-            Settings st = Settings.getInstance();
+            Settings st = getSettings();
             String address = this.getServerAddress();
             switch (type) {
               case AUTO_SEND_TEXT:
@@ -620,21 +622,30 @@ public class ClipShareActivity extends AppCompatActivity {
    */
   @Nullable
   private String getServerAddress() {
+    String address;
     try {
-      String address = editAddress.getText().toString();
+      address = editAddress.getText().toString();
       if (!address.matches("^((25[0-5]|(2[0-4]|1\\d|[1-9]|)\\d)(\\.(?!$)|$)){4}$")) {
         Toast.makeText(ClipShareActivity.this, "Invalid address", Toast.LENGTH_SHORT).show();
         return null;
       }
-      SharedPreferences sharedPref =
-          context.getSharedPreferences(ClipShareActivity.PREFERENCES, Context.MODE_PRIVATE);
-      SharedPreferences.Editor editor = sharedPref.edit();
-      editor.putString("serverIP", address);
-      editor.apply();
-      return address;
     } catch (Exception ignored) {
       return null;
     }
+    try {
+      Settings settings = getSettings();
+      List<String> savedServers = settings.getSavedServersList();
+      int ind = savedServers.lastIndexOf(address);
+      if (ind == savedServers.size() - 1) return address;
+      if (ind >= 0) savedServers.remove(address);
+      savedServers.add(address);
+      SharedPreferences.Editor editor = sharedPref.edit();
+      editor.putString("settings", settings.toString());
+      editor.apply();
+      return address;
+    } catch (Exception ignored) {
+    }
+    return address;
   }
 
   private void clkSendTxt() {
