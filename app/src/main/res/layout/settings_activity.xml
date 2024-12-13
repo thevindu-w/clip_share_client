@@ -116,6 +116,50 @@
                 android:layout_margin="12dp"
                 android:textSize="20sp"
                 android:textColor="?android:textColorPrimary"
+                android:text="@string/saved_addresses" />
+
+            <ImageButton
+                android:id="@+id/expandSavedAddressBtn"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:src="@android:drawable/arrow_down_float"
+                android:layout_marginEnd="20dp"
+                android:background="#0000"
+                android:contentDescription="@string/expand" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/savedAddressLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            android:orientation="vertical">
+
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/saveAddressesSwitch"
+                android:text="@string/save_addresses"
+                android:padding="12dp"
+                android:textSize="18sp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:checked="false" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="5dp"
+            android:background="@color/settingsTopic1BG">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.8"
+                android:layout_margin="12dp"
+                android:textSize="20sp"
+                android:textColor="?android:textColorPrimary"
                 android:text="@string/secure_mode" />
 
             <ImageButton

@@ -56,4 +56,6 @@
     <string name="auto_close_delay" translatable="false">Auto-close delay (seconds)</string>
     <string name="other_settings">Other settings</string>
     <string name="expand">Expand</string>
+    <string name="saved_addresses">Saved addresses</string>
+    <string name="save_addresses">Save addresses</string>
 </resources>

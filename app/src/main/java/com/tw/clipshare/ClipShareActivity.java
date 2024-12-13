@@ -634,6 +634,7 @@ public class ClipShareActivity extends AppCompatActivity {
     }
     try {
       Settings settings = getSettings();
+      if (!settings.getSaveServers()) return address;
       List<String> savedServers = settings.getSavedServersList();
       int ind = savedServers.lastIndexOf(address);
       if (ind == savedServers.size() - 1) return address;
@@ -642,7 +643,6 @@ public class ClipShareActivity extends AppCompatActivity {
       SharedPreferences.Editor editor = sharedPref.edit();
       editor.putString("settings", settings.toString());
       editor.apply();
-      return address;
     } catch (Exception ignored) {
     }
     return address;

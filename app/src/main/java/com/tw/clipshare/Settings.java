@@ -55,6 +55,7 @@ public class Settings implements Serializable {
   private boolean vibrate;
   private boolean closeIfIdle;
   private int autoCloseDelay;
+  private boolean saveServers;
 
   private Settings() {
     this.secure = false;
@@ -74,6 +75,7 @@ public class Settings implements Serializable {
     this.vibrate = true;
     this.closeIfIdle = true;
     this.autoCloseDelay = 120;
+    this.saveServers = true;
   }
 
   private static ArrayList<String> objectToArrayList(Object listO) {
@@ -269,6 +271,15 @@ public class Settings implements Serializable {
     } catch (Exception ignored) {
     }
 
+    // Set saveServers
+    try {
+      Object attributeO = map.get("saveServers");
+      if (attributeO instanceof Boolean) {
+        settings.saveServers = (Boolean) attributeO;
+      }
+    } catch (Exception ignored) {
+    }
+
     return settings;
   }
 
@@ -280,7 +291,7 @@ public class Settings implements Serializable {
 
   @NonNull
   public String toString(boolean includePassword) {
-    HashMap<String, Object> map = new HashMap<>(17);
+    HashMap<String, Object> map = new HashMap<>(18);
     try {
       if (this.caCert != null)
         map.put("caCert", Base64.encodeToString(this.caCert, Base64.DEFAULT));
@@ -300,6 +311,7 @@ public class Settings implements Serializable {
       map.put("closeIfIdle", this.closeIfIdle);
       map.put("autoCloseDelay", this.autoCloseDelay);
       map.put("savedServersList", this.savedServersList);
+      map.put("saveServers", this.saveServers);
     } catch (Exception ignored) {
     }
 
@@ -338,6 +350,7 @@ public class Settings implements Serializable {
         INSTANCE.autoCloseDelay = strSet.autoCloseDelay;
         INSTANCE.savedServersList.clear();
         INSTANCE.savedServersList.addAll(strSet.savedServersList);
+        INSTANCE.saveServers = strSet.saveServers;
       } catch (Exception ignored) {
       }
     }
@@ -422,6 +435,10 @@ public class Settings implements Serializable {
     return autoCloseDelay;
   }
 
+  public boolean getSaveServers() {
+    return saveServers;
+  }
+
   public List<String> getSavedServersList() {
     return this.savedServersList;
   }
@@ -504,5 +521,9 @@ public class Settings implements Serializable {
 
   public void setAutoCloseDelay(int autoCloseDelay) {
     this.autoCloseDelay = autoCloseDelay;
+  }
+
+  public void setSaveServers(boolean saveServers) {
+    this.saveServers = saveServers;
   }
 }

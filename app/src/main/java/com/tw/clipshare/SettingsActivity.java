@@ -44,6 +44,7 @@ import android.widget.*;
 import androidx.activity.OnBackPressedCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.IdRes;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SwitchCompat;
 import com.tw.clipshare.netConnection.SecureConnection;
@@ -246,6 +247,15 @@ public class SettingsActivity extends AppCompatActivity {
     }
   }
 
+  private void expandBlock(@IdRes int layoutId, @IdRes int buttonId) {
+    LinearLayout layout = findViewById(layoutId);
+    layout.setVisibility(View.GONE);
+    ImageButton expandButton = findViewById(buttonId);
+    expandButton.setImageResource(android.R.drawable.arrow_down_float);
+    expandButton.setTag(false);
+    expandButton.setOnClickListener(view -> toggleLayout((ImageButton) view, layout));
+  }
+
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
@@ -268,28 +278,10 @@ public class SettingsActivity extends AppCompatActivity {
     EditText editPortSecure = findViewById(R.id.editPortSecure);
     EditText editPortUDP = findViewById(R.id.editPortUDP);
 
-    LinearLayout autoSendLayout = findViewById(R.id.autoSendLayout);
-    autoSendLayout.setVisibility(View.GONE);
-    ImageButton expandAutoSendBtn = findViewById(R.id.expandAutoSendBtn);
-    expandAutoSendBtn.setImageResource(android.R.drawable.arrow_down_float);
-    expandAutoSendBtn.setTag(false);
-    expandAutoSendBtn.setOnClickListener(view -> toggleLayout((ImageButton) view, autoSendLayout));
-
-    LinearLayout secureModeLayout = findViewById(R.id.secureModeLayout);
-    secureModeLayout.setVisibility(View.GONE);
-    ImageButton expandSecureModeBtn = findViewById(R.id.expandSecureModeBtn);
-    expandSecureModeBtn.setImageResource(android.R.drawable.arrow_down_float);
-    expandSecureModeBtn.setTag(false);
-    expandSecureModeBtn.setOnClickListener(
-        view -> toggleLayout((ImageButton) view, secureModeLayout));
-
-    LinearLayout otherSettingsLayout = findViewById(R.id.otherSettingsLayout);
-    secureModeLayout.setVisibility(View.GONE);
-    ImageButton expandOtherSettingsBtn = findViewById(R.id.expandOtherSettingsBtn);
-    expandOtherSettingsBtn.setImageResource(android.R.drawable.arrow_down_float);
-    expandOtherSettingsBtn.setTag(false);
-    expandOtherSettingsBtn.setOnClickListener(
-        view -> toggleLayout((ImageButton) view, otherSettingsLayout));
+    expandBlock(R.id.autoSendLayout, R.id.expandAutoSendBtn);
+    expandBlock(R.id.savedAddressLayout, R.id.expandSavedAddressBtn);
+    expandBlock(R.id.secureModeLayout, R.id.expandSecureModeBtn);
+    expandBlock(R.id.otherSettingsLayout, R.id.expandOtherSettingsBtn);
 
     this.secureSwitch.setOnClickListener(
         view -> {
@@ -446,6 +438,11 @@ public class SettingsActivity extends AppCompatActivity {
         });
     editAutoCloseDelay.setText(String.valueOf(st.getAutoCloseDelay()));
 
+    SwitchCompat saveAddressesSwitch = findViewById(R.id.saveAddressesSwitch);
+    saveAddressesSwitch.setOnClickListener(
+        view -> st.setSaveServers(saveAddressesSwitch.isChecked()));
+    saveAddressesSwitch.setChecked(st.getSaveServers());
+
     addTrustedCNBtn.setOnClickListener(view -> addRowToTrustList(true, null));
 
     caBrowseBtn.setOnClickListener(
@@ -484,11 +481,6 @@ public class SettingsActivity extends AppCompatActivity {
                   SharedPreferences.Editor editor = sharedPref.edit();
                   editor.putString("settings", st.toString());
                   editor.apply();
-                  runOnUiThread(
-                      () ->
-                          Toast.makeText(
-                                  getApplicationContext(), "Saved settings", Toast.LENGTH_SHORT)
-                              .show());
                 } catch (Exception ignored) {
                 }
                 if (SettingsActivity.this.intent != null) {
