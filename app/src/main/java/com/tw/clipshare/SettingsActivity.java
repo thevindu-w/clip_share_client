@@ -64,6 +64,16 @@ public class SettingsActivity extends AppCompatActivity {
   private EditText editPass;
   private TextView cnTxt;
   private TextView caCnTxt;
+  private EditText editPort;
+  private EditText editPortSecure;
+  private EditText editPortUDP;
+  private SwitchCompat autoSendTextSwitch;
+  private SwitchCompat autoSendFileSwitch;
+  private SwitchCompat vibrateSwitch;
+  private SwitchCompat autoCloseSwitch;
+  private EditText editAutoCloseDelay;
+  private LinearLayout layoutAutoCloseDelay;
+  private Settings settings;
   private final ActivityResultLauncher<Intent> clientActivityLauncher =
       registerForActivityResult(
           new ActivityResultContracts.StartActivityForResult(),
@@ -128,6 +138,111 @@ public class SettingsActivity extends AppCompatActivity {
                     .show();
               }
             } catch (Exception ignored) {
+            }
+          });
+  private final ActivityResultLauncher<Intent> exportActivityLauncher =
+      registerForActivityResult(
+          new ActivityResultContracts.StartActivityForResult(),
+          result -> {
+            try {
+              if (result.getResultCode() != Activity.RESULT_OK) {
+                return;
+              }
+              Intent intent1 = result.getData();
+              if (intent1 == null) {
+                return;
+              }
+              Uri uri = intent1.getData();
+              if (uri == null) {
+                return;
+              }
+              String jsonStr = settings.toString(true);
+              try (OutputStream fileOutputStream = getContentResolver().openOutputStream(uri)) {
+                fileOutputStream.write(jsonStr.getBytes(StandardCharsets.UTF_8));
+                runOnUiThread(
+                    () ->
+                        Toast.makeText(
+                                SettingsActivity.this, "Exported settings", Toast.LENGTH_SHORT)
+                            .show());
+              }
+            } catch (Exception ignored) {
+              runOnUiThread(
+                  () ->
+                      Toast.makeText(SettingsActivity.this, "Error occurred", Toast.LENGTH_SHORT)
+                          .show());
+            }
+          });
+  private final ActivityResultLauncher<Intent> importActivityLauncher =
+      registerForActivityResult(
+          new ActivityResultContracts.StartActivityForResult(),
+          result -> {
+            try {
+              if (result.getResultCode() != Activity.RESULT_OK) {
+                return;
+              }
+              Intent intent1 = result.getData();
+              if (intent1 == null) {
+                return;
+              }
+              Uri uri = intent1.getData();
+              if (uri == null) {
+                return;
+              }
+              Cursor cursor = getContentResolver().query(uri, null, null, null, null);
+              if (cursor.getCount() <= 0) {
+                cursor.close();
+                return;
+              }
+              cursor.moveToFirst();
+              String fileSizeStr =
+                  cursor.getString(cursor.getColumnIndexOrThrow(OpenableColumns.SIZE));
+              int size = Integer.parseInt(fileSizeStr);
+              cursor.close();
+              try (InputStream fileInputStream = getContentResolver().openInputStream(uri)) {
+                byte[] data = new byte[size];
+                if (fileInputStream.read(data) < size) return;
+                String jsonStr = new String(data, StandardCharsets.UTF_8);
+                Settings.loadInstance(jsonStr);
+                editPort.setText(String.valueOf(settings.getPort()));
+                editPortSecure.setText(String.valueOf(settings.getPortSecure()));
+                editPortUDP.setText(String.valueOf(settings.getPortUDP()));
+                String caCertCN1 = settings.getCACertCN();
+                if (caCertCN1 != null) this.caCnTxt.setText(caCertCN1);
+                String certCN1 = settings.getCertCN();
+                if (certCN1 != null) this.cnTxt.setText(certCN1);
+                List<String> servers1 = settings.getTrustedList();
+                trustList.removeAllViews();
+                for (String server : servers1) {
+                  addRowToTrustList(false, server);
+                }
+                this.secureSwitch.setChecked(settings.getSecure());
+                autoSendTextSwitch.setChecked(settings.getAutoSendText());
+                autoSendFileSwitch.setChecked(settings.getAutoSendFiles());
+                List<String> autoSendServers = settings.getAutoSendTrustedList();
+                autoSendTrustList.removeAllViews();
+                for (String server : autoSendServers) {
+                  addRowToAutoSendTrustList(false, server);
+                }
+                vibrateSwitch.setChecked(settings.getVibrate());
+                boolean autoClose = settings.getCloseIfIdle();
+                autoCloseSwitch.setChecked(autoClose);
+                editAutoCloseDelay.setText(String.valueOf(settings.getAutoCloseDelay()));
+                if (autoClose) {
+                  layoutAutoCloseDelay.setVisibility(View.VISIBLE);
+                } else {
+                  layoutAutoCloseDelay.setVisibility(View.GONE);
+                }
+                runOnUiThread(
+                    () ->
+                        Toast.makeText(
+                                SettingsActivity.this, "Imported settings", Toast.LENGTH_SHORT)
+                            .show());
+              }
+            } catch (Exception ignored) {
+              runOnUiThread(
+                  () ->
+                      Toast.makeText(SettingsActivity.this, "Error occurred", Toast.LENGTH_SHORT)
+                          .show());
             }
           });
 
@@ -260,7 +375,7 @@ public class SettingsActivity extends AppCompatActivity {
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.settings_activity);
-    Settings st = Settings.getInstance();
+    this.settings = Settings.getInstance();
     this.intent = getIntent();
     this.idTLS = new AtomicInteger(10000);
     this.idAutoSend = new AtomicInteger(20000);
@@ -274,9 +389,15 @@ public class SettingsActivity extends AppCompatActivity {
     this.editPass = findViewById(R.id.editCertPass);
     this.caCnTxt = findViewById(R.id.txtCACertName);
     this.cnTxt = findViewById(R.id.txtCertName);
-    EditText editPort = findViewById(R.id.editPort);
-    EditText editPortSecure = findViewById(R.id.editPortSecure);
-    EditText editPortUDP = findViewById(R.id.editPortUDP);
+    this.editPort = findViewById(R.id.editPort);
+    this.editPortSecure = findViewById(R.id.editPortSecure);
+    this.editPortUDP = findViewById(R.id.editPortUDP);
+    this.autoSendTextSwitch = findViewById(R.id.autoSendTextSwitch);
+    this.autoSendFileSwitch = findViewById(R.id.autoSendFileSwitch);
+    this.vibrateSwitch = findViewById(R.id.vibrateSwitch);
+    this.autoCloseSwitch = findViewById(R.id.autoCloseSwitch);
+    this.editAutoCloseDelay = findViewById(R.id.editAutoCloseDelay);
+    this.layoutAutoCloseDelay = findViewById(R.id.layoutAutoCloseDelay);
 
     expandBlock(R.id.autoSendLayout, R.id.expandAutoSendBtn);
     expandBlock(R.id.savedAddressLayout, R.id.expandSavedAddressBtn);
@@ -286,32 +407,32 @@ public class SettingsActivity extends AppCompatActivity {
     this.secureSwitch.setOnClickListener(
         view -> {
           if (!SettingsActivity.this.secureSwitch.isChecked()) {
-            st.setSecure(false);
+            settings.setSecure(false);
             return;
           }
-          if (st.getCACertCN() == null) {
+          if (settings.getCACertCN() == null) {
             Toast.makeText(SettingsActivity.this, "No CA certificate", Toast.LENGTH_SHORT).show();
             SettingsActivity.this.secureSwitch.setChecked(false);
-            st.setSecure(false);
+            settings.setSecure(false);
             return;
           }
-          if (st.getCertCN() == null) {
+          if (settings.getCertCN() == null) {
             Toast.makeText(
                     SettingsActivity.this, "No client key and certificate", Toast.LENGTH_SHORT)
                 .show();
             SettingsActivity.this.secureSwitch.setChecked(false);
-            st.setSecure(false);
+            settings.setSecure(false);
             return;
           }
-          if (st.getTrustedList().isEmpty()) {
+          if (settings.getTrustedList().isEmpty()) {
             Toast.makeText(SettingsActivity.this, "No trusted servers", Toast.LENGTH_SHORT).show();
             SettingsActivity.this.secureSwitch.setChecked(false);
-            st.setSecure(false);
+            settings.setSecure(false);
             return;
           }
-          st.setSecure(secureSwitch.isChecked());
+          settings.setSecure(secureSwitch.isChecked());
         });
-    this.secureSwitch.setChecked(st.getSecure());
+    this.secureSwitch.setChecked(settings.getSecure());
 
     editPort.setOnFocusChangeListener(
         (view, focus) -> {
@@ -320,11 +441,11 @@ public class SettingsActivity extends AppCompatActivity {
             String portStr = ((EditText) view).getText().toString();
             int port = Integer.parseInt(portStr);
             if (port <= 0 || 65536 <= port) {
-              ((EditText) view).setText(st.getPort());
+              ((EditText) view).setText(settings.getPort());
               Toast.makeText(SettingsActivity.this, "Invalid port", Toast.LENGTH_SHORT).show();
               return;
             }
-            st.setPort(port);
+            settings.setPort(port);
           } catch (Exception ignored) {
             Toast.makeText(SettingsActivity.this, "Error occurred", Toast.LENGTH_SHORT).show();
           }
@@ -336,11 +457,11 @@ public class SettingsActivity extends AppCompatActivity {
             String portStr = ((EditText) view).getText().toString();
             int port = Integer.parseInt(portStr);
             if (port <= 0 || 65536 <= port) {
-              ((EditText) view).setText(st.getPortSecure());
+              ((EditText) view).setText(settings.getPortSecure());
               Toast.makeText(SettingsActivity.this, "Invalid port", Toast.LENGTH_SHORT).show();
               return;
             }
-            st.setPortSecure(port);
+            settings.setPortSecure(port);
           } catch (Exception ignored) {
             Toast.makeText(SettingsActivity.this, "Error occurred", Toast.LENGTH_SHORT).show();
           }
@@ -352,74 +473,68 @@ public class SettingsActivity extends AppCompatActivity {
             String portStr = ((EditText) view).getText().toString();
             int port = Integer.parseInt(portStr);
             if (port <= 0 || 65536 <= port) {
-              ((EditText) view).setText(st.getPort());
+              ((EditText) view).setText(settings.getPort());
               Toast.makeText(SettingsActivity.this, "Invalid port", Toast.LENGTH_SHORT).show();
               return;
             }
-            st.setPortUDP(port);
+            settings.setPortUDP(port);
           } catch (Exception ignored) {
             Toast.makeText(SettingsActivity.this, "Error occurred", Toast.LENGTH_SHORT).show();
           }
         });
 
-    editPort.setText(String.valueOf(st.getPort()));
-    editPortSecure.setText(String.valueOf(st.getPortSecure()));
-    editPortUDP.setText(String.valueOf(st.getPortUDP()));
+    editPort.setText(String.valueOf(settings.getPort()));
+    editPortSecure.setText(String.valueOf(settings.getPortSecure()));
+    editPortUDP.setText(String.valueOf(settings.getPortUDP()));
     this.caCnTxt.setMovementMethod(new ScrollingMovementMethod());
     this.caCnTxt.setHorizontallyScrolling(true);
-    String caCertCN = st.getCACertCN();
+    String caCertCN = settings.getCACertCN();
     if (caCertCN != null) this.caCnTxt.setText(caCertCN);
 
     this.cnTxt.setMovementMethod(new ScrollingMovementMethod());
     this.cnTxt.setHorizontallyScrolling(true);
-    String certCN = st.getCertCN();
+    String certCN = settings.getCertCN();
     if (certCN != null) this.cnTxt.setText(certCN);
 
-    for (String server : st.getTrustedList()) {
+    for (String server : settings.getTrustedList()) {
       addRowToTrustList(false, server);
     }
 
-    for (String server : st.getAutoSendTrustedList()) {
+    for (String server : settings.getAutoSendTrustedList()) {
       addRowToAutoSendTrustList(false, server);
     }
 
-    SwitchCompat autoSendTextSwitch = findViewById(R.id.autoSendTextSwitch);
     autoSendTextSwitch.setOnClickListener(
-        view -> st.setAutoSendText(autoSendTextSwitch.isChecked()));
-    autoSendTextSwitch.setChecked(st.getAutoSendText());
+        view -> settings.setAutoSendText(autoSendTextSwitch.isChecked()));
+    autoSendTextSwitch.setChecked(settings.getAutoSendText());
 
-    SwitchCompat autoSendFileSwitch = findViewById(R.id.autoSendFileSwitch);
     autoSendFileSwitch.setOnClickListener(
-        view -> st.setAutoSendFiles(autoSendFileSwitch.isChecked()));
-    autoSendFileSwitch.setChecked(st.getAutoSendFiles());
+        view -> settings.setAutoSendFiles(autoSendFileSwitch.isChecked()));
+    autoSendFileSwitch.setChecked(settings.getAutoSendFiles());
 
     addAutoSendServerBtn.setOnClickListener(view -> addRowToAutoSendTrustList(true, null));
 
-    SwitchCompat vibrateSwitch = findViewById(R.id.vibrateSwitch);
-    vibrateSwitch.setOnClickListener(view -> st.setVibrate(vibrateSwitch.isChecked()));
-    vibrateSwitch.setChecked(st.getVibrate());
+    vibrateSwitch.setOnClickListener(view -> settings.setVibrate(vibrateSwitch.isChecked()));
+    vibrateSwitch.setChecked(settings.getVibrate());
 
-    LinearLayout layoutAutoCloseDelay = findViewById(R.id.layoutAutoCloseDelay);
-    SwitchCompat autoCloseSwitch = findViewById(R.id.autoCloseSwitch);
     autoCloseSwitch.setOnClickListener(
         view -> {
           boolean autoClose = autoCloseSwitch.isChecked();
-          st.setCloseIfIdle(autoClose);
+          settings.setCloseIfIdle(autoClose);
           if (autoClose) {
             layoutAutoCloseDelay.setVisibility(View.VISIBLE);
           } else {
             layoutAutoCloseDelay.setVisibility(View.GONE);
           }
         });
-    autoCloseSwitch.setChecked(st.getCloseIfIdle());
+    autoCloseSwitch.setChecked(settings.getCloseIfIdle());
 
-    if (!st.getCloseIfIdle()) {
+    if (!settings.getCloseIfIdle()) {
       layoutAutoCloseDelay.setVisibility(View.GONE);
     } else {
       layoutAutoCloseDelay.setVisibility(View.VISIBLE);
     }
 
-    EditText editAutoCloseDelay = findViewById(R.id.editAutoCloseDelay);
     editAutoCloseDelay.setOnFocusChangeListener(
         (view, focus) -> {
           try {
@@ -427,21 +542,21 @@ public class SettingsActivity extends AppCompatActivity {
             String delayStr = ((EditText) view).getText().toString();
             int delay = Integer.parseInt(delayStr);
             if (delay <= 0 || 10000 <= delay) {
-              ((EditText) view).setText(st.getAutoCloseDelay());
+              ((EditText) view).setText(settings.getAutoCloseDelay());
               Toast.makeText(SettingsActivity.this, "Invalid delay", Toast.LENGTH_SHORT).show();
               return;
             }
-            st.setAutoCloseDelay(delay);
+            settings.setAutoCloseDelay(delay);
           } catch (Exception ignored) {
             Toast.makeText(SettingsActivity.this, "Error occurred", Toast.LENGTH_SHORT).show();
           }
         });
-    editAutoCloseDelay.setText(String.valueOf(st.getAutoCloseDelay()));
+    editAutoCloseDelay.setText(String.valueOf(settings.getAutoCloseDelay()));
 
     SwitchCompat saveAddressesSwitch = findViewById(R.id.saveAddressesSwitch);
     saveAddressesSwitch.setOnClickListener(
-        view -> st.setSaveServers(saveAddressesSwitch.isChecked()));
-    saveAddressesSwitch.setChecked(st.getSaveServers());
+        view -> settings.setSaveServers(saveAddressesSwitch.isChecked()));
+    saveAddressesSwitch.setChecked(settings.getSaveServers());
 
     addTrustedCNBtn.setOnClickListener(view -> addRowToTrustList(true, null));
 
@@ -479,7 +594,7 @@ public class SettingsActivity extends AppCompatActivity {
                           .getSharedPreferences(
                               ClipShareActivity.PREFERENCES, Context.MODE_PRIVATE);
                   SharedPreferences.Editor editor = sharedPref.edit();
-                  editor.putString("settings", st.toString());
+                  editor.putString("settings", settings.toString());
                   editor.apply();
                 } catch (Exception ignored) {
                 }
@@ -490,38 +605,6 @@ public class SettingsActivity extends AppCompatActivity {
               }
             });
 
-    ActivityResultLauncher<Intent> exportActivityLauncher =
-        registerForActivityResult(
-            new ActivityResultContracts.StartActivityForResult(),
-            result -> {
-              try {
-                if (result.getResultCode() != Activity.RESULT_OK) {
-                  return;
-                }
-                Intent intent1 = result.getData();
-                if (intent1 == null) {
-                  return;
-                }
-                Uri uri = intent1.getData();
-                if (uri == null) {
-                  return;
-                }
-                String jsonStr = st.toString(true);
-                try (OutputStream fileOutputStream = getContentResolver().openOutputStream(uri)) {
-                  fileOutputStream.write(jsonStr.getBytes(StandardCharsets.UTF_8));
-                  runOnUiThread(
-                      () ->
-                          Toast.makeText(
-                                  SettingsActivity.this, "Exported settings", Toast.LENGTH_SHORT)
-                              .show());
-                }
-              } catch (Exception ignored) {
-                runOnUiThread(
-                    () ->
-                        Toast.makeText(SettingsActivity.this, "Error occurred", Toast.LENGTH_SHORT)
-                            .show());
-              }
-            });
     Button exportBtn = findViewById(R.id.btnExport);
     exportBtn.setOnClickListener(
         view -> {
@@ -542,79 +625,6 @@ public class SettingsActivity extends AppCompatActivity {
           }
         });
 
-    ActivityResultLauncher<Intent> importActivityLauncher =
-        registerForActivityResult(
-            new ActivityResultContracts.StartActivityForResult(),
-            result -> {
-              try {
-                if (result.getResultCode() != Activity.RESULT_OK) {
-                  return;
-                }
-                Intent intent1 = result.getData();
-                if (intent1 == null) {
-                  return;
-                }
-                Uri uri = intent1.getData();
-                if (uri == null) {
-                  return;
-                }
-                Cursor cursor = getContentResolver().query(uri, null, null, null, null);
-                if (cursor.getCount() <= 0) {
-                  cursor.close();
-                  return;
-                }
-                cursor.moveToFirst();
-                String fileSizeStr =
-                    cursor.getString(cursor.getColumnIndexOrThrow(OpenableColumns.SIZE));
-                int size = Integer.parseInt(fileSizeStr);
-                cursor.close();
-                try (InputStream fileInputStream = getContentResolver().openInputStream(uri)) {
-                  byte[] data = new byte[size];
-                  if (fileInputStream.read(data) < size) return;
-                  String jsonStr = new String(data, StandardCharsets.UTF_8);
-                  Settings.loadInstance(jsonStr);
-                  editPort.setText(String.valueOf(st.getPort()));
-                  editPortSecure.setText(String.valueOf(st.getPortSecure()));
-                  editPortUDP.setText(String.valueOf(st.getPortUDP()));
-                  String caCertCN1 = st.getCACertCN();
-                  if (caCertCN1 != null) this.caCnTxt.setText(caCertCN1);
-                  String certCN1 = st.getCertCN();
-                  if (certCN1 != null) this.cnTxt.setText(certCN1);
-                  List<String> servers1 = st.getTrustedList();
-                  trustList.removeAllViews();
-                  for (String server : servers1) {
-                    addRowToTrustList(false, server);
-                  }
-                  this.secureSwitch.setChecked(st.getSecure());
-                  autoSendTextSwitch.setChecked(st.getAutoSendText());
-                  autoSendFileSwitch.setChecked(st.getAutoSendFiles());
-                  List<String> autoSendServers = st.getAutoSendTrustedList();
-                  autoSendTrustList.removeAllViews();
-                  for (String server : autoSendServers) {
-                    addRowToAutoSendTrustList(false, server);
-                  }
-                  vibrateSwitch.setChecked(st.getVibrate());
-                  boolean autoClose = st.getCloseIfIdle();
-                  autoCloseSwitch.setChecked(autoClose);
-                  editAutoCloseDelay.setText(String.valueOf(st.getAutoCloseDelay()));
-                  if (autoClose) {
-                    layoutAutoCloseDelay.setVisibility(View.VISIBLE);
-                  } else {
-                    layoutAutoCloseDelay.setVisibility(View.GONE);
-                  }
-                  runOnUiThread(
-                      () ->
-                          Toast.makeText(
-                                  SettingsActivity.this, "Imported settings", Toast.LENGTH_SHORT)
-                              .show());
-                }
-              } catch (Exception ignored) {
-                runOnUiThread(
-                    () ->
-                        Toast.makeText(SettingsActivity.this, "Error occurred", Toast.LENGTH_SHORT)
-                            .show());
-              }
-            });
     Button importBtn = findViewById(R.id.btnImport);
     importBtn.setOnClickListener(
         view -> {
