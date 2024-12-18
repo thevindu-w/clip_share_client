@@ -11,8 +11,7 @@
         android:layout_weight="0.8"
         android:layout_margin="12dp"
         android:textSize="18sp"
-        android:textColor="?android:textColorPrimary"
-        android:text="@string/server_name" />
+        android:textColor="?android:textColorPrimary"/>
 
     <EditText
         android:id="@+id/editTxt"

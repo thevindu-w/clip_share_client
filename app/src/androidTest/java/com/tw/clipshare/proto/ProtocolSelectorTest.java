@@ -1,5 +1,8 @@
 package com.tw.clipshare.proto;
 
+import static com.tw.clipshare.Consts.PROTOCOL_OBSOLETE;
+import static com.tw.clipshare.Consts.PROTOCOL_SUPPORTED;
+import static com.tw.clipshare.Consts.PROTOCOL_UNKNOWN;
 import static org.junit.Assert.*;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -15,9 +18,6 @@ import org.junit.runner.RunWith;
 @RunWith(AndroidJUnit4.class)
 public class ProtocolSelectorTest {
   static final byte PROTOCOL_REJECT = 0;
-  static final byte PROTOCOL_SUPPORTED = 1;
-  static final byte PROTOCOL_OBSOLETE = 2;
-  static final byte PROTOCOL_UNKNOWN = 3;
   static final byte MAX_PROTO = ProtocolSelector.PROTO_MAX;
 
   @SuppressWarnings("ConstantConditions")

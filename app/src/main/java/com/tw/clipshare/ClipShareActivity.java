@@ -625,7 +625,7 @@ public class ClipShareActivity extends AppCompatActivity {
     String address;
     try {
       address = editAddress.getText().toString();
-      if (!address.matches("^((25[0-5]|(2[0-4]|1\\d|[1-9]|)\\d)(\\.(?!$)|$)){4}$")) {
+      if (!address.matches(Consts.IPV4_REGEX)) {
         Toast.makeText(ClipShareActivity.this, "Invalid address", Toast.LENGTH_SHORT).show();
         return null;
       }
@@ -639,6 +639,7 @@ public class ClipShareActivity extends AppCompatActivity {
       int ind = savedServers.lastIndexOf(address);
       if (ind == savedServers.size() - 1) return address;
       if (ind >= 0) savedServers.remove(address);
+      if (savedServers.size() >= 50) savedServers.remove(0);
       savedServers.add(address);
       SharedPreferences.Editor editor = sharedPref.edit();
       editor.putString("settings", settings.toString());

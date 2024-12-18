@@ -248,14 +248,14 @@ public class SettingsActivity extends AppCompatActivity {
 
   private void addRowToTrustList(boolean addToList, String name) {
     try {
-      View trustServer = View.inflate(getApplicationContext(), R.layout.trusted_server, null);
+      View trustServer = View.inflate(getApplicationContext(), R.layout.list_element, null);
       ImageButton delBtn = trustServer.findViewById(R.id.delBtn);
       TextView cnTxt = trustServer.findViewById(R.id.viewTxt);
       EditText cnEdit = trustServer.findViewById(R.id.editTxt);
       trustServer.setId(idTLS.getAndIncrement());
       Settings st = Settings.getInstance();
       List<String> servers = st.getTrustedList();
-      if (name != null) cnTxt.setText(name);
+      cnTxt.setText(name != null ? name : "Server name");
       if (addToList) servers.add(cnTxt.getText().toString());
       trustList.addView(trustServer, 0);
       cnTxt.setTextColor(caCnTxt.getTextColors());
@@ -298,17 +298,14 @@ public class SettingsActivity extends AppCompatActivity {
 
   private void addRowToAutoSendTrustList(boolean addToList, String address) {
     try {
-      View trustServer = View.inflate(getApplicationContext(), R.layout.trusted_server, null);
+      View trustServer = View.inflate(getApplicationContext(), R.layout.list_element, null);
       ImageButton delBtn = trustServer.findViewById(R.id.delBtn);
       TextView addressTxt = trustServer.findViewById(R.id.viewTxt);
       EditText addressEdit = trustServer.findViewById(R.id.editTxt);
       trustServer.setId(idAutoSend.getAndIncrement());
       Settings st = Settings.getInstance();
       List<String> servers = st.getAutoSendTrustedList();
-      if (address != null
-          && address.matches("^\\*|((25[0-5]|(2[0-4]|1\\d|[1-9]|)\\d)(\\.(?!$)|$)){4}$"))
-        addressTxt.setText(address);
-      else addressTxt.setText("*");
+      addressTxt.setText((address != null && address.matches(Consts.IPV4_REGEX)) ? address : "*");
       if (addToList) servers.add(addressTxt.getText().toString());
       autoSendTrustList.addView(trustServer, 0);
       addressTxt.setTextColor(caCnTxt.getTextColors());
@@ -334,8 +331,7 @@ public class SettingsActivity extends AppCompatActivity {
             if (!hasFocus) {
               CharSequence oldText = addressTxt.getText();
               String newText = addressEdit.getText().toString();
-              boolean isValid =
-                  newText.matches("^\\*|((25[0-5]|(2[0-4]|1\\d|[1-9]|)\\d)(\\.(?!$)|$)){4}$");
+              boolean isValid = "*".equals(newText) || newText.matches(Consts.IPV4_REGEX);
               if (isValid) addressTxt.setText(newText);
               else
                 Toast.makeText(SettingsActivity.this, "Invalid IPv4 address", Toast.LENGTH_SHORT)

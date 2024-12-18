@@ -25,7 +25,6 @@
     <string name="add" translatable="false">Add</string>
     <string name="trusted_servers" translatable="false">Trusted servers</string>
     <string name="auto_send_trusted_servers" translatable="false">Auto send to</string>
-    <string name="server_name" translatable="false">Server name</string>
     <string name="enter_server_name" translatable="false">Enter server name</string>
     <string name="password" translatable="false">Password :</string>
     <string name="client_certificate" translatable="false">Client Certificate</string>
