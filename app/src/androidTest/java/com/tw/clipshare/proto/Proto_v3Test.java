@@ -1,7 +1,7 @@
 package com.tw.clipshare.proto;
 
+import static com.tw.clipshare.Consts.PROTOCOL_SUPPORTED;
 import static com.tw.clipshare.proto.ProtocolSelectorTest.MAX_PROTO;
-import static com.tw.clipshare.proto.ProtocolSelectorTest.PROTOCOL_SUPPORTED;
 import static org.junit.Assert.*;
 
 import android.Manifest;
