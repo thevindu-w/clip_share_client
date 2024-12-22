@@ -637,7 +637,7 @@ public class ClipShareActivity extends AppCompatActivity {
       if (!settings.getSaveServers()) return address;
       List<String> savedServers = settings.getSavedServersList();
       int ind = savedServers.lastIndexOf(address);
-      if (ind == savedServers.size() - 1) return address;
+      if (ind == savedServers.size() - 1 && ind >= 0) return address;
       if (ind >= 0) savedServers.remove(address);
       if (savedServers.size() >= 50) savedServers.remove(0);
       savedServers.add(address);

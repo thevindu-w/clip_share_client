@@ -59,8 +59,10 @@ public class SettingsActivity extends AppCompatActivity {
   private Intent intent;
   private AtomicInteger idTLS;
   private AtomicInteger idAutoSend;
+  private AtomicInteger idSavedServer;
   private LinearLayout trustList;
   private LinearLayout autoSendTrustList;
+  private LinearLayout savedServersList;
   private EditText editPass;
   private TextView cnTxt;
   private TextView caCnTxt;
@@ -73,6 +75,7 @@ public class SettingsActivity extends AppCompatActivity {
   private SwitchCompat autoCloseSwitch;
   private EditText editAutoCloseDelay;
   private LinearLayout layoutAutoCloseDelay;
+  private SwitchCompat saveAddressesSwitch;
   private Settings settings;
   private final ActivityResultLauncher<Intent> clientActivityLauncher =
       registerForActivityResult(
@@ -232,6 +235,12 @@ public class SettingsActivity extends AppCompatActivity {
                 } else {
                   layoutAutoCloseDelay.setVisibility(View.GONE);
                 }
+                saveAddressesSwitch.setChecked(settings.getSaveServers());
+                List<String> savedServers = settings.getSavedServersList();
+                savedServersList.removeAllViews();
+                for (String server : savedServers) {
+                  addRowToSavedServersList(false, server);
+                }
                 runOnUiThread(
                     () ->
                         Toast.makeText(
@@ -255,7 +264,7 @@ public class SettingsActivity extends AppCompatActivity {
       trustServer.setId(idTLS.getAndIncrement());
       Settings st = Settings.getInstance();
       List<String> servers = st.getTrustedList();
-      cnTxt.setText(name != null ? name : "Server name");
+      cnTxt.setText(name != null ? name : "Server_name");
       if (addToList) servers.add(cnTxt.getText().toString());
       trustList.addView(trustServer, 0);
       cnTxt.setTextColor(caCnTxt.getTextColors());
@@ -345,6 +354,56 @@ public class SettingsActivity extends AppCompatActivity {
     }
   }
 
+  private void addRowToSavedServersList(boolean addToList, String address) {
+    try {
+      View savedServer = View.inflate(getApplicationContext(), R.layout.list_element, null);
+      ImageButton delBtn = savedServer.findViewById(R.id.delBtn);
+      TextView addressTxt = savedServer.findViewById(R.id.viewTxt);
+      EditText addressEdit = savedServer.findViewById(R.id.editTxt);
+      savedServer.setId(idSavedServer.getAndIncrement());
+      Settings st = Settings.getInstance();
+      List<String> servers = st.getSavedServersList();
+      addressTxt.setText(
+          (address != null && address.matches(Consts.IPV4_REGEX)) ? address : "0.0.0.0");
+      if (addToList) servers.add(addressTxt.getText().toString());
+      savedServersList.addView(savedServer, 0);
+      addressTxt.setTextColor(caCnTxt.getTextColors());
+      addressEdit.setTextColor(caCnTxt.getTextColors());
+      delBtn.setOnClickListener(
+          view1 -> {
+            try {
+              if (servers.remove(addressTxt.getText().toString())) {
+                savedServersList.removeView(savedServer);
+              }
+            } catch (Exception ignored) {
+            }
+          });
+      addressTxt.setOnClickListener(
+          view1 -> {
+            addressEdit.setText(addressTxt.getText());
+            addressTxt.setVisibility(View.GONE);
+            addressEdit.setVisibility(View.VISIBLE);
+            addressEdit.requestFocus();
+          });
+      addressEdit.setOnFocusChangeListener(
+          (view1, hasFocus) -> {
+            if (!hasFocus) {
+              CharSequence oldText = addressTxt.getText();
+              String newText = addressEdit.getText().toString();
+              boolean isValid = newText.matches(Consts.IPV4_REGEX);
+              if (isValid) addressTxt.setText(newText);
+              else
+                Toast.makeText(SettingsActivity.this, "Invalid IPv4 address", Toast.LENGTH_SHORT)
+                    .show();
+              addressEdit.setVisibility(View.GONE);
+              addressTxt.setVisibility(View.VISIBLE);
+              if (isValid && servers.remove(oldText.toString())) servers.add(newText);
+            }
+          });
+    } catch (Exception ignored) {
+    }
+  }
+
   private void toggleLayout(ImageButton btn, LinearLayout layout) {
     Object tag = btn.getTag();
     if (tag instanceof Boolean && (Boolean) tag) {
@@ -375,12 +434,10 @@ public class SettingsActivity extends AppCompatActivity {
     this.intent = getIntent();
     this.idTLS = new AtomicInteger(10000);
     this.idAutoSend = new AtomicInteger(20000);
+    this.idSavedServer = new AtomicInteger(30000);
     this.trustList = findViewById(R.id.trustedList);
     this.autoSendTrustList = findViewById(R.id.autoSendTrustedList);
-    ImageButton addTrustedCNBtn = findViewById(R.id.addServerBtn);
-    ImageButton addAutoSendServerBtn = findViewById(R.id.addAutoSendServerBtn);
-    Button clientBrowseBtn = findViewById(R.id.btnImportCert);
-    Button caBrowseBtn = findViewById(R.id.btnImportCACert);
+    this.savedServersList = findViewById(R.id.savedServersList);
     this.secureSwitch = findViewById(R.id.secureSwitch);
     this.editPass = findViewById(R.id.editCertPass);
     this.caCnTxt = findViewById(R.id.txtCACertName);
@@ -394,6 +451,7 @@ public class SettingsActivity extends AppCompatActivity {
     this.autoCloseSwitch = findViewById(R.id.autoCloseSwitch);
     this.editAutoCloseDelay = findViewById(R.id.editAutoCloseDelay);
     this.layoutAutoCloseDelay = findViewById(R.id.layoutAutoCloseDelay);
+    this.saveAddressesSwitch = findViewById(R.id.saveAddressesSwitch);
 
     expandBlock(R.id.autoSendLayout, R.id.expandAutoSendBtn);
     expandBlock(R.id.savedAddressLayout, R.id.expandSavedAddressBtn);
@@ -500,6 +558,10 @@ public class SettingsActivity extends AppCompatActivity {
       addRowToAutoSendTrustList(false, server);
     }
 
+    for (String server : settings.getSavedServersList()) {
+      addRowToSavedServersList(false, server);
+    }
+
     autoSendTextSwitch.setOnClickListener(
         view -> settings.setAutoSendText(autoSendTextSwitch.isChecked()));
     autoSendTextSwitch.setChecked(settings.getAutoSendText());
@@ -508,6 +570,7 @@ public class SettingsActivity extends AppCompatActivity {
         view -> settings.setAutoSendFiles(autoSendFileSwitch.isChecked()));
     autoSendFileSwitch.setChecked(settings.getAutoSendFiles());
 
+    ImageButton addAutoSendServerBtn = findViewById(R.id.addAutoSendServerBtn);
     addAutoSendServerBtn.setOnClickListener(view -> addRowToAutoSendTrustList(true, null));
 
     vibrateSwitch.setOnClickListener(view -> settings.setVibrate(vibrateSwitch.isChecked()));
@@ -549,13 +612,17 @@ public class SettingsActivity extends AppCompatActivity {
         });
     editAutoCloseDelay.setText(String.valueOf(settings.getAutoCloseDelay()));
 
-    SwitchCompat saveAddressesSwitch = findViewById(R.id.saveAddressesSwitch);
     saveAddressesSwitch.setOnClickListener(
         view -> settings.setSaveServers(saveAddressesSwitch.isChecked()));
     saveAddressesSwitch.setChecked(settings.getSaveServers());
 
+    ImageButton addSavedServerBtn = findViewById(R.id.addSavedServerBtn);
+    addSavedServerBtn.setOnClickListener(view -> addRowToSavedServersList(true, null));
+
+    ImageButton addTrustedCNBtn = findViewById(R.id.addTrustedServerBtn);
     addTrustedCNBtn.setOnClickListener(view -> addRowToTrustList(true, null));
 
+    Button caBrowseBtn = findViewById(R.id.btnImportCACert);
     caBrowseBtn.setOnClickListener(
         view -> {
           Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
@@ -571,6 +638,7 @@ public class SettingsActivity extends AppCompatActivity {
           caActivityLauncher.launch(intent);
         });
 
+    Button clientBrowseBtn = findViewById(R.id.btnImportCert);
     clientBrowseBtn.setOnClickListener(
         view -> {
           Intent intent = new Intent(Intent.ACTION_GET_CONTENT);

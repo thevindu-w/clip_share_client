@@ -144,6 +144,45 @@
                 android:layout_height="wrap_content"
                 android:checked="false" />
 
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:background="@color/settingsTopic2BG">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="0.8"
+                        android:layout_margin="12dp"
+                        android:textSize="20sp"
+                        android:textColor="?android:textColorPrimary"
+                        android:text="@string/saved_servers" />
+
+                    <ImageButton
+                        android:id="@+id/addSavedServerBtn"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:src="@android:drawable/ic_input_add"
+                        android:layout_margin="10dp"
+                        android:background="#00000000"
+                        android:contentDescription="@string/add" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/savedServersList"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:minHeight="20dp"
+                    android:orientation="vertical" />
+            </LinearLayout>
+
         </LinearLayout>
 
         <LinearLayout
@@ -329,7 +368,7 @@
                         android:text="@string/trusted_servers" />
 
                     <ImageButton
-                        android:id="@+id/addServerBtn"
+                        android:id="@+id/addTrustedServerBtn"
                         android:layout_width="wrap_content"
                         android:layout_height="match_parent"
                         android:src="@android:drawable/ic_input_add"
