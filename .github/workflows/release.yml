@@ -1,4 +1,4 @@
-name: Create release
+name: Create-Release
 run-name: Create release ${{github.ref_name}}
 
 on:
@@ -7,6 +7,13 @@ on:
     - 'v[0-9]+.[0-9]+.[0-9]+'
 
 jobs:
+  Build-and-Test:
+    uses: ./.github/workflows/build-test.yml
+    permissions:
+      contents: write
+      pull-requests: write
+      security-events: write
+
   Release:
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -14,6 +21,8 @@ jobs:
       contents: write
       id-token: write
       attestations: write
+    needs:
+    - Build-and-Test
 
     steps:
     - name: Check out repository code
@@ -25,8 +34,6 @@ jobs:
         echo VERSION="$version" >> $GITHUB_ENV
         echo TAG="v${version}" >> $GITHUB_ENV
         echo TITLE="Version ${version}" >> $GITHUB_ENV
-        echo APK_FILE="clip_share_client.apk" >> $GITHUB_ENV
-        echo APK_FILE_LEGACY="clip_share_client-legacy.apk" >> $GITHUB_ENV
 
     - name: Check version
       run: |
@@ -71,8 +78,8 @@ jobs:
         chmod +x gradlew
         ./gradlew assembleRelease
         mkdir release
-        mv app/build/outputs/apk/latest/release/*.apk "release/${{env.APK_FILE}}"
-        mv app/build/outputs/apk/legacy/release/*.apk "release/${{env.APK_FILE_LEGACY}}"
+        mv app/build/outputs/apk/latest/release/*.apk "release/clip_share_client.apk"
+        mv app/build/outputs/apk/legacy/release/*.apk "release/clip_share_client-legacy.apk"
         cd release/
         sha256sum -b * >SHA2-256SUM
 

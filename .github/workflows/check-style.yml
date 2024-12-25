@@ -1,0 +1,84 @@
+name: Style-Check
+run-name: Check Style on ${{ github.sha }}
+
+on:
+  push:
+    branches:
+    - master
+    paths:
+    - '.github/**'
+    - '!.github/workflows/resources/*'
+    - '!.github/workflows/build-test.yml'
+    - '.yamllint'
+  workflow_call:
+    inputs:
+      trigger:
+        type: string
+        required: false
+
+jobs:
+  Style-Check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+    - name: Check out repository code
+      uses: actions/checkout@v4
+      with:
+        ref: ${{ github.ref }}
+
+    - name: Install tools
+      run: sudo apt-get update && sudo apt-get install -y --no-install-recommends yamllint
+
+    - name: Set up JDK 19
+      uses: actions/setup-java@v4
+      with:
+        java-version: '19'
+        distribution: 'temurin'
+
+    - name: Set environment
+      run: echo EVENT="${{ inputs.trigger || github.event_name }}" >> $GITHUB_ENV
+
+    - name: Create gradle.properties
+      run: |
+        mkdir -p ~/.gradle
+        echo "RELEASE_STORE_FILE=notExisting.jks" >~/.gradle/gradle.properties
+        echo "RELEASE_STORE_PASSWORD=unused" >>~/.gradle/gradle.properties
+        echo "RELEASE_KEY_ALIAS=unused" >>~/.gradle/gradle.properties
+        echo "RELEASE_KEY_PASSWORD=unused" >>~/.gradle/gradle.properties
+
+    - name: Grant execute permission for gradlew
+      run: chmod +x gradlew
+
+    - name: Verify Google Java format
+      run: ./gradlew verifyGoogleJavaFormat
+
+    - name: Check yaml style
+      run: yamllint .
+
+    - name: Format Java code
+      if: ${{ (env.EVENT == 'push') && (success() || failure()) }}
+      run: ./gradlew googleJavaFormat
+
+    - name: Create pull request
+      if: ${{ (env.EVENT == 'push') && (success() || failure()) }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        [[ -z "$(git status -s)" ]] && echo No changes && exit 0
+        curr_branch="${{ github.ref_name }}"
+        new_branch="auto-format-$(git rev-parse HEAD | head -c 8)"
+        author_name="$(git log -1 --pretty=format:'%an')"
+        author_email="$(git log -1 --pretty=format:'%ae')"
+        git checkout -b "$new_branch" && git merge "$curr_branch"
+        git config user.name "$author_name"
+        git config user.email "$author_email"
+        git remote set-url origin "https://github.com/${{ github.repository }}"
+        git commit -am 'Apply code formatting automatically from GitHub actions'
+        git push origin "$new_branch"
+        gh pr create -B "$curr_branch" -H "$new_branch" --title "Merge \`$new_branch\` into \`$curr_branch\`" \
+        --body 'Apply code formatting [generated automatically]'
