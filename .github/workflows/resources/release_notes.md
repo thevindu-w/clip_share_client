@@ -4,7 +4,7 @@ You will need the ClipShare server running on a Windows, macOS, or Linux machine
 Refer to the [README](https://github.com/thevindu-w/clip_share_client/#how-to-use) for usage information.
 <br>
 **Changes:**
-- Group settings options into categories.
-- Bug fix: hide auto-close delay if auto-close is disabled after importing settings.
-- Reduce fluctuations in estimated file transfer time.
+Features:
+  - Save all connected servers.
+  - Add or remove server addresses in the list from settings.
 - Other code improvements.
