@@ -29,6 +29,7 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
+import java.util.Locale;
 
 public final class StatusNotifier {
 
@@ -38,7 +39,7 @@ public final class StatusNotifier {
   private final int notificationId;
   private long fileSize;
   private long prevNotifyTime;
-  private int prevProgress;
+  private DataSize prevProgress;
   private long prevSize;
   private long prevSpeed;
   private TimeContainer prevTimeRemaining;
@@ -60,7 +61,7 @@ public final class StatusNotifier {
     this.notificationId = notificationId;
     this.fileSize = -1;
     this.prevNotifyTime = 0;
-    this.prevProgress = -1;
+    this.prevProgress = null;
     this.prevTime = 0;
     this.prevSize = -1;
     this.prevSpeed = -1;
@@ -137,13 +138,14 @@ public final class StatusNotifier {
       long curTime = System.currentTimeMillis();
       long speed = getSpeed(current, curTime);
       if (curTime < this.prevNotifyTime + 500) return;
-      int progress = (int) ((current * 100) / fileSize);
+      DataSize progress = new DataSize(current);
       TimeContainer timeRemaining = getRemainingTime(current, speed);
-      if (progress == prevProgress && timeRemaining.equals(prevTimeRemaining)) return;
+      if (progress.equals(prevProgress) && timeRemaining.equals(prevTimeRemaining)) return;
       this.prevProgress = progress;
       this.prevTimeRemaining = timeRemaining;
       this.prevNotifyTime = curTime;
-      builder.setProgress(PROGRESS_MAX, progress, false).setContentText(progress + "%");
+      int percent = (int) ((current * 100) / fileSize);
+      builder.setProgress(PROGRESS_MAX, percent, false).setContentText(progress.toString());
       if (timeRemaining.time >= 0) builder.setSubText(timeRemaining.toString());
       notificationManager.notify(notificationId, builder.build());
     } catch (Exception ignored) {
@@ -156,7 +158,7 @@ public final class StatusNotifier {
 
   public void reset() {
     this.prevNotifyTime = 0;
-    this.prevProgress = -1;
+    this.prevProgress = null;
     this.prevTime = 0;
     this.prevSize = -1;
     this.prevSpeed = -1;
@@ -188,6 +190,70 @@ public final class StatusNotifier {
   protected void finalize() throws Throwable {
     this.finish();
     super.finalize();
+  }
+}
+
+enum DataUnit {
+  B,
+  KB,
+  MB,
+  GB,
+  TB;
+}
+
+class DataSize {
+  final DataUnit unit;
+  final float value;
+
+  DataSize(long size) {
+    int p1000;
+    long size1 = size;
+    for (p1000 = 0; size1 >= 1000; size1 /= 1000) {
+      p1000++;
+      size = size1;
+    }
+    if (size < 1000) this.value = (float) size;
+    else this.value = size / 1000.f;
+    switch (p1000) {
+      case 0:
+        {
+          this.unit = DataUnit.B;
+          break;
+        }
+      case 1:
+        {
+          this.unit = DataUnit.KB;
+          break;
+        }
+      case 2:
+        {
+          this.unit = DataUnit.MB;
+          break;
+        }
+      case 3:
+        {
+          this.unit = DataUnit.GB;
+          break;
+        }
+      default:
+        {
+          this.unit = DataUnit.TB;
+        }
+    }
+  }
+
+  @Override
+  public boolean equals(Object other) {
+    if (!(other instanceof DataSize)) return false;
+    DataSize otherSize = (DataSize) other;
+    if (this.unit != otherSize.unit) return false;
+    return Math.round(this.value * 100) == Math.round(otherSize.value * 100);
+  }
+
+  @Override
+  @NonNull
+  public String toString() {
+    return String.format(Locale.ENGLISH, "%.3G %s", this.value, this.unit.name());
   }
 }
 
