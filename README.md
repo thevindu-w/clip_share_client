@@ -1,10 +1,14 @@
-![Build and Check](https://github.com/thevindu-w/clip_share_client/actions/workflows/check.yml/badge.svg?branch=master)
+# ClipShare Android Client
+
+### Client application of ClipShare for Android devices.
+
+![Build and Test](https://github.com/thevindu-w/clip_share_client/actions/workflows/build-test.yml/badge.svg?branch=master)
+![Check Style](https://github.com/thevindu-w/clip_share_client/actions/workflows/check-style.yml/badge.svg?branch=master)
 ![Last commit](https://img.shields.io/github/last-commit/thevindu-w/clip_share_client.svg?color=yellow)
 ![License](https://img.shields.io/github/license/thevindu-w/clip_share_client.svg?color=blue)
 
-# ClipShare Android Client
-
-### This is the client application of ClipShare for Android devices.
+[![Latest release](https://img.shields.io/github/v/release/thevindu-w/clip_share_client?color=purple)](https://github.com/thevindu-w/clip_share_client/releases)
+[![Stars](https://img.shields.io/github/stars/thevindu-w/clip_share_client)](https://github.com/thevindu-w/clip_share_client/stargazers)
 
 Share the clipboard between your phone and desktop. Share files and screenshots securely.
 <br>
@@ -15,22 +19,19 @@ and a desktop.
 
 <table>
     <tr>
-        <th>Server</th>
-        <th>Client</th>
+        <th style="text-align:center">Server</th>
+        <th style="text-align:center">Client</th>
     </tr>
     <tr>
-        <td>
-            <a href="https://github.com/thevindu-w/clip_share_server/releases"><img src="https://raw.githubusercontent.com/thevindu-w/clip_share_client/master/fastlane/metadata/android/en-US/images/icon.png"
-               alt="Get it on GitHub" height="100"/></a><br>
-            (Download the server from <a href="https://github.com/thevindu-w/clip_share_server/releases">Releases</a>.)
+        <td align="center">
+            <a href="https://github.com/thevindu-w/clip_share_server/releases"><img src="https://raw.githubusercontent.com/thevindu-w/clip_share_client/master/fastlane/metadata/android/en-US/images/icon.png" alt="Get it on GitHub" height="100"/></a><br>
+            Download the server from <a href="https://github.com/thevindu-w/clip_share_server/releases">Releases</a>.
         </td>
-        <td>
-            <a href="https://apt.izzysoft.de/fdroid/index/apk/com.tw.clipshare"><img src="https://gitlab.com/IzzyOnDroid/repo/-/raw/master/assets/IzzyOnDroid.png"
-               alt="Get it on IzzyOnDroid" height="100"/></a><br>
-            (Download the client app
-            from <a href="https://apt.izzysoft.de/fdroid/index/apk/com.tw.clipshare">
-            apt.izzysoft.de/fdroid/index/apk/com.tw.clipshare</a>.<br>
-            or from <a href="https://github.com/thevindu-w/clip_share_client/releases">GitHub Releases</a>.)
+        <td align="center">
+            <a href="https://apt.izzysoft.de/fdroid/index/apk/com.tw.clipshare"><img src="https://gitlab.com/IzzyOnDroid/repo/-/raw/master/assets/IzzyOnDroid.png" alt="Get it on IzzyOnDroid" height="100"/></a><br>
+            Download the client app
+            from <a href="https://apt.izzysoft.de/fdroid/index/apk/com.tw.clipshare">apt.izzysoft.de/fdroid/index/apk/com.tw.clipshare</a>.<br>
+            or from <a href="https://github.com/thevindu-w/clip_share_client/releases">GitHub Releases</a>.
         </td>
     </tr>
 </table>
