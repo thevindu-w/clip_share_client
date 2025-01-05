@@ -38,6 +38,7 @@ public final class StatusNotifier {
   private final NotificationCompat.Builder builder;
   private final int notificationId;
   private long fileSize;
+  private String fileSizeStr;
   private long prevNotifyTime;
   private DataSize prevProgress;
   private long prevSize;
@@ -60,6 +61,7 @@ public final class StatusNotifier {
             .setSilent(true);
     this.notificationId = notificationId;
     this.fileSize = -1;
+    this.fileSizeStr = "";
     this.prevNotifyTime = 0;
     this.prevProgress = null;
     this.prevTime = 0;
@@ -73,8 +75,8 @@ public final class StatusNotifier {
     if (this.builder == null) return;
     try {
       int len = title.length();
-      if (len > 45) {
-        title = title.substring(0, 30) + "..." + title.substring(len - 12);
+      if (len > 32) {
+        title = title.substring(0, 20) + "..." + title.substring(len - 9);
       }
       this.builder.setContentTitle(title);
     } catch (Exception ignored) {
@@ -145,8 +147,10 @@ public final class StatusNotifier {
       this.prevTimeRemaining = timeRemaining;
       this.prevNotifyTime = curTime;
       int percent = (int) ((current * 100) / fileSize);
-      builder.setProgress(PROGRESS_MAX, percent, false).setContentText(progress.toString());
-      if (timeRemaining.time >= 0) builder.setSubText(timeRemaining.toString());
+      builder
+          .setProgress(PROGRESS_MAX, percent, false)
+          .setContentText(progress + "/" + fileSizeStr);
+      if (timeRemaining.time >= 0) builder.setSubText(timeRemaining + " left");
       notificationManager.notify(notificationId, builder.build());
     } catch (Exception ignored) {
     }
@@ -154,6 +158,7 @@ public final class StatusNotifier {
 
   public void setFileSize(long fileSize) {
     this.fileSize = fileSize;
+    this.fileSizeStr = (new DataSize(fileSize)).toString();
   }
 
   public void reset() {
@@ -198,7 +203,7 @@ enum DataUnit {
   KB,
   MB,
   GB,
-  TB;
+  TB
 }
 
 class DataSize {
