@@ -4,7 +4,5 @@ You will need the ClipShare server running on a Windows, macOS, or Linux machine
 Refer to the [README](https://github.com/thevindu-w/clip_share_client/#how-to-use) for usage information.
 <br>
 **Changes:**
-Features:
-  - Save all connected servers.
-  - Add or remove server addresses in the list from settings.
-- Other code improvements.
+Feature:
+  - Show file transfer progress in terms of file size instead of percentage.
