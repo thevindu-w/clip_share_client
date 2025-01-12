@@ -314,7 +314,7 @@ public class SettingsActivity extends AppCompatActivity {
       trustServer.setId(idAutoSend.getAndIncrement());
       Settings st = Settings.getInstance();
       List<String> servers = st.getAutoSendTrustedList();
-      addressTxt.setText((address != null && address.matches(Consts.IPV4_REGEX)) ? address : "*");
+      addressTxt.setText(Utils.isValidIPv4(address) ? address : "*");
       if (addToList) servers.add(addressTxt.getText().toString());
       autoSendTrustList.addView(trustServer, 0);
       addressTxt.setTextColor(caCnTxt.getTextColors());
@@ -340,7 +340,7 @@ public class SettingsActivity extends AppCompatActivity {
             if (!hasFocus) {
               CharSequence oldText = addressTxt.getText();
               String newText = addressEdit.getText().toString();
-              boolean isValid = "*".equals(newText) || newText.matches(Consts.IPV4_REGEX);
+              boolean isValid = "*".equals(newText) || Utils.isValidIPv4(newText);
               if (isValid) addressTxt.setText(newText);
               else
                 Toast.makeText(SettingsActivity.this, "Invalid IPv4 address", Toast.LENGTH_SHORT)
@@ -363,8 +363,7 @@ public class SettingsActivity extends AppCompatActivity {
       savedServer.setId(idSavedServer.getAndIncrement());
       Settings st = Settings.getInstance();
       List<String> servers = st.getSavedServersList();
-      addressTxt.setText(
-          (address != null && address.matches(Consts.IPV4_REGEX)) ? address : "0.0.0.0");
+      addressTxt.setText(Utils.isValidIPv4(address) ? address : "0.0.0.0");
       if (addToList) servers.add(addressTxt.getText().toString());
       savedServersList.addView(savedServer, 0);
       addressTxt.setTextColor(caCnTxt.getTextColors());
@@ -390,7 +389,7 @@ public class SettingsActivity extends AppCompatActivity {
             if (!hasFocus) {
               CharSequence oldText = addressTxt.getText();
               String newText = addressEdit.getText().toString();
-              boolean isValid = newText.matches(Consts.IPV4_REGEX);
+              boolean isValid = Utils.isValidIPv4(newText);
               if (isValid) addressTxt.setText(newText);
               else
                 Toast.makeText(SettingsActivity.this, "Invalid IPv4 address", Toast.LENGTH_SHORT)

@@ -625,7 +625,7 @@ public class ClipShareActivity extends AppCompatActivity {
     String address;
     try {
       address = editAddress.getText().toString();
-      if (!address.matches(Consts.IPV4_REGEX)) {
+      if (!Utils.isValidIPv4(address)) {
         Toast.makeText(ClipShareActivity.this, "Invalid address", Toast.LENGTH_SHORT).show();
         return null;
       }

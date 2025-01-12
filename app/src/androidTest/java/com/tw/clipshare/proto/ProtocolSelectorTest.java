@@ -1,8 +1,8 @@
 package com.tw.clipshare.proto;
 
-import static com.tw.clipshare.Consts.PROTOCOL_OBSOLETE;
-import static com.tw.clipshare.Consts.PROTOCOL_SUPPORTED;
-import static com.tw.clipshare.Consts.PROTOCOL_UNKNOWN;
+import static com.tw.clipshare.Utils.PROTOCOL_OBSOLETE;
+import static com.tw.clipshare.Utils.PROTOCOL_SUPPORTED;
+import static com.tw.clipshare.Utils.PROTOCOL_UNKNOWN;
 import static org.junit.Assert.*;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;

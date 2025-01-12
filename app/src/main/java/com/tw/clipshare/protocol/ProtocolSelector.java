@@ -24,7 +24,7 @@
 
 package com.tw.clipshare.protocol;
 
-import com.tw.clipshare.Consts;
+import com.tw.clipshare.Utils;
 import com.tw.clipshare.netConnection.ServerConnection;
 import com.tw.clipshare.platformUtils.AndroidUtils;
 import com.tw.clipshare.platformUtils.StatusNotifier;
@@ -50,9 +50,9 @@ public class ProtocolSelector {
       return null;
     }
     int selectedProto = PROTO_MAX;
-    if (proto_v[0] == Consts.PROTOCOL_OBSOLETE) {
+    if (proto_v[0] == Utils.PROTOCOL_OBSOLETE) {
       throw new ProtocolException("Obsolete client");
-    } else if (proto_v[0] == Consts.PROTOCOL_UNKNOWN) {
+    } else if (proto_v[0] == Utils.PROTOCOL_UNKNOWN) {
       byte[] serverProto = new byte[1];
       if (connection.receive(serverProto)) {
         return null;
@@ -67,7 +67,7 @@ public class ProtocolSelector {
         return null;
       }
       selectedProto = serverMaxProto;
-    } else if (proto_v[0] != Consts.PROTOCOL_SUPPORTED) {
+    } else if (proto_v[0] != Utils.PROTOCOL_SUPPORTED) {
       return null;
     }
     switch (selectedProto) {
