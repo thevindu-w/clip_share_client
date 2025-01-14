@@ -314,7 +314,7 @@ public class SettingsActivity extends AppCompatActivity {
       trustServer.setId(idAutoSend.getAndIncrement());
       Settings st = Settings.getInstance();
       List<String> servers = st.getAutoSendTrustedList();
-      addressTxt.setText(Utils.isValidIPv4(address) ? address : "*");
+      addressTxt.setText(Utils.isValidIP(address) ? address : "*");
       if (addToList) servers.add(addressTxt.getText().toString());
       autoSendTrustList.addView(trustServer, 0);
       addressTxt.setTextColor(caCnTxt.getTextColors());
@@ -340,7 +340,7 @@ public class SettingsActivity extends AppCompatActivity {
             if (!hasFocus) {
               CharSequence oldText = addressTxt.getText();
               String newText = addressEdit.getText().toString();
-              boolean isValid = "*".equals(newText) || Utils.isValidIPv4(newText);
+              boolean isValid = "*".equals(newText) || Utils.isValidIP(newText);
               if (isValid) addressTxt.setText(newText);
               else
                 Toast.makeText(SettingsActivity.this, "Invalid IPv4 address", Toast.LENGTH_SHORT)
@@ -356,6 +356,8 @@ public class SettingsActivity extends AppCompatActivity {
 
   private void addRowToSavedServersList(boolean addToList, String address) {
     try {
+      if (address == null) address = "0.0.0.0";
+      else if (!Utils.isValidIP(address)) return;
       View savedServer = View.inflate(getApplicationContext(), R.layout.list_element, null);
       ImageButton delBtn = savedServer.findViewById(R.id.delBtn);
       TextView addressTxt = savedServer.findViewById(R.id.viewTxt);
@@ -363,7 +365,7 @@ public class SettingsActivity extends AppCompatActivity {
       savedServer.setId(idSavedServer.getAndIncrement());
       Settings st = Settings.getInstance();
       List<String> servers = st.getSavedServersList();
-      addressTxt.setText(Utils.isValidIPv4(address) ? address : "0.0.0.0");
+      addressTxt.setText(address);
       if (addToList) servers.add(addressTxt.getText().toString());
       savedServersList.addView(savedServer, 0);
       addressTxt.setTextColor(caCnTxt.getTextColors());
@@ -389,7 +391,7 @@ public class SettingsActivity extends AppCompatActivity {
             if (!hasFocus) {
               CharSequence oldText = addressTxt.getText();
               String newText = addressEdit.getText().toString();
-              boolean isValid = Utils.isValidIPv4(newText);
+              boolean isValid = Utils.isValidIP(newText);
               if (isValid) addressTxt.setText(newText);
               else
                 Toast.makeText(SettingsActivity.this, "Invalid IPv4 address", Toast.LENGTH_SHORT)

@@ -59,7 +59,6 @@ import com.tw.clipshare.protocol.Proto;
 import com.tw.clipshare.protocol.Proto_v3;
 import com.tw.clipshare.protocol.ProtocolSelector;
 import java.io.InputStream;
-import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.ProtocolException;
 import java.util.ArrayList;
@@ -502,14 +501,14 @@ public class ClipShareActivity extends AppCompatActivity {
           }
           String[] acceptedServers = settings.getTrustedList().toArray(new String[0]);
           return new SecureConnection(
-              Inet4Address.getByName(addressStr),
+              InetAddress.getByName(addressStr),
               settings.getPortSecure(),
               caCertIn,
               clientCertKeyIn,
               clientPass,
               acceptedServers);
         } else {
-          return new PlainConnection(Inet4Address.getByName(addressStr), settings.getPort());
+          return new PlainConnection(InetAddress.getByName(addressStr), settings.getPort());
         }
       } catch (Exception ignored) {
       }
@@ -625,7 +624,7 @@ public class ClipShareActivity extends AppCompatActivity {
     String address;
     try {
       address = editAddress.getText().toString();
-      if (!Utils.isValidIPv4(address)) {
+      if (!Utils.isValidIP(address)) {
         Toast.makeText(ClipShareActivity.this, "Invalid address", Toast.LENGTH_SHORT).show();
         return null;
       }
