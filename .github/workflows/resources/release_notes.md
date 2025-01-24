@@ -5,4 +5,4 @@ Refer to the [README](https://github.com/thevindu-w/clip_share_client/#how-to-us
 <br>
 **Changes:**
 Feature:
-  - Show file transfer progress in terms of file size instead of percentage.
+  - Added support for IPv6.
