@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:id="@+id/main_layout"
     android:background="@color/appBackground">
@@ -17,7 +18,7 @@
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="0.04"
+            android:layout_weight="0.02"
             tools:ignore="UselessLeaf" />
 
         <TextView
@@ -38,10 +39,10 @@
         <EditText
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="0.4"
-            android:ems="10"
+            android:layout_weight="0.44"
             android:id="@+id/hostTxt"
             android:inputType="text"
+            android:textSize="17sp"
             android:layout_marginStart="4dp"
             android:layout_marginEnd="15dp"
             android:gravity="start|center_vertical"
@@ -61,13 +62,17 @@
             android:layout_height="match_parent"
             android:layout_weight="0.2"
             android:backgroundTint="#FF6666FF"
+            app:autoSizeTextType="uniform"
+            app:autoSizeMinTextSize="14sp"
+            app:autoSizeMaxTextSize="20sp"
+            app:autoSizeStepGranularity="1sp"
             android:textAppearance="@style/TextAppearance.AppCompat.Button"
             android:textStyle="bold" />
 
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="0.05"
+            android:layout_weight="0.03"
             tools:ignore="UselessLeaf" />
     </LinearLayout>
 
@@ -109,6 +114,10 @@
             android:layout_height="match_parent"
             android:layout_weight="0.96"
             android:backgroundTint="#FF7F7F7F"
+            app:autoSizeTextType="uniform"
+            app:autoSizeMinTextSize="16sp"
+            app:autoSizeMaxTextSize="22sp"
+            app:autoSizeStepGranularity="1sp"
             android:textAppearance="@style/TextAppearance.AppCompat.Body2"
             android:textStyle="normal" />
 
@@ -138,6 +147,10 @@
             android:layout_height="match_parent"
             android:layout_weight="0.23"
             android:backgroundTint="#FFFF0000"
+            app:autoSizeTextType="uniform"
+            app:autoSizeMinTextSize="18sp"
+            app:autoSizeMaxTextSize="24sp"
+            app:autoSizeStepGranularity="1sp"
             android:textAppearance="@style/TextAppearance.AppCompat.Button"
             android:textStyle="bold" />
 
@@ -154,6 +167,10 @@
             android:layout_height="match_parent"
             android:layout_weight="0.23"
             android:backgroundTint="#FFFF0000"
+            app:autoSizeTextType="uniform"
+            app:autoSizeMinTextSize="18sp"
+            app:autoSizeMaxTextSize="24sp"
+            app:autoSizeStepGranularity="1sp"
             android:textAppearance="@style/TextAppearance.AppCompat.Button"
             android:textStyle="bold" />
 
@@ -170,6 +187,10 @@
             android:layout_height="match_parent"
             android:layout_weight="0.23"
             android:backgroundTint="#FFFF0000"
+            app:autoSizeTextType="uniform"
+            app:autoSizeMinTextSize="18sp"
+            app:autoSizeMaxTextSize="24sp"
+            app:autoSizeStepGranularity="1sp"
             android:textAppearance="@style/TextAppearance.AppCompat.Button"
             android:textStyle="bold" />
 
@@ -200,6 +221,10 @@
             android:layout_height="match_parent"
             android:layout_weight="0.23"
             android:backgroundTint="#FF00DD00"
+            app:autoSizeTextType="uniform"
+            app:autoSizeMinTextSize="18sp"
+            app:autoSizeMaxTextSize="24sp"
+            app:autoSizeStepGranularity="1sp"
             android:textAppearance="@style/TextAppearance.AppCompat.Button"
             android:textStyle="bold" />
 
@@ -216,6 +241,10 @@
             android:layout_height="match_parent"
             android:layout_weight="0.23"
             android:backgroundTint="#FF00DD00"
+            app:autoSizeTextType="uniform"
+            app:autoSizeMinTextSize="18sp"
+            app:autoSizeMaxTextSize="24sp"
+            app:autoSizeStepGranularity="1sp"
             android:textAppearance="@style/TextAppearance.AppCompat.Button"
             android:textStyle="bold"
             android:singleLine="true" />
@@ -233,6 +262,10 @@
             android:layout_height="match_parent"
             android:layout_weight="0.23"
             android:backgroundTint="#FF00DD00"
+            app:autoSizeTextType="uniform"
+            app:autoSizeMinTextSize="18sp"
+            app:autoSizeMaxTextSize="24sp"
+            app:autoSizeStepGranularity="1sp"
             android:textAppearance="@style/TextAppearance.AppCompat.Button"
             android:textStyle="bold" />
 

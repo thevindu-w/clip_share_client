@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/popupElem"
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
@@ -11,10 +10,10 @@
         android:id="@+id/popElemTxt"
         android:layout_margin="5dp"
         android:paddingHorizontal="10dp"
-        app:autoSizeTextType="uniform"
-        app:autoSizeMinTextSize="12sp"
-        app:autoSizeMaxTextSize="18sp"
-        app:autoSizeStepGranularity="1sp"
+        android:autoSizeTextType="uniform"
+        android:autoSizeMinTextSize="12sp"
+        android:autoSizeMaxTextSize="18sp"
+        android:autoSizeStepGranularity="1sp"
         android:lines="1"
         android:gravity="center_vertical"
         android:background="@color/popupTextBackground"

@@ -582,11 +582,13 @@ public class ClipShareActivity extends AppCompatActivity {
                     .findViewById(R.id.popupLinearWrap)
                     .setOnClickListener(v -> popupView.performClick());
 
-                int width = LinearLayout.LayoutParams.MATCH_PARENT;
-                int height = LinearLayout.LayoutParams.MATCH_PARENT;
                 boolean focusable = true; // lets taps outside the popup also dismiss it
                 final PopupWindow popupWindow =
-                    new PopupWindow(popupView, width, height, focusable);
+                    new PopupWindow(
+                        popupView,
+                        LinearLayout.LayoutParams.MATCH_PARENT,
+                        LinearLayout.LayoutParams.MATCH_PARENT,
+                        focusable);
                 runOnUiThread(() -> popupWindow.showAtLocation(parent, Gravity.CENTER, 0, 0));
 
                 LinearLayout popupLayout = popupView.findViewById(R.id.popupLayout);
@@ -921,10 +923,13 @@ public class ClipShareActivity extends AppCompatActivity {
       LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
       View popupView =
           inflater.inflate(R.layout.popup_display, findViewById(R.id.main_layout), false);
-      int width = LinearLayout.LayoutParams.MATCH_PARENT;
-      int height = LinearLayout.LayoutParams.MATCH_PARENT;
       boolean focusable = true; // lets taps outside the popup also dismiss it
-      final PopupWindow popupWindow = new PopupWindow(popupView, width, height, focusable);
+      final PopupWindow popupWindow =
+          new PopupWindow(
+              popupView,
+              LinearLayout.LayoutParams.MATCH_PARENT,
+              LinearLayout.LayoutParams.MATCH_PARENT,
+              focusable);
       popupWindow.showAtLocation(parent, Gravity.CENTER, 0, 0);
 
       Button btnGetCopiedImg = popupView.findViewById(R.id.btnGetCopiedImg);
