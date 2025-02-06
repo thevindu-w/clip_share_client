@@ -5,4 +5,4 @@ Refer to the [README](https://github.com/thevindu-w/clip_share_client/#how-to-us
 <br>
 **Changes:**
 Feature:
-  - Added support for IPv6.
+  - Added support for scanning in IPv6.
