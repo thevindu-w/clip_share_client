@@ -32,7 +32,9 @@ jobs:
         ref: ${{ github.ref }}
 
     - name: Install tools
-      run: sudo apt-get update && sudo apt-get install -y --no-install-recommends yamllint
+      run: |
+        echo "set man-db/auto-update false" | sudo debconf-communicate && sudo dpkg-reconfigure man-db -f noninteractive
+        sudo apt-get update && sudo apt-get install -y --no-install-recommends yamllint
 
     - name: Set up JDK 19
       uses: actions/setup-java@v4
