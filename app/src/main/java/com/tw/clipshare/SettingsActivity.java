@@ -431,7 +431,11 @@ public class SettingsActivity extends AppCompatActivity {
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.settings_activity);
-    this.settings = Settings.getInstance();
+    try {
+      this.settings = Settings.getInstance();
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
+    }
     this.intent = getIntent();
     this.idTLS = new AtomicInteger(10000);
     this.idAutoSend = new AtomicInteger(20000);

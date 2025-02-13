@@ -74,8 +74,6 @@ public class ClipShareActivity extends AppCompatActivity {
   public static final String PREFERENCES = "preferences";
   private static final int AUTO_SEND_TEXT = 1;
   private static final int AUTO_SEND_FILES = 2;
-  private static final Object settingsLock = new Object();
-  private static volatile boolean isSettingsLoaded = false;
   private String receivedURI;
   public TextView output;
   private EditText editAddress;
@@ -154,7 +152,7 @@ public class ClipShareActivity extends AppCompatActivity {
     inflater.inflate(R.menu.action_bar, menu);
     this.menu = menu;
     try {
-      Settings st = getSettings();
+      Settings st = Settings.getInstance();
       int icon_id = st.getSecure() ? R.drawable.ic_secure : R.drawable.ic_insecure;
       menu.findItem(R.id.action_secure)
           .setIcon(ContextCompat.getDrawable(ClipShareActivity.this, icon_id));
@@ -167,6 +165,7 @@ public class ClipShareActivity extends AppCompatActivity {
   public boolean onOptionsItemSelected(MenuItem item) {
     int itemID = item.getItemId();
     if (itemID == R.id.action_settings) {
+      if (!Settings.isIsSettingsLoaded()) return true;
       Intent settingsIntent = new Intent(ClipShareActivity.this, SettingsActivity.class);
       settingsActivityLauncher.launch(settingsIntent);
       startActiveTask();
@@ -217,12 +216,8 @@ public class ClipShareActivity extends AppCompatActivity {
       Settings.loadInstance(sharedPref.getString("settings", null));
     } catch (Exception ignored) {
     }
-    isSettingsLoaded = true;
-    synchronized (settingsLock) {
-      settingsLock.notifyAll();
-    }
     try {
-      List<String> servers = getSettings().getSavedServersList();
+      List<String> servers = Settings.getInstance().getSavedServersList();
       if (!servers.isEmpty()) editAddress.setText(servers.get(servers.size() - 1));
     } catch (Exception ignored) {
     }
@@ -248,19 +243,6 @@ public class ClipShareActivity extends AppCompatActivity {
         closeIfIdle(settings.getAutoCloseDelay() * 1000);
     } catch (Exception ignored) {
     }
-  }
-
-  private Settings getSettings() {
-    if (isSettingsLoaded) return Settings.getInstance();
-    synchronized (settingsLock) {
-      while (!isSettingsLoaded) {
-        try {
-          settingsLock.wait();
-        } catch (InterruptedException ignored) {
-        }
-      }
-    }
-    return Settings.getInstance();
   }
 
   private void closeIfIdle(int delay) {
@@ -459,7 +441,7 @@ public class ClipShareActivity extends AppCompatActivity {
     Runnable runnableAutoSendText =
         () -> {
           try {
-            Settings st = getSettings();
+            Settings st = Settings.getInstance();
             String address = this.getServerAddress();
             switch (type) {
               case AUTO_SEND_TEXT:
@@ -634,7 +616,7 @@ public class ClipShareActivity extends AppCompatActivity {
       return null;
     }
     try {
-      Settings settings = getSettings();
+      Settings settings = Settings.getInstance();
       if (!settings.getSaveServers()) return address;
       List<String> savedServers = settings.getSavedServersList();
       int ind = savedServers.lastIndexOf(address);

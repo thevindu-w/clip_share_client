@@ -37,6 +37,9 @@ import org.json.JSONObject;
 public class Settings implements Serializable {
 
   private static final Object LOCK = new Object();
+  private static final Object LOAD_LOCK = new Object();
+
+  private static volatile boolean isSettingsLoaded = false;
   private static volatile Settings INSTANCE = null;
   private final List<String> trustedList;
   private final List<String> autoSendTrustedList;
@@ -354,11 +357,23 @@ public class Settings implements Serializable {
       } catch (Exception ignored) {
       }
     }
+    synchronized (LOAD_LOCK) {
+      isSettingsLoaded = true;
+      LOAD_LOCK.notifyAll();
+    }
   }
 
-  public static Settings getInstance() {
-    Settings.loadInstance(null);
+  public static Settings getInstance() throws InterruptedException {
+    if (!isSettingsLoaded) {
+      synchronized (LOAD_LOCK) {
+        if (!isSettingsLoaded) LOAD_LOCK.wait();
+      }
+    }
     return INSTANCE;
+  }
+
+  public static boolean isIsSettingsLoaded() {
+    return isSettingsLoaded;
   }
 
   public List<String> getTrustedList() {
