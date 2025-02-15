@@ -202,7 +202,7 @@ class ServerFinder implements Runnable {
       List<InterfaceAddress> addresses = netIF.getInterfaceAddresses();
       for (InterfaceAddress intAddress : addresses) {
         InetAddress address = intAddress.getAddress();
-        if (address instanceof Inet6Address) {
+        if (address instanceof Inet6Address && Settings.getInstance().getScanIPv6()) {
           myAddresses.add(address);
         }
       }
@@ -228,7 +228,7 @@ class ServerFinder implements Runnable {
               }
               break;
             }
-          } else if (address instanceof Inet6Address) {
+          } else if (address instanceof Inet6Address && Settings.getInstance().getScanIPv6()) {
             scanMulticast((Inet6Address) address);
           }
         } catch (RuntimeException ignored) {

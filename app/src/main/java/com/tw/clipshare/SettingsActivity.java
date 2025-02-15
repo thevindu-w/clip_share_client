@@ -72,6 +72,7 @@ public class SettingsActivity extends AppCompatActivity {
   private SwitchCompat autoSendTextSwitch;
   private SwitchCompat autoSendFileSwitch;
   private SwitchCompat vibrateSwitch;
+  private SwitchCompat scanIPv6Switch;
   private SwitchCompat autoCloseSwitch;
   private EditText editAutoCloseDelay;
   private LinearLayout layoutAutoCloseDelay;
@@ -227,6 +228,7 @@ public class SettingsActivity extends AppCompatActivity {
                   addRowToAutoSendTrustList(false, server);
                 }
                 vibrateSwitch.setChecked(settings.getVibrate());
+                scanIPv6Switch.setChecked(settings.getScanIPv6());
                 boolean autoClose = settings.getCloseIfIdle();
                 autoCloseSwitch.setChecked(autoClose);
                 editAutoCloseDelay.setText(String.valueOf(settings.getAutoCloseDelay()));
@@ -453,6 +455,7 @@ public class SettingsActivity extends AppCompatActivity {
     this.autoSendTextSwitch = findViewById(R.id.autoSendTextSwitch);
     this.autoSendFileSwitch = findViewById(R.id.autoSendFileSwitch);
     this.vibrateSwitch = findViewById(R.id.vibrateSwitch);
+    this.scanIPv6Switch = findViewById(R.id.scanIPv6Switch);
     this.autoCloseSwitch = findViewById(R.id.autoCloseSwitch);
     this.editAutoCloseDelay = findViewById(R.id.editAutoCloseDelay);
     this.layoutAutoCloseDelay = findViewById(R.id.layoutAutoCloseDelay);
@@ -580,6 +583,9 @@ public class SettingsActivity extends AppCompatActivity {
 
     vibrateSwitch.setOnClickListener(view -> settings.setVibrate(vibrateSwitch.isChecked()));
     vibrateSwitch.setChecked(settings.getVibrate());
+
+    scanIPv6Switch.setOnClickListener(view -> settings.setScanIPv6(scanIPv6Switch.isChecked()));
+    scanIPv6Switch.setChecked(settings.getScanIPv6());
 
     autoCloseSwitch.setOnClickListener(
         view -> {

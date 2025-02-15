@@ -56,6 +56,7 @@ public class Settings implements Serializable {
   private boolean autoSendText;
   private boolean autoSendFiles;
   private boolean vibrate;
+  private boolean scanIPv6;
   private boolean closeIfIdle;
   private int autoCloseDelay;
   private boolean saveServers;
@@ -76,6 +77,7 @@ public class Settings implements Serializable {
     this.autoSendTrustedList = new ArrayList<>(1);
     this.savedServersList = new ArrayList<>(1);
     this.vibrate = true;
+    this.scanIPv6 = true;
     this.closeIfIdle = true;
     this.autoCloseDelay = 120;
     this.saveServers = true;
@@ -255,6 +257,15 @@ public class Settings implements Serializable {
     } catch (Exception ignored) {
     }
 
+    // Set scanIPv6
+    try {
+      Object attributeO = map.get("scanIPv6");
+      if (attributeO instanceof Boolean) {
+        settings.scanIPv6 = (Boolean) attributeO;
+      }
+    } catch (Exception ignored) {
+    }
+
     // Set closeIfIdle
     try {
       Object attributeO = map.get("closeIfIdle");
@@ -294,7 +305,7 @@ public class Settings implements Serializable {
 
   @NonNull
   public String toString(boolean includePassword) {
-    HashMap<String, Object> map = new HashMap<>(18);
+    HashMap<String, Object> map = new HashMap<>(19);
     try {
       if (this.caCert != null)
         map.put("caCert", Base64.encodeToString(this.caCert, Base64.DEFAULT));
@@ -311,6 +322,7 @@ public class Settings implements Serializable {
       map.put("autoSendFiles", this.autoSendFiles);
       map.put("autoSendTrustedList", this.autoSendTrustedList);
       map.put("vibrate", this.vibrate);
+      map.put("scanIPv6", this.scanIPv6);
       map.put("closeIfIdle", this.closeIfIdle);
       map.put("autoCloseDelay", this.autoCloseDelay);
       map.put("savedServersList", this.savedServersList);
@@ -349,6 +361,7 @@ public class Settings implements Serializable {
         INSTANCE.autoSendTrustedList.clear();
         INSTANCE.autoSendTrustedList.addAll(strSet.autoSendTrustedList);
         INSTANCE.vibrate = strSet.vibrate;
+        INSTANCE.scanIPv6 = strSet.scanIPv6;
         INSTANCE.closeIfIdle = strSet.closeIfIdle;
         INSTANCE.autoCloseDelay = strSet.autoCloseDelay;
         INSTANCE.savedServersList.clear();
@@ -442,6 +455,10 @@ public class Settings implements Serializable {
     return vibrate;
   }
 
+  public boolean getScanIPv6() {
+    return scanIPv6;
+  }
+
   public boolean getCloseIfIdle() {
     return closeIfIdle;
   }
@@ -528,6 +545,10 @@ public class Settings implements Serializable {
 
   public void setVibrate(boolean vibrate) {
     this.vibrate = vibrate;
+  }
+
+  public void setScanIPv6(boolean scanIPv6) {
+    this.scanIPv6 = scanIPv6;
   }
 
   public void setCloseIfIdle(boolean closeIfIdle) {
