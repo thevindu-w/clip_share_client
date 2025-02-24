@@ -6,4 +6,7 @@
     <color name="popupTextBackground">#F333</color>
     <color name="settingsTopic1BG">#F115</color>
     <color name="settingsTopic2BG">#F223</color>
+    <color name="getBtnBG">#F0D0</color>
+    <color name="sendBtnBG">#FF11</color>
+    <color name="grey">#FBBB</color>
 </resources>

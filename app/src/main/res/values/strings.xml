@@ -1,9 +1,8 @@
 <resources>
     <string name="app_name" translatable="false">ClipShare</string>
     <string name="btnImgTxt" translatable="false">Image</string>
-    <string name="btnGetTxt" translatable="false">Get</string>
-    <string name="btnSendTxt" translatable="false">Send</string>
-    <string name="addressLbl" translatable="false">Server :</string>
+    <string name="btnTxt" translatable="false">Text</string>
+    <string name="addressLbl" translatable="false">Server:</string>
     <string name="addressHint" translatable="false">192.168.1.2</string>
     <string name="btnFileTxt" translatable="false">File</string>
     <string name="btnFolderTxt" translatable="false">Folder</string>
@@ -59,4 +58,5 @@
     <string name="expand">Expand</string>
     <string name="saved_addresses">Saved addresses</string>
     <string name="save_addresses">Save addresses</string>
+    <string name="send">Send</string>
 </resources>

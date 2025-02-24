@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:id="@+id/main_layout"
     android:background="@color/appBackground">
@@ -15,45 +14,38 @@
         android:layout_marginTop="8dp"
         android:layout_marginBottom="4dp">
 
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="0.02"
-            tools:ignore="UselessLeaf" />
-
         <TextView
             android:text="@string/addressLbl"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="0.22"
+            android:layout_weight="0.24"
             android:id="@+id/textView"
-            android:textSize="21sp"
+            android:textSize="20sp"
+            android:textStyle="bold"
             android:gravity="end|center_vertical" />
 
-        <LinearLayout
+        <View
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="0.01"
-            tools:ignore="UselessLeaf" />
+            android:layout_weight="0.01" />
 
         <EditText
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="0.44"
+            android:layout_weight="0.48"
             android:id="@+id/hostTxt"
             android:inputType="text"
             android:textSize="17sp"
             android:layout_marginStart="4dp"
-            android:layout_marginEnd="15dp"
+            android:layout_marginEnd="10dp"
             android:gravity="start|center_vertical"
             android:hint="@string/addressHint"
             android:importantForAutofill="no" />
 
-        <LinearLayout
+        <View
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="0.02"
-            tools:ignore="UselessLeaf" />
+            android:layout_weight="0.02" />
 
         <Button
             android:id="@+id/btnScanHost"
@@ -69,11 +61,10 @@
             android:textAppearance="@style/TextAppearance.AppCompat.Button"
             android:textStyle="bold" />
 
-        <LinearLayout
+        <View
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="0.03"
-            tools:ignore="UselessLeaf" />
+            android:layout_weight="0.05" />
     </LinearLayout>
 
     <TextView
@@ -101,11 +92,10 @@
         android:layout_marginTop="6dp"
         android:visibility="gone">
 
-        <LinearLayout
+        <View
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="0.02"
-            tools:ignore="UselessLeaf" />
+            android:layout_weight="0.02" />
 
         <Button
             android:id="@+id/btnOpenLink"
@@ -121,32 +111,57 @@
             android:textAppearance="@style/TextAppearance.AppCompat.Body2"
             android:textStyle="normal" />
 
-        <LinearLayout
+        <View
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="0.02"
-            tools:ignore="UselessLeaf" />
+            android:layout_weight="0.02" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:layout_marginTop="6dp">
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="1px"
+            android:layout_weight="1"
+            android:background="@color/grey" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Send"
+            android:textSize="16sp"
+            android:textColor="@color/grey"
+            android:textAppearance="@style/TextAppearance.AppCompat.Button"
+            android:layout_marginHorizontal="5dp" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="1px"
+            android:layout_weight="1"
+            android:background="@color/grey" />
     </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="64dp"
-        android:orientation="horizontal"
-        android:layout_marginTop="6dp">
+        android:orientation="horizontal">
 
-        <LinearLayout
+        <View
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="0.02"
-            tools:ignore="UselessLeaf" />
+            android:layout_weight="0.02" />
 
         <Button
             android:id="@+id/btnSendTxt"
-            android:text="@string/btnSendTxt"
+            android:text="@string/btnTxt"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="0.23"
-            android:backgroundTint="#FFFF0000"
+            android:backgroundTint="@color/sendBtnBG"
             app:autoSizeTextType="uniform"
             app:autoSizeMinTextSize="18sp"
             app:autoSizeMaxTextSize="24sp"
@@ -154,11 +169,10 @@
             android:textAppearance="@style/TextAppearance.AppCompat.Button"
             android:textStyle="bold" />
 
-        <LinearLayout
+        <View
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="0.02"
-            tools:ignore="UselessLeaf" />
+            android:layout_weight="0.02" />
 
         <Button
             android:id="@+id/btnSendFolder"
@@ -166,7 +180,7 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="0.23"
-            android:backgroundTint="#FFFF0000"
+            android:backgroundTint="@color/sendBtnBG"
             app:autoSizeTextType="uniform"
             app:autoSizeMinTextSize="18sp"
             app:autoSizeMaxTextSize="24sp"
@@ -174,11 +188,10 @@
             android:textAppearance="@style/TextAppearance.AppCompat.Button"
             android:textStyle="bold" />
 
-        <LinearLayout
+        <View
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="0.02"
-            tools:ignore="UselessLeaf" />
+            android:layout_weight="0.02" />
 
         <Button
             android:id="@+id/btnSendFile"
@@ -186,7 +199,7 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="0.23"
-            android:backgroundTint="#FFFF0000"
+            android:backgroundTint="@color/sendBtnBG"
             app:autoSizeTextType="uniform"
             app:autoSizeMinTextSize="18sp"
             app:autoSizeMaxTextSize="24sp"
@@ -194,33 +207,58 @@
             android:textAppearance="@style/TextAppearance.AppCompat.Button"
             android:textStyle="bold" />
 
-        <LinearLayout
+        <View
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="0.02"
-            tools:ignore="UselessLeaf" />
+            android:layout_weight="0.02" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:layout_marginTop="6dp">
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="1px"
+            android:layout_weight="1"
+            android:background="@color/grey" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Get"
+            android:textSize="16sp"
+            android:textColor="@color/grey"
+            android:textAppearance="@style/TextAppearance.AppCompat.Button"
+            android:layout_marginHorizontal="5dp" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="1px"
+            android:layout_weight="1"
+            android:background="@color/grey" />
     </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="64dp"
         android:orientation="horizontal"
-        android:layout_marginTop="6dp"
         android:layout_marginBottom="18dp">
 
-        <LinearLayout
+        <View
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="0.02"
-            tools:ignore="UselessLeaf" />
+            android:layout_weight="0.02" />
 
         <Button
             android:id="@+id/btnGetTxt"
-            android:text="@string/btnGetTxt"
+            android:text="@string/btnTxt"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="0.23"
-            android:backgroundTint="#FF00DD00"
+            android:backgroundTint="@color/getBtnBG"
             app:autoSizeTextType="uniform"
             app:autoSizeMinTextSize="18sp"
             app:autoSizeMaxTextSize="24sp"
@@ -228,11 +266,10 @@
             android:textAppearance="@style/TextAppearance.AppCompat.Button"
             android:textStyle="bold" />
 
-        <LinearLayout
+        <View
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="0.02"
-            tools:ignore="UselessLeaf" />
+            android:layout_weight="0.02" />
 
         <Button
             android:id="@+id/btnGetImg"
@@ -240,28 +277,7 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="0.23"
-            android:backgroundTint="#FF00DD00"
-            app:autoSizeTextType="uniform"
-            app:autoSizeMinTextSize="18sp"
-            app:autoSizeMaxTextSize="24sp"
-            app:autoSizeStepGranularity="1sp"
-            android:textAppearance="@style/TextAppearance.AppCompat.Button"
-            android:textStyle="bold"
-            android:singleLine="true" />
-
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="0.02"
-            tools:ignore="UselessLeaf" />
-
-        <Button
-            android:id="@+id/btnGetFile"
-            android:text="@string/btnFileTxt"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="0.23"
-            android:backgroundTint="#FF00DD00"
+            android:backgroundTint="@color/getBtnBG"
             app:autoSizeTextType="uniform"
             app:autoSizeMinTextSize="18sp"
             app:autoSizeMaxTextSize="24sp"
@@ -269,10 +285,28 @@
             android:textAppearance="@style/TextAppearance.AppCompat.Button"
             android:textStyle="bold" />
 
-        <LinearLayout
+        <View
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="0.02"
-            tools:ignore="UselessLeaf" />
+            android:layout_weight="0.02" />
+
+        <Button
+            android:id="@+id/btnGetFile"
+            android:text="@string/btnFileTxt"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="0.23"
+            android:backgroundTint="@color/getBtnBG"
+            app:autoSizeTextType="uniform"
+            app:autoSizeMinTextSize="18sp"
+            app:autoSizeMaxTextSize="24sp"
+            app:autoSizeStepGranularity="1sp"
+            android:textAppearance="@style/TextAppearance.AppCompat.Button"
+            android:textStyle="bold" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="0.02" />
     </LinearLayout>
 </LinearLayout>
