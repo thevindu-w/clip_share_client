@@ -85,6 +85,7 @@ public class ClipShareActivity extends AppCompatActivity {
   private int activeTasks = 0;
   private long lastActivityTime;
   private ExecutorService inactivityExecutor = null;
+  private ExecutorService fileUpdateExecutor = null;
   private final ActivityResultLauncher<Intent> fileSelectActivityLauncher =
       registerForActivityResult(
           new ActivityResultContracts.StartActivityForResult(),
@@ -296,6 +297,27 @@ public class ClipShareActivity extends AppCompatActivity {
       this.lastActivityTime = System.currentTimeMillis();
     }
     return super.dispatchTouchEvent(event);
+  }
+
+  private void listenFileServiceMessage() {
+    if (fileUpdateExecutor != null) {
+      fileUpdateExecutor.shutdown();
+      fileUpdateExecutor.shutdownNow();
+    }
+    fileUpdateExecutor = Executors.newSingleThreadExecutor();
+    Runnable runnable =
+        () -> {
+          try {
+            do {
+              String message = FileService.getNextMessage();
+              if (message == null) continue;
+              outputSetText(message);
+              break;
+            } while (true);
+          } catch (Exception ignored) {
+          }
+        };
+    fileUpdateExecutor.submit(runnable);
   }
 
   private void startActiveTask() {
@@ -635,11 +657,7 @@ public class ClipShareActivity extends AppCompatActivity {
   private void clkSendTxt() {
     try {
       startActiveTask();
-      runOnUiThread(
-          () -> {
-            openBrowserLayout.setVisibility(View.GONE);
-            output.setText("");
-          });
+      outputReset();
       String address = this.getServerAddress();
       if (address == null) return;
       ExecutorService executorService = Executors.newSingleThreadExecutor();
@@ -717,11 +735,7 @@ public class ClipShareActivity extends AppCompatActivity {
   private void sendFromDirectoryTree(DirectoryTreeNode dirTree) {
     try {
       startActiveTask();
-      runOnUiThread(
-          () -> {
-            openBrowserLayout.setVisibility(View.GONE);
-            output.setText("");
-          });
+      outputReset();
       String address = this.getServerAddress();
       if (address == null) return;
       FSUtils utils = new FSUtils(context, ClipShareActivity.this, dirTree);
@@ -746,11 +760,7 @@ public class ClipShareActivity extends AppCompatActivity {
   private void sendFromURIs(ArrayList<Uri> uris) {
     try {
       startActiveTask();
-      runOnUiThread(
-          () -> {
-            openBrowserLayout.setVisibility(View.GONE);
-            output.setText("");
-          });
+      outputReset();
       String address = this.getServerAddress();
       if (address == null) {
         if (ClipShareActivity.this.fileURIs == null || ClipShareActivity.this.fileURIs.isEmpty()) {
@@ -814,11 +824,7 @@ public class ClipShareActivity extends AppCompatActivity {
   private void clkGetTxt() {
     try {
       startActiveTask();
-      runOnUiThread(
-          () -> {
-            openBrowserLayout.setVisibility(View.GONE);
-            output.setText("");
-          });
+      outputReset();
       String address = this.getServerAddress();
       if (address == null) return;
       ExecutorService executorService = Executors.newSingleThreadExecutor();
@@ -854,11 +860,7 @@ public class ClipShareActivity extends AppCompatActivity {
       startActiveTask();
       if (needsPermission(WRITE_IMAGE)) return;
 
-      runOnUiThread(
-          () -> {
-            openBrowserLayout.setVisibility(View.GONE);
-            output.setText("");
-          });
+      outputReset();
       String address = this.getServerAddress();
       if (address == null) return;
 
@@ -939,11 +941,7 @@ public class ClipShareActivity extends AppCompatActivity {
   private void getCopiedImg() {
     try {
       startActiveTask();
-      runOnUiThread(
-          () -> {
-            openBrowserLayout.setVisibility(View.GONE);
-            output.setText("");
-          });
+      outputReset();
       String address = this.getServerAddress();
       if (address == null) return;
 
@@ -993,11 +991,7 @@ public class ClipShareActivity extends AppCompatActivity {
   private void getScreenshot(EditText editDisplay) {
     try {
       startActiveTask();
-      runOnUiThread(
-          () -> {
-            openBrowserLayout.setVisibility(View.GONE);
-            output.setText("");
-          });
+      outputReset();
       String address = this.getServerAddress();
       if (address == null) return;
       String displayStr = editDisplay.getText().toString();
@@ -1056,11 +1050,7 @@ public class ClipShareActivity extends AppCompatActivity {
       startActiveTask();
       if (needsPermission(WRITE_FILE)) return;
 
-      runOnUiThread(
-          () -> {
-            openBrowserLayout.setVisibility(View.GONE);
-            output.setText("");
-          });
+      outputReset();
       String address = this.getServerAddress();
       if (address == null) return;
       Runnable getFile =
@@ -1090,6 +1080,7 @@ public class ClipShareActivity extends AppCompatActivity {
       if (proto == null) return false;
       FileService.addPendingTask(new PendingTask(proto, utils, task));
       Intent intent = new Intent(this, FileService.class);
+      listenFileServiceMessage();
       ContextCompat.startForegroundService(context, intent);
       return true;
     } catch (Exception e) {
@@ -1144,7 +1135,7 @@ public class ClipShareActivity extends AppCompatActivity {
     }
   }
 
-  private void outputSetText(CharSequence text) {
+  public void outputSetText(CharSequence text) {
     try {
       runOnUiThread(() -> output.setText(text));
     } catch (Exception ignored) {
@@ -1166,6 +1157,14 @@ public class ClipShareActivity extends AppCompatActivity {
             output.setText(newText);
           } catch (Exception ignored) {
           }
+        });
+  }
+
+  private void outputReset() {
+    runOnUiThread(
+        () -> {
+          openBrowserLayout.setVisibility(View.GONE);
+          output.setText("");
         });
   }
 }

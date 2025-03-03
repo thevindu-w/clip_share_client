@@ -23,6 +23,31 @@ public class FileService extends Service {
   private static LinkedList<PendingTask> pendingTasks = null;
   private ExecutorService executorService;
   private StatusNotifier statusNotifier;
+  private static final Object LOCK = new Object();
+  private static String message;
+
+  static String getNextMessage() throws InterruptedException {
+    String current;
+    try {
+      synchronized (LOCK) {
+        LOCK.wait();
+        current = message;
+        message = null;
+      }
+    } finally {
+      synchronized (LOCK) {
+        message = null;
+      }
+    }
+    return current;
+  }
+
+  static void setMessage(String msg) {
+    synchronized (LOCK) {
+      message = msg;
+      LOCK.notifyAll();
+    }
+  }
 
   @Nullable
   @Override
@@ -155,26 +180,39 @@ public class FileService extends Service {
           AndroidUtils utils = pendingTask.utils;
           try {
             proto.setStatusNotifier(statusNotifier);
+            statusNotifier.reset();
+            boolean success = false;
             switch (pendingTask.task) {
               case PendingTask.GET_FILES:
                 {
-                  statusNotifier.reset();
                   statusNotifier.setTitle("Getting file");
                   statusNotifier.setIcon(R.drawable.ic_download_icon);
-                  if (!proto.getFile() && !proto.isStopped())
-                    utils.showToast("Failed getting files");
+                  if (proto.getFile()) success = true;
+                  else if (!proto.isStopped()) utils.showToast("Failed getting files");
+                  break;
                 }
               case PendingTask.SEND_FILES:
                 {
-                  statusNotifier.reset();
                   statusNotifier.setTitle("Sending file");
                   statusNotifier.setIcon(R.drawable.ic_upload_icon);
-                  if (proto.sendFile()) utils.showToast("Sent all files");
-                  else if (!proto.isStopped()) utils.showToast("Failed sending files");
+                  if (proto.sendFile()) {
+                    success = true;
+                    utils.showToast("Sent all files");
+                  } else if (!proto.isStopped()) utils.showToast("Failed sending files");
+                  break;
                 }
             }
-            if (proto.isStopped()) break;
+            if (proto.isStopped()) {
+              setMessage(
+                  (pendingTask.task == PendingTask.GET_FILES ? "Getting" : "Sending")
+                      + " files stopped");
+              break;
+            }
             utils.vibrate();
+            setMessage(
+                (pendingTask.task == PendingTask.GET_FILES ? "Getting" : "Sending")
+                    + " files "
+                    + (success ? "completed" : "failed"));
           } catch (Exception ignored) {
           } finally {
             proto.close();
