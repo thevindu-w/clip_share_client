@@ -74,7 +74,9 @@ public class ClipShareActivity extends AppCompatActivity {
   public static final String PREFERENCES = "preferences";
   private static final int AUTO_SEND_TEXT = 1;
   private static final int AUTO_SEND_FILES = 2;
-  private String receivedURI;
+  private static final byte GET_IMAGE = 5;
+  private static final byte GET_COPIED_IMAGE = 6;
+  private static final byte GET_SCREENSHOT = 7;
   public TextView output;
   private EditText editAddress;
   private Context context;
@@ -191,7 +193,7 @@ public class ClipShareActivity extends AppCompatActivity {
     Button btnGet = findViewById(R.id.btnGetTxt);
     btnGet.setOnClickListener(view -> clkGetTxt());
     Button btnImg = findViewById(R.id.btnGetImg);
-    btnImg.setOnClickListener(view -> clkGetImg());
+    btnImg.setOnClickListener(view -> getImageCommon(GET_IMAGE, 0));
     btnImg.setOnLongClickListener(this::longClkImg);
     Button btnGetFile = findViewById(R.id.btnGetFile);
     btnGetFile.setOnClickListener(view -> clkGetFile());
@@ -209,8 +211,6 @@ public class ClipShareActivity extends AppCompatActivity {
     btnSendFolder.setOnClickListener(view -> clkSendFolder(null));
     Button btnScanHost = findViewById(R.id.btnScanHost);
     btnScanHost.setOnClickListener(this::clkScanBtn);
-    Button btnOpenLink = findViewById(R.id.btnOpenLink);
-    btnOpenLink.setOnClickListener(view -> openInBrowser());
     openBrowserLayout = findViewById(R.id.layoutOpenBrowser);
 
     try {
@@ -547,18 +547,6 @@ public class ClipShareActivity extends AppCompatActivity {
     return null;
   }
 
-  private void openInBrowser() {
-    try {
-      try {
-        Intent intent =
-            new Intent(Intent.ACTION_VIEW, Uri.parse(ClipShareActivity.this.receivedURI));
-        startActivity(intent);
-      } catch (Exception ignored) {
-      }
-    } catch (Exception ignored) {
-    }
-  }
-
   private void clkScanBtn(View parent) {
     startActiveTask();
     new Thread(
@@ -586,13 +574,12 @@ public class ClipShareActivity extends AppCompatActivity {
                     .findViewById(R.id.popupLinearWrap)
                     .setOnClickListener(v -> popupView.performClick());
 
-                boolean focusable = true; // lets taps outside the popup also dismiss it
                 final PopupWindow popupWindow =
                     new PopupWindow(
                         popupView,
                         LinearLayout.LayoutParams.MATCH_PARENT,
                         LinearLayout.LayoutParams.MATCH_PARENT,
-                        focusable);
+                        true);
                 runOnUiThread(() -> popupWindow.showAtLocation(parent, Gravity.CENTER, 0, 0));
 
                 LinearLayout popupLayout = popupView.findViewById(R.id.popupLayout);
@@ -816,7 +803,16 @@ public class ClipShareActivity extends AppCompatActivity {
       url = "http://" + url;
     }
     if (Patterns.WEB_URL.matcher(url).matches()) {
-      ClipShareActivity.this.receivedURI = url;
+      String finalUrl = url;
+      Button btnOpenLink = findViewById(R.id.btnOpenLink);
+      btnOpenLink.setOnClickListener(
+          view -> {
+            try {
+              Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(finalUrl));
+              startActivity(intent);
+            } catch (Exception ignored) {
+            }
+          });
       runOnUiThread(() -> openBrowserLayout.setVisibility(View.VISIBLE));
     }
   }
@@ -855,46 +851,6 @@ public class ClipShareActivity extends AppCompatActivity {
     }
   }
 
-  private void clkGetImg() {
-    try {
-      startActiveTask();
-      if (needsPermission(WRITE_IMAGE)) return;
-
-      outputReset();
-      String address = this.getServerAddress();
-      if (address == null) return;
-
-      ExecutorService executorService = Executors.newSingleThreadExecutor();
-      Runnable getImg =
-          () -> {
-            try {
-              FSUtils utils = new FSUtils(context, ClipShareActivity.this);
-              Proto proto = getProtoWrapper(address, utils);
-              if (proto == null) return;
-              boolean status = proto.getImage();
-              proto.close();
-              if (status) {
-                utils.vibrate();
-              } else {
-                runOnUiThread(
-                    () ->
-                        Toast.makeText(
-                                ClipShareActivity.this, "Getting image failed", Toast.LENGTH_SHORT)
-                            .show());
-              }
-            } catch (Exception e) {
-              outputAppend("Error " + e.getMessage());
-            } finally {
-              endActiveTask();
-              this.lastActivityTime = System.currentTimeMillis();
-            }
-          };
-      executorService.submit(getImg);
-    } catch (Exception e) {
-      outputAppend("Error " + e.getMessage());
-    }
-  }
-
   /**
    * Long click gives additional options from protocol v3
    *
@@ -903,23 +859,22 @@ public class ClipShareActivity extends AppCompatActivity {
   private boolean longClkImg(View parent) {
     try {
       startActiveTask();
-      if (needsPermission(WRITE_IMAGE)) return true;
+      if (needsPermission(0)) return true;
       LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
       View popupView =
           inflater.inflate(R.layout.popup_display, findViewById(R.id.main_layout), false);
-      boolean focusable = true; // lets taps outside the popup also dismiss it
       final PopupWindow popupWindow =
           new PopupWindow(
               popupView,
               LinearLayout.LayoutParams.MATCH_PARENT,
               LinearLayout.LayoutParams.MATCH_PARENT,
-              focusable);
+              true);
       popupWindow.showAtLocation(parent, Gravity.CENTER, 0, 0);
 
       Button btnGetCopiedImg = popupView.findViewById(R.id.btnGetCopiedImg);
       btnGetCopiedImg.setOnClickListener(
           view -> {
-            getCopiedImg();
+            getImageCommon(GET_COPIED_IMAGE, 0);
             popupWindow.dismiss();
           });
 
@@ -928,7 +883,15 @@ public class ClipShareActivity extends AppCompatActivity {
       Button btnGetScreenshot = popupView.findViewById(R.id.btnGetScreenshot);
       btnGetScreenshot.setOnClickListener(
           view -> {
-            getScreenshot(editDisplay);
+            int display;
+            try {
+              String displayStr = editDisplay.getText().toString();
+              display = Integer.parseInt(displayStr);
+              if (display < 0 || display >= 65536) display = 0;
+            } catch (NumberFormatException ignored) {
+              display = 0;
+            }
+            getImageCommon(GET_SCREENSHOT, display);
             popupWindow.dismiss();
           });
 
@@ -938,13 +901,13 @@ public class ClipShareActivity extends AppCompatActivity {
     return true;
   }
 
-  private void getCopiedImg() {
+  private void getImageCommon(int method, int display) {
     try {
-      startActiveTask();
+      if (needsPermission(method == GET_IMAGE ? WRITE_IMAGE : 0)) return;
       outputReset();
       String address = this.getServerAddress();
       if (address == null) return;
-
+      startActiveTask();
       ExecutorService executorService = Executors.newSingleThreadExecutor();
       Runnable getImg =
           () -> {
@@ -952,7 +915,7 @@ public class ClipShareActivity extends AppCompatActivity {
               FSUtils utils = new FSUtils(context, ClipShareActivity.this);
               Proto proto = getProtoWrapper(address, utils);
               if (proto == null) return;
-              if (!(proto instanceof Proto_v3)) {
+              if (method != GET_IMAGE && !(proto instanceof Proto_v3)) {
                 runOnUiThread(
                     () ->
                         Toast.makeText(
@@ -963,65 +926,10 @@ public class ClipShareActivity extends AppCompatActivity {
                 proto.close();
                 return;
               }
-              Proto_v3 protoV3 = (Proto_v3) proto;
-              boolean status = protoV3.getCopiedImage();
-              proto.close();
-              if (status) {
-                utils.vibrate();
-              } else {
-                runOnUiThread(
-                    () ->
-                        Toast.makeText(
-                                ClipShareActivity.this, "Getting image failed", Toast.LENGTH_SHORT)
-                            .show());
-              }
-            } catch (Exception e) {
-              outputAppend("Error " + e.getMessage());
-            } finally {
-              this.lastActivityTime = System.currentTimeMillis();
-              endActiveTask();
-            }
-          };
-      executorService.submit(getImg);
-    } catch (Exception e) {
-      outputAppend("Error " + e.getMessage());
-    }
-  }
-
-  private void getScreenshot(EditText editDisplay) {
-    try {
-      startActiveTask();
-      outputReset();
-      String address = this.getServerAddress();
-      if (address == null) return;
-      String displayStr = editDisplay.getText().toString();
-      int display;
-      try {
-        display = Integer.parseInt(displayStr);
-      } catch (NumberFormatException ignored) {
-        display = 0;
-      }
-      final int displayNum = display;
-      ExecutorService executorService = Executors.newSingleThreadExecutor();
-      Runnable getImg =
-          () -> {
-            try {
-              FSUtils utils = new FSUtils(context, ClipShareActivity.this);
-              Proto proto = getProtoWrapper(address, utils);
-              if (proto == null) return;
-              if (!(proto instanceof Proto_v3)) {
-                runOnUiThread(
-                    () ->
-                        Toast.makeText(
-                                ClipShareActivity.this,
-                                "Server doesn't support this method",
-                                Toast.LENGTH_SHORT)
-                            .show());
-                proto.close();
-                return;
-              }
-              Proto_v3 protoV3 = (Proto_v3) proto;
-              boolean status = protoV3.getScreenshot(displayNum);
+              boolean status = false;
+              if (method == GET_IMAGE) status = proto.getImage();
+              else if (method == GET_COPIED_IMAGE) status = ((Proto_v3) proto).getCopiedImage();
+              else if (method == GET_SCREENSHOT) status = ((Proto_v3) proto).getScreenshot(display);
               proto.close();
               if (status) {
                 utils.vibrate();
@@ -1114,12 +1022,12 @@ public class ClipShareActivity extends AppCompatActivity {
       int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
     super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
-    if (requestCode == WRITE_IMAGE || requestCode == WRITE_FILE) {
+    if (requestCode == 0 || requestCode == WRITE_IMAGE || requestCode == WRITE_FILE) {
       if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
         switch (requestCode) {
           case WRITE_IMAGE:
             {
-              clkGetImg();
+              getImageCommon(GET_IMAGE, 0);
               break;
             }
           case WRITE_FILE:
