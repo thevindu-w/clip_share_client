@@ -9,6 +9,7 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 import com.tw.clipshare.platformUtils.AndroidUtils;
+import com.tw.clipshare.platformUtils.DataContainer;
 import com.tw.clipshare.platformUtils.StatusNotifier;
 import com.tw.clipshare.protocol.Proto;
 import java.util.HashMap;
@@ -24,27 +25,28 @@ public class FileService extends Service {
   private ExecutorService executorService;
   private StatusNotifier statusNotifier;
   private static final Object LOCK = new Object();
-  private static String message;
+  private static DataContainer data;
 
-  static String getNextMessage() throws InterruptedException {
-    String current;
+  static DataContainer getNextMessage() throws InterruptedException {
+    DataContainer current;
     try {
       synchronized (LOCK) {
         LOCK.wait();
-        current = message;
-        message = null;
+        current = data;
+        data = null;
       }
     } finally {
       synchronized (LOCK) {
-        message = null;
+        data = null;
       }
     }
     return current;
   }
 
-  static void setMessage(String msg) {
+  static void setMessage(DataContainer dataContainer, String msg) {
     synchronized (LOCK) {
-      message = msg;
+      data = dataContainer != null ? dataContainer : new DataContainer();
+      data.setMessage(msg);
       LOCK.notifyAll();
     }
   }
@@ -204,12 +206,14 @@ public class FileService extends Service {
             }
             if (proto.isStopped()) {
               setMessage(
+                  null,
                   (pendingTask.task == PendingTask.GET_FILES ? "Getting" : "Sending")
                       + " files stopped");
               break;
             }
             utils.vibrate();
             setMessage(
+                proto.dataContainer,
                 (pendingTask.task == PendingTask.GET_FILES ? "Getting" : "Sending")
                     + " files "
                     + (success ? "completed" : "failed"));

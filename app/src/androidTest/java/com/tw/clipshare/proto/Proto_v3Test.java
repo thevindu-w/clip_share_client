@@ -110,7 +110,9 @@ public class Proto_v3Test {
 
     connection = new MockConnection(istream);
     proto = ProtocolSelector.getProto(connection, null, null);
-    assertNull(proto.getText());
+    assertFalse(proto.getText());
+    assertNotNull(proto.dataContainer);
+    assertNull(proto.dataContainer.getString());
     istream.reset();
 
     connection = new MockConnection(istream);
@@ -147,7 +149,9 @@ public class Proto_v3Test {
     ByteArrayInputStream istream = builder.getStream();
     MockConnection connection = new MockConnection(istream);
     Proto proto = ProtocolSelector.getProto(connection, null, null);
-    assertEquals(sample, proto.getText());
+    assertTrue(proto.getText());
+    assertNotNull(proto.dataContainer);
+    assertEquals(sample, proto.dataContainer.getString());
     proto.close();
   }
 
@@ -158,7 +162,9 @@ public class Proto_v3Test {
     ByteArrayInputStream istream = builder.getStream();
     MockConnection connection = new MockConnection(istream);
     Proto proto = ProtocolSelector.getProto(connection, null, null);
-    assertNull(proto.getText());
+    assertFalse(proto.getText());
+    assertNotNull(proto.dataContainer);
+    assertNull(proto.dataContainer.getString());
     proto.close();
   }
 
@@ -169,7 +175,9 @@ public class Proto_v3Test {
     ByteArrayInputStream istream = builder.getStream();
     MockConnection connection = new MockConnection(istream);
     Proto proto = ProtocolSelector.getProto(connection, null, null);
-    assertNull(proto.getText());
+    assertFalse(proto.getText());
+    assertNotNull(proto.dataContainer);
+    assertNull(proto.dataContainer.getString());
     proto.close();
   }
 
@@ -180,7 +188,9 @@ public class Proto_v3Test {
     ByteArrayInputStream istream = builder.getStream();
     MockConnection connection = new MockConnection(istream);
     Proto proto = ProtocolSelector.getProto(connection, null, null);
-    assertNull(proto.getText());
+    assertFalse(proto.getText());
+    assertNotNull(proto.dataContainer);
+    assertNull(proto.dataContainer.getString());
     proto.close();
   }
 
@@ -191,7 +201,9 @@ public class Proto_v3Test {
     ByteArrayInputStream istream = builder.getStream();
     MockConnection connection = new MockConnection(istream);
     Proto proto = ProtocolSelector.getProto(connection, null, null);
-    assertNull(proto.getText());
+    assertFalse(proto.getText());
+    assertNotNull(proto.dataContainer);
+    assertNull(proto.dataContainer.getString());
     proto.close();
   }
 
@@ -203,7 +215,9 @@ public class Proto_v3Test {
     ByteArrayInputStream istream = builder.getStream();
     MockConnection connection = new MockConnection(istream);
     Proto proto = ProtocolSelector.getProto(connection, null, null);
-    assertNull(proto.getText());
+    assertFalse(proto.getText());
+    assertNotNull(proto.dataContainer);
+    assertNull(proto.dataContainer.getString());
     proto.close();
   }
 

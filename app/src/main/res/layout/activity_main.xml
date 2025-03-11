@@ -118,6 +118,39 @@
     </LinearLayout>
 
     <LinearLayout
+        android:id="@+id/layoutShareFile"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:orientation="horizontal"
+        android:layout_marginTop="6dp"
+        android:visibility="gone">
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="0.02" />
+
+        <Button
+            android:id="@+id/btnShareFile"
+            android:text="@string/btnShareFile"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="0.96"
+            android:backgroundTint="#FF7F7F7F"
+            app:autoSizeTextType="uniform"
+            app:autoSizeMinTextSize="16sp"
+            app:autoSizeMaxTextSize="22sp"
+            app:autoSizeStepGranularity="1sp"
+            android:textAppearance="@style/TextAppearance.AppCompat.Body2"
+            android:textStyle="normal" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="0.02" />
+    </LinearLayout>
+
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"

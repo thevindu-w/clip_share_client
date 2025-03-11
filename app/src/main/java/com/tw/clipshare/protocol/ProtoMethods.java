@@ -26,6 +26,7 @@ package com.tw.clipshare.protocol;
 
 import com.tw.clipshare.netConnection.ServerConnection;
 import com.tw.clipshare.platformUtils.AndroidUtils;
+import com.tw.clipshare.platformUtils.DataContainer;
 import com.tw.clipshare.platformUtils.FSUtils;
 import com.tw.clipshare.platformUtils.StatusNotifier;
 import java.io.ByteArrayInputStream;
@@ -56,20 +57,29 @@ public final class ProtoMethods {
   private final ServerConnection serverConnection;
   private final AndroidUtils utils;
   private StatusNotifier notifier;
+  private final DataContainer dataContainer;
   private volatile boolean isRunning;
 
-  ProtoMethods(ServerConnection serverConnection, AndroidUtils utils, StatusNotifier notifier) {
+  ProtoMethods(
+      ServerConnection serverConnection,
+      AndroidUtils utils,
+      StatusNotifier notifier,
+      DataContainer dataContainer) {
     this.serverConnection = serverConnection;
     this.utils = utils;
     this.notifier = notifier;
+    this.dataContainer = dataContainer;
     this.isRunning = true;
   }
 
-  String v1_getText() {
+  boolean v1_getText() {
     if (methodInit(GET_TEXT)) {
-      return null;
+      return false;
     }
-    return readString(MAX_TEXT_LENGTH);
+    String data = readString(MAX_TEXT_LENGTH);
+    if (data == null) return false;
+    dataContainer.setData(data);
+    return true;
   }
 
   boolean v1_sendText(String text) {
@@ -174,6 +184,7 @@ public final class ProtoMethods {
     }
     try {
       out.close();
+      fsUtils.setDataContainer(dataContainer);
       fsUtils.getFileDone("image");
       fsUtils.scanMediaFile();
     } catch (IOException ignored) {
@@ -205,19 +216,14 @@ public final class ProtoMethods {
   }
 
   private boolean getFilesCommon(int version) {
-    if (!(this.utils instanceof FSUtils)) return false;
-    FSUtils fsUtils = (FSUtils) this.utils;
-    if (methodInit(GET_FILE)) {
-      return false;
-    }
-    long fileCnt;
     try {
-      fileCnt = readSize();
-    } catch (IOException ignored) {
-      return false;
-    }
-    boolean status = true;
-    try {
+      if (!(this.utils instanceof FSUtils)) return false;
+      FSUtils fsUtils = (FSUtils) this.utils;
+      if (methodInit(GET_FILE)) {
+        return false;
+      }
+      long fileCnt = readSize();
+      boolean status = true;
       for (long fileNum = 0; fileNum < fileCnt && isRunning; fileNum++) {
         String fileName = readString(MAX_FILE_NAME_LENGTH);
         if (fileName == null || fileName.isEmpty()) {
@@ -280,11 +286,13 @@ public final class ProtoMethods {
         }
         if (!status) break;
       }
+      fsUtils.setDataContainer(dataContainer);
+      status = status && isRunning && fsUtils.finish();
+      if (status) fsUtils.getFileDone("files");
+      return status;
     } catch (Exception ignored) {
-      status = false;
+      return false;
     }
-    if (status && isRunning) fsUtils.getFileDone("files");
-    return status && isRunning && fsUtils.finish() && isRunning;
   }
 
   boolean v2_getFiles() {

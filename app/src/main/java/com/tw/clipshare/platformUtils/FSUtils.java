@@ -43,9 +43,9 @@ public class FSUtils extends AndroidUtils {
   private InputStream inStream;
   private final String id;
   private String outFilePath;
-  private String baseDirName;
   private final LinkedList<PendingFile> pendingFiles;
   private final DirectoryTreeNode directoryTree;
+  private DataContainer dataContainer;
 
   private FSUtils(
       Context context,
@@ -82,6 +82,7 @@ public class FSUtils extends AndroidUtils {
   }
 
   private String getDocumentDir() {
+    String baseDirName;
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
       baseDirName =
           Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS)
@@ -146,8 +147,9 @@ public class FSUtils extends AndroidUtils {
     String[] content = dataDir.list();
     if (content == null) return true;
     boolean status = true;
+    File newFile = null;
     for (String fileName : content) {
-      File newFile = new File(dir + fileName);
+      newFile = new File(dir + fileName);
       int pref = 1;
       while (newFile.exists()) {
         String newName = pref++ + "_" + fileName;
@@ -157,11 +159,13 @@ public class FSUtils extends AndroidUtils {
       status &= file.renameTo(newFile);
       scanMediaFile(newFile.getAbsolutePath());
     }
+    if (content.length == 1 && status) dataContainer.setData(newFile);
     status &= dataDir.delete();
     return status;
   }
 
   public OutputStream getImageOutStream() {
+    String baseDirName;
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
       baseDirName =
           String.valueOf(
@@ -199,6 +203,7 @@ public class FSUtils extends AndroidUtils {
     String path;
     if ("image".equals(type)) {
       path = outFilePath;
+      dataContainer.setData(new File(path));
     } else {
       path = getDocumentDir();
     }
@@ -277,5 +282,9 @@ public class FSUtils extends AndroidUtils {
 
   public boolean prepareNextFile() {
     return this.prepareNextFile(false);
+  }
+
+  public void setDataContainer(DataContainer dataContainer) {
+    this.dataContainer = dataContainer;
   }
 }

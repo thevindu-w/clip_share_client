@@ -8,6 +8,7 @@
     <string name="btnFolderTxt" translatable="false">Folder</string>
     <string name="scanBtnTxt" translatable="false">Scan</string>
     <string name="btnOpenLink" translatable="false">Open link</string>
+    <string name="btnShareFile" translatable="false">Share</string>
     <string name="fileSelectedTxt" translatable="false">File selected. Press send file button.</string>
     <string name="channel_name" translatable="false">File transfer progress</string>
     <string name="channel_description" translatable="false">File upload/download progress</string>

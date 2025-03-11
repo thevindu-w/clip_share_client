@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2022-2024 H. Thevindu J. Wijesekera
+ * Copyright (c) 2022-2025 H. Thevindu J. Wijesekera
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,45 +22,41 @@
  * SOFTWARE.
  */
 
-package com.tw.clipshare.protocol;
+package com.tw.clipshare.platformUtils;
 
-import com.tw.clipshare.netConnection.ServerConnection;
-import com.tw.clipshare.platformUtils.AndroidUtils;
-import com.tw.clipshare.platformUtils.StatusNotifier;
+import androidx.annotation.Nullable;
+import java.io.File;
 
-public class Proto_v1 extends Proto {
+public class DataContainer {
+  private Object data;
+  private String message;
 
-  Proto_v1(ServerConnection serverConnection, AndroidUtils utils, StatusNotifier notifier) {
-    super(serverConnection, utils, notifier);
+  public void setData(Object data) {
+    this.data = data;
   }
 
-  @Override
-  public boolean getText() {
-    return this.protoMethods.v1_getText();
+  @Nullable
+  public String getString() {
+    if (data instanceof String) {
+      return (String) data;
+    }
+    return null;
   }
 
-  @Override
-  public boolean sendText(String text) {
-    return this.protoMethods.v1_sendText(text);
+  @Nullable
+  public File getFile() {
+    if (data instanceof File) {
+      return (File) data;
+    }
+    return null;
   }
 
-  @Override
-  public boolean getFile() {
-    return this.protoMethods.v1_getFiles();
+  @Nullable
+  public String getMessage() {
+    return this.message;
   }
 
-  @Override
-  public boolean sendFile() {
-    return this.protoMethods.v1_sendFile();
-  }
-
-  @Override
-  public boolean getImage() {
-    return this.protoMethods.v1_getImage();
-  }
-
-  @Override
-  public String checkInfo() {
-    return this.protoMethods.v1_checkInfo();
+  public void setMessage(String msg) {
+    this.message = msg;
   }
 }

@@ -35,7 +35,7 @@ public class Proto_v2 extends Proto {
   }
 
   @Override
-  public String getText() {
+  public boolean getText() {
     return this.protoMethods.v1_getText();
   }
 

@@ -48,9 +48,11 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 import androidx.documentfile.provider.DocumentFile;
 import com.tw.clipshare.netConnection.*;
 import com.tw.clipshare.platformUtils.AndroidUtils;
+import com.tw.clipshare.platformUtils.DataContainer;
 import com.tw.clipshare.platformUtils.FSUtils;
 import com.tw.clipshare.platformUtils.directoryTree.Directory;
 import com.tw.clipshare.platformUtils.directoryTree.DirectoryTreeNode;
@@ -58,6 +60,7 @@ import com.tw.clipshare.platformUtils.directoryTree.RegularFile;
 import com.tw.clipshare.protocol.Proto;
 import com.tw.clipshare.protocol.Proto_v3;
 import com.tw.clipshare.protocol.ProtocolSelector;
+import java.io.File;
 import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.ProtocolException;
@@ -84,6 +87,7 @@ public class ClipShareActivity extends AppCompatActivity {
   private ArrayList<Uri> fileURIs;
   private Menu menu;
   private LinearLayout openBrowserLayout;
+  private LinearLayout shareFileLayout;
   private int activeTasks = 0;
   private long lastActivityTime;
   private ExecutorService inactivityExecutor = null;
@@ -212,6 +216,7 @@ public class ClipShareActivity extends AppCompatActivity {
     Button btnScanHost = findViewById(R.id.btnScanHost);
     btnScanHost.setOnClickListener(this::clkScanBtn);
     openBrowserLayout = findViewById(R.id.layoutOpenBrowser);
+    shareFileLayout = findViewById(R.id.layoutShareFile);
 
     try {
       Settings.loadInstance(sharedPref.getString("settings", null));
@@ -309,9 +314,11 @@ public class ClipShareActivity extends AppCompatActivity {
         () -> {
           try {
             do {
-              String message = FileService.getNextMessage();
-              if (message == null) continue;
-              outputSetText(message);
+              DataContainer data = FileService.getNextMessage();
+              if (data == null || data.getMessage() == null) continue;
+              outputSetText(data.getMessage());
+              File file = data.getFile();
+              showShareButton(file);
               break;
             } while (true);
           } catch (Exception ignored) {
@@ -545,6 +552,22 @@ public class ClipShareActivity extends AppCompatActivity {
     } while (retries-- > 0);
     outputAppend("Couldn't connect");
     return null;
+  }
+
+  private void showShareButton(File file) {
+    if (file == null) return;
+    Button btnShareFile = findViewById(R.id.btnShareFile);
+    btnShareFile.setOnClickListener(
+        view -> {
+          Intent intent = new Intent(Intent.ACTION_SEND);
+          intent.setType("image/png");
+          Uri uri =
+              FileProvider.getUriForFile(
+                  context, context.getApplicationContext().getPackageName() + ".provider", file);
+          intent.putExtra(Intent.EXTRA_STREAM, uri);
+          startActivity(intent);
+        });
+    runOnUiThread(() -> shareFileLayout.setVisibility(View.VISIBLE));
   }
 
   private void clkScanBtn(View parent) {
@@ -830,8 +853,10 @@ public class ClipShareActivity extends AppCompatActivity {
               AndroidUtils utils = new AndroidUtils(context, ClipShareActivity.this);
               Proto proto = getProtoWrapper(address, utils);
               if (proto == null) return;
-              String text = proto.getText();
+              boolean status = proto.getText();
               proto.close();
+              if (!status) return;
+              String text = proto.dataContainer.getString();
               if (text == null) return;
               utils.setClipboardText(text);
               if (text.length() < 16384) outputSetText("Received: " + text);
@@ -933,6 +958,8 @@ public class ClipShareActivity extends AppCompatActivity {
               proto.close();
               if (status) {
                 utils.vibrate();
+                File file = proto.dataContainer.getFile();
+                showShareButton(file);
               } else {
                 runOnUiThread(
                     () ->
@@ -1072,6 +1099,7 @@ public class ClipShareActivity extends AppCompatActivity {
     runOnUiThread(
         () -> {
           openBrowserLayout.setVisibility(View.GONE);
+          shareFileLayout.setVisibility(View.GONE);
           output.setText("");
         });
   }
