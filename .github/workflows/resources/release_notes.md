@@ -5,5 +5,6 @@ Refer to the [README](https://github.com/thevindu-w/clip_share_client/#how-to-us
 <br>
 **Changes:**
 - Feature:
-  - Settings option to enable/disable scanning for IPv6 servers.
+  - Option to share received files and images with other apps.
+- UI improvements.
 - Code quality improvements.
