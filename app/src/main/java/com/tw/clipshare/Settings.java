@@ -166,7 +166,7 @@ public class Settings implements Serializable {
       Object attributeO = map.get("passwd");
       if (attributeO instanceof String) {
         String pwStr = (String) attributeO;
-        if (!pwStr.isEmpty() && pwStr.length() < 80) settings.passwd = pwStr.toCharArray();
+        if (!pwStr.isEmpty() && pwStr.length() < 256) settings.passwd = pwStr.toCharArray();
       }
     } catch (Exception ignored) {
     }

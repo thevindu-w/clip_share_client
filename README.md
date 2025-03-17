@@ -134,37 +134,41 @@ app. You can find more information on running the server on Windows, macOS, or L
   button. Setting the address to `*` will allow auto-sending to any server. Tap on the address to edit it, and tap on
   the `X` button to remove the entry from the list.
 
-#### Close app if idle
+#### Saved addresses
+
+- **Save addresses:** When this setting is enabled, ClipShare will save the server addresses used by the app.
+- **Saved servers:** This is the list of automatically saved server addresses. You can manually add an IP address to
+  the list using the `+` button. Tap on any address to edit it, and tap on the `X` button to remove it from the list.
+
+#### Secure mode
+
+- **CA Certificate:** This is the self-signed TLS certificate of the certification authority that signed the client and
+  server's TLS certificates. Select the certificate file using the _Browse_ button.
+- **Client Certificate:** This is the TLS key and certificate _p12_ or _pfx_ file of the client. Before selecting the
+  file using the _Browse_ button, you must enter the password for the _pfx_ file.
+  The password should have less than 256 characters.
+- **Trusted servers:** This is the list of trusted servers to which the client is allowed to connect. Add the _Common
+  Name_ of each server using the `+` button. Tap on the name to edit it, and tap on the `X` button to remove the entry
+  from the list. The client app will refuse to connect to servers not having TLS certificates with their _Common Name_
+  listed under this list when secure mode is enabled.
+- **Secure mode:** When this setting is enabled, the connections with the server (ex: your laptop) are secured with TLS
+  encryption. Enabling this setting prevents others on the same network from spying on or modifying the data you share
+  with your laptop. To enable this setting, you need to select the CA certificate and client TLS certificate and add at
+  least one trusted server. Additionally, you need to configure the server to create and use a server certificate.
+  Refer to the
+  [TLS certificates](https://github.com/thevindu-w/clip_share_server#create-ssltls-certificate-and-key-files) and
+  [Configuration](https://github.com/thevindu-w/clip_share_server#configuration) sections of the
+  [ClipShare server](https://github.com/thevindu-w/clip_share_server) for more information.
+
+#### Other settings
 
 - **Close app if idle:** When this setting is enabled, the ClipShare app will automatically close if it is kept idle
   without interacting with it for some time. This time duration can be changed from the _Auto-close delay_ setting
   described below.
 - **Auto-close delay:** This is the time duration, in seconds, for which the app is kept idle before automatically
   closing. This setting is visible only when the _Close app if idle_ setting is enabled.
-
-#### Vibration alerts
-
 - **Vibration alerts:** When this setting is enabled, the phone will give a short vibration pulse after each successful
   operation (ex: _Get Files_) as feedback to the user.
-
-#### Secure mode
-
-- **Secure mode:** When this setting is enabled, the connections with the server (ex: your laptop) will be secured with
-  TLS. Enabling this setting can prevent others on the same network from spying on or modifying the data you share with
-  your laptop. To enable this setting, you need to select the CA certificate, client TLS certificate, and add at least
-  one trusted server. Additionally, you need to configure the server on your laptop to have a server certificate.
-  Refer to the
-  [TLS certificates](https://github.com/thevindu-w/clip_share_server#create-ssltls-certificate-and-key-files) and
-  [Configuration](https://github.com/thevindu-w/clip_share_server#configuration) sections of the
-  [ClipShare server](https://github.com/thevindu-w/clip_share_server) for more information.
-- **CA Certificate:** This is the self-signed TLS certificate of the certification authority that signed the client and
-  server's TLS certificates. Select the certificate file using the _Browse_ button.
-- **Client Certificate:** This is the TLS key and certificate _p12_ or _pfx_ file of the client. Before selecting the
-  file using the _Browse_ button, you must enter the password for the _pfx_ file.
-- **Trusted servers:** This is the list of trusted servers to which the client is allowed to connect. Add the _Common
-  Name_ of each server using the `+` button. Tap on the name to edit it, and tap on the `X` button to remove the entry
-  from the list. The client app will refuse to connect to servers having TLS certificates with their _Common Name_ not
-  listed under this list when secure mode is enabled.
 
 #### Ports
 
