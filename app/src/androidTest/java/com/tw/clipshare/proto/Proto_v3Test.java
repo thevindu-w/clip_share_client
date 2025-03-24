@@ -28,7 +28,6 @@ import static com.tw.clipshare.Utils.PROTOCOL_SUPPORTED;
 import static com.tw.clipshare.proto.ProtocolSelectorTest.MAX_PROTO;
 import static org.junit.Assert.*;
 
-import android.Manifest;
 import android.app.Activity;
 import android.app.NotificationManager;
 import android.content.Context;
@@ -38,7 +37,6 @@ import androidx.core.app.NotificationCompat;
 import androidx.test.core.app.ActivityScenario;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
-import androidx.test.rule.GrantPermissionRule;
 import com.tw.clipshare.ClipShareActivity;
 import com.tw.clipshare.FileService;
 import com.tw.clipshare.PendingFile;
@@ -67,10 +65,6 @@ import org.junit.runner.RunWith;
 
 @RunWith(AndroidJUnit4.class)
 public class Proto_v3Test {
-  @Rule
-  public GrantPermissionRule mRuntimePermissionRule =
-      GrantPermissionRule.grant(Manifest.permission.WRITE_EXTERNAL_STORAGE);
-
   private static Context context;
   private static Activity activity;
   private StatusNotifier notifier;
@@ -477,7 +471,11 @@ public class Proto_v3Test {
     String content = "Test";
     String fName = "clip.txt";
     byte[] fileData = content.getBytes(StandardCharsets.UTF_8);
-    String fPath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/" + fName;
+    String fPath =
+        Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS)
+                .getAbsolutePath()
+            + "/"
+            + fName;
     File file = new File(fPath);
     FileOutputStream stream = new FileOutputStream(file);
     stream.write(fileData);
@@ -506,6 +504,8 @@ public class Proto_v3Test {
     byte[] expected = builder.getArray();
     byte[] received = connection.getOutputBytes();
     assertArrayEquals(expected, received);
+    //noinspection ResultOfMethodCallIgnored
+    file.delete();
   }
 
   @Test
