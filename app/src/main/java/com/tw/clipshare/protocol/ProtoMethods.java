@@ -97,8 +97,7 @@ public final class ProtoMethods {
   }
 
   boolean v1_sendFile() {
-    if (!(this.utils instanceof FSUtils)) return false;
-    FSUtils fsUtils = (FSUtils) this.utils;
+    if (!(this.utils instanceof FSUtils fsUtils)) return false;
     if (!fsUtils.prepareNextFile()) return false;
     String fileName = fsUtils.getFileName();
     if (fileName == null || fileName.isEmpty()) {
@@ -150,8 +149,7 @@ public final class ProtoMethods {
   }
 
   private boolean getImageCommon(byte method, int display) {
-    if (!(this.utils instanceof FSUtils)) return false;
-    FSUtils fsUtils = (FSUtils) this.utils;
+    if (!(this.utils instanceof FSUtils fsUtils)) return false;
     if (methodInit(method)) {
       return false;
     }
@@ -217,8 +215,7 @@ public final class ProtoMethods {
 
   private boolean getFilesCommon(int version) {
     try {
-      if (!(this.utils instanceof FSUtils)) return false;
-      FSUtils fsUtils = (FSUtils) this.utils;
+      if (!(this.utils instanceof FSUtils fsUtils)) return false;
       if (methodInit(GET_FILE)) {
         return false;
       }
@@ -300,8 +297,7 @@ public final class ProtoMethods {
   }
 
   boolean sendFilesCommon(int version) {
-    if (!(this.utils instanceof FSUtils)) return false;
-    FSUtils fsUtils = (FSUtils) this.utils;
+    if (!(this.utils instanceof FSUtils fsUtils)) return false;
     int fileCnt = fsUtils.getRemainingFileCount(version >= 3);
     if (fileCnt <= 0) return false;
     if (methodInit(SEND_FILE)) return false;

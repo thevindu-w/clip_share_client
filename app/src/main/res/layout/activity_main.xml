@@ -165,7 +165,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Send"
+            android:text="@string/send"
             android:textSize="16sp"
             android:textColor="@color/grey"
             android:textAppearance="@style/TextAppearance.AppCompat.Button"
@@ -261,7 +261,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Get"
+            android:text="@string/get"
             android:textSize="16sp"
             android:textColor="@color/grey"
             android:textAppearance="@style/TextAppearance.AppCompat.Button"

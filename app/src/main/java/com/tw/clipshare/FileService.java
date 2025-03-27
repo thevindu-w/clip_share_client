@@ -202,13 +202,13 @@ public class FileService extends Service {
         while (!this.pendingTasks.isEmpty()) {
           pendingTask = this.pendingTasks.pop();
 
-          proto = pendingTask.proto;
-          AndroidUtils utils = pendingTask.utils;
+          proto = pendingTask.proto();
+          AndroidUtils utils = pendingTask.utils();
           try {
             proto.setStatusNotifier(statusNotifier);
             statusNotifier.reset();
             boolean success = false;
-            switch (pendingTask.task) {
+            switch (pendingTask.task()) {
               case PendingTask.GET_FILES:
                 {
                   statusNotifier.setTitle("Getting file");
@@ -231,14 +231,14 @@ public class FileService extends Service {
             if (proto.isStopped()) {
               setMessage(
                   null,
-                  (pendingTask.task == PendingTask.GET_FILES ? "Getting" : "Sending")
+                  (pendingTask.task() == PendingTask.GET_FILES ? "Getting" : "Sending")
                       + " files stopped");
               break;
             }
             utils.vibrate();
             setMessage(
                 proto.dataContainer,
-                (pendingTask.task == PendingTask.GET_FILES ? "Getting" : "Sending")
+                (pendingTask.task() == PendingTask.GET_FILES ? "Getting" : "Sending")
                     + " files "
                     + (success ? "completed" : "failed"));
           } catch (Exception ignored) {

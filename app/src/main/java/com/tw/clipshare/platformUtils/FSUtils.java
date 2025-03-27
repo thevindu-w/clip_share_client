@@ -268,10 +268,10 @@ public class FSUtils extends AndroidUtils {
       }
       if (this.pendingFiles != null) {
         PendingFile pendingFile = this.pendingFiles.pop();
-        this.inFileName = pendingFile.name;
-        this.fileSize = pendingFile.size;
-        if (pendingFile.uri != null)
-          this.inStream = activity.getContentResolver().openInputStream(pendingFile.uri);
+        this.inFileName = pendingFile.name();
+        this.fileSize = pendingFile.size();
+        if (pendingFile.uri() != null)
+          this.inStream = activity.getContentResolver().openInputStream(pendingFile.uri());
         else this.inStream = null;
         return true;
       }

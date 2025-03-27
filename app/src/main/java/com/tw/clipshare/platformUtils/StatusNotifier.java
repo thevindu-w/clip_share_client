@@ -249,8 +249,7 @@ class DataSize {
 
   @Override
   public boolean equals(Object other) {
-    if (!(other instanceof DataSize)) return false;
-    DataSize otherSize = (DataSize) other;
+    if (!(other instanceof DataSize otherSize)) return false;
     if (this.unit != otherSize.unit) return false;
     return Math.round(this.value * 100) == Math.round(otherSize.value * 100);
   }
@@ -296,8 +295,7 @@ class TimeContainer {
 
   @Override
   public boolean equals(Object other) {
-    if (!(other instanceof TimeContainer)) return false;
-    TimeContainer otherContainer = (TimeContainer) other;
+    if (!(other instanceof TimeContainer otherContainer)) return false;
     return (this.time == otherContainer.time
         && (this.time < 0 || this.unit.equals(otherContainer.unit)));
   }

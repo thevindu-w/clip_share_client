@@ -86,8 +86,7 @@ public class Settings implements Serializable {
   private static ArrayList<String> objectToArrayList(Object listO) {
     try {
       ArrayList<String> list = null;
-      if (listO instanceof JSONArray) {
-        JSONArray jsonArray = (JSONArray) listO;
+      if (listO instanceof JSONArray jsonArray) {
         int len = jsonArray.length();
         list = new ArrayList<>(len);
         for (int i = 0; i < len; i++) {
@@ -142,8 +141,7 @@ public class Settings implements Serializable {
     // Set caCert
     try {
       Object attributeO = map.get("caCert");
-      if (attributeO instanceof String) {
-        String value = (String) attributeO;
+      if (attributeO instanceof String value) {
         if (!value.isEmpty() && value.length() < 32768)
           settings.caCert = Base64.decode(value, Base64.DEFAULT);
       }
@@ -153,8 +151,7 @@ public class Settings implements Serializable {
     // Set cert
     try {
       Object attributeO = map.get("cert");
-      if (attributeO instanceof String) {
-        String value = (String) attributeO;
+      if (attributeO instanceof String value) {
         if (!value.isEmpty() && value.length() < 32768)
           settings.cert = Base64.decode(value, Base64.DEFAULT);
       }
@@ -164,8 +161,7 @@ public class Settings implements Serializable {
     // Set passwd
     try {
       Object attributeO = map.get("passwd");
-      if (attributeO instanceof String) {
-        String pwStr = (String) attributeO;
+      if (attributeO instanceof String pwStr) {
         if (!pwStr.isEmpty() && pwStr.length() < 256) settings.passwd = pwStr.toCharArray();
       }
     } catch (Exception ignored) {
@@ -174,8 +170,7 @@ public class Settings implements Serializable {
     // Set caCN
     try {
       Object attributeO = map.get("caCN");
-      if (attributeO instanceof String) {
-        String value = (String) attributeO;
+      if (attributeO instanceof String value) {
         if (!value.isEmpty() && value.length() < 256) settings.caCN = value;
       }
     } catch (Exception ignored) {
@@ -184,8 +179,7 @@ public class Settings implements Serializable {
     // Set cn
     try {
       Object attributeO = map.get("cn");
-      if (attributeO instanceof String) {
-        String value = (String) attributeO;
+      if (attributeO instanceof String value) {
         if (!value.isEmpty() && value.length() < 256) settings.cn = value;
       }
     } catch (Exception ignored) {
