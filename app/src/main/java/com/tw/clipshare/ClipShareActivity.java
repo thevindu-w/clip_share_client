@@ -315,7 +315,10 @@ public class ClipShareActivity extends AppCompatActivity {
           try {
             do {
               DataContainer data = FileService.getNextMessage();
-              if (data == null || data.getMessage() == null) continue;
+              if (data == null || data.getMessage() == null) {
+                if (FileService.isStopped()) break;
+                continue;
+              }
               outputSetText(data.getMessage());
               File file = data.getFile();
               showShareButton(file);

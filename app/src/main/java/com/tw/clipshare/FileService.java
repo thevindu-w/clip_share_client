@@ -55,9 +55,8 @@ public class FileService extends Service {
     DataContainer current;
     try {
       synchronized (LOCK) {
-        LOCK.wait();
+        LOCK.wait(2000);
         current = data;
-        data = null;
       }
     } finally {
       synchronized (LOCK) {
@@ -83,6 +82,10 @@ public class FileService extends Service {
 
   private static final class RunningTasksHolder {
     static final HashMap<Integer, FileShareRunnable> runningTasks = new HashMap<>(1);
+  }
+
+  public static boolean isStopped() {
+    return RunningTasksHolder.runningTasks.isEmpty();
   }
 
   @Override
