@@ -320,8 +320,8 @@ public class ClipShareActivity extends AppCompatActivity {
                 continue;
               }
               outputSetText(data.getMessage());
-              File file = data.getFile();
-              showShareButton(file);
+              List<File> files = data.getFiles();
+              showShareButton(files, false);
               break;
             } while (true);
           } catch (Exception ignored) {
@@ -557,20 +557,32 @@ public class ClipShareActivity extends AppCompatActivity {
     return null;
   }
 
-  private void showShareButton(File file) {
-    if (file == null) return;
-    Button btnShareFile = findViewById(R.id.btnShareFile);
-    btnShareFile.setOnClickListener(
-        view -> {
-          Intent intent = new Intent(Intent.ACTION_SEND);
-          intent.setType("image/png");
-          Uri uri =
-              FileProvider.getUriForFile(
-                  context, context.getApplicationContext().getPackageName() + ".provider", file);
-          intent.putExtra(Intent.EXTRA_STREAM, uri);
-          startActivity(intent);
-        });
-    runOnUiThread(() -> shareFileLayout.setVisibility(View.VISIBLE));
+  private void showShareButton(List<File> files, boolean isImage) {
+    try {
+      if (files == null || files.isEmpty()) return;
+      boolean isSingle = files.size() == 1;
+      Button btnShareFile = findViewById(R.id.btnShareFile);
+      btnShareFile.setOnClickListener(
+          view -> {
+            try {
+              Intent intent =
+                  new Intent(isSingle ? Intent.ACTION_SEND : Intent.ACTION_SEND_MULTIPLE);
+              intent.setType(isImage ? "image/png" : "application/octet-stream");
+              ArrayList<Uri> uris = new ArrayList<>(files.size());
+              for (File file : files) {
+                uris.add(
+                    FileProvider.getUriForFile(
+                        context, context.getPackageName() + ".provider", file));
+              }
+              if (isSingle) intent.putExtra(Intent.EXTRA_STREAM, uris.get(0));
+              else intent.putExtra(Intent.EXTRA_STREAM, uris);
+              startActivity(intent);
+            } catch (Exception ignored) {
+            }
+          });
+      runOnUiThread(() -> shareFileLayout.setVisibility(View.VISIBLE));
+    } catch (Exception ignored) {
+    }
   }
 
   private void clkScanBtn(View parent) {
@@ -961,8 +973,8 @@ public class ClipShareActivity extends AppCompatActivity {
               proto.close();
               if (status) {
                 utils.vibrate();
-                File file = proto.dataContainer.getFile();
-                showShareButton(file);
+                List<File> files = proto.dataContainer.getFiles();
+                showShareButton(files, true);
               } else {
                 runOnUiThread(
                     () ->

@@ -26,6 +26,7 @@ package com.tw.clipshare.platformUtils;
 
 import androidx.annotation.Nullable;
 import java.io.File;
+import java.util.List;
 
 public class DataContainer {
   private Object data;
@@ -44,9 +45,16 @@ public class DataContainer {
   }
 
   @Nullable
-  public File getFile() {
-    if (data instanceof File) {
-      return (File) data;
+  public List<File> getFiles() {
+    if (data instanceof File file) {
+      return List.of(file);
+    }
+    if (data instanceof List<?>) {
+      for (Object obj : (List<?>) data) {
+        if (!(obj instanceof File)) return null;
+      }
+      //noinspection unchecked
+      return (List<File>) data;
     }
     return null;
   }

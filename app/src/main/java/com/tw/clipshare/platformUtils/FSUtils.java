@@ -33,6 +33,7 @@ import android.os.Environment;
 import com.tw.clipshare.PendingFile;
 import com.tw.clipshare.platformUtils.directoryTree.DirectoryTreeNode;
 import java.io.*;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Random;
 
@@ -147,9 +148,9 @@ public class FSUtils extends AndroidUtils {
     String[] content = dataDir.list();
     if (content == null) return true;
     boolean status = true;
-    File newFile = null;
+    ArrayList<File> files = new ArrayList<>(content.length);
     for (String fileName : content) {
-      newFile = new File(dir + fileName);
+      File newFile = new File(dir + fileName);
       int pref = 1;
       while (newFile.exists()) {
         String newName = pref++ + "_" + fileName;
@@ -158,8 +159,9 @@ public class FSUtils extends AndroidUtils {
       File file = new File(dataDirName + "/" + fileName);
       status &= file.renameTo(newFile);
       scanMediaFile(newFile.getAbsolutePath());
+      if (newFile.isFile()) files.add(newFile);
     }
-    if (content.length == 1 && status) dataContainer.setData(newFile);
+    if (status) dataContainer.setData(files);
     status &= dataDir.delete();
     return status;
   }
