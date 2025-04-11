@@ -40,6 +40,7 @@ import android.provider.OpenableColumns;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Patterns;
 import android.view.*;
+import android.webkit.MimeTypeMap;
 import android.widget.*;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -88,6 +89,7 @@ public class ClipShareActivity extends AppCompatActivity {
   private Menu menu;
   private LinearLayout openBrowserLayout;
   private LinearLayout shareFileLayout;
+  private LinearLayout viewFileLayout;
   private int activeTasks = 0;
   private long lastActivityTime;
   private ExecutorService inactivityExecutor = null;
@@ -217,6 +219,7 @@ public class ClipShareActivity extends AppCompatActivity {
     btnScanHost.setOnClickListener(this::clkScanBtn);
     openBrowserLayout = findViewById(R.id.layoutOpenBrowser);
     shareFileLayout = findViewById(R.id.layoutShareFile);
+    viewFileLayout = findViewById(R.id.layoutViewFile);
 
     try {
       Settings.loadInstance(sharedPref.getString("settings", null));
@@ -322,6 +325,7 @@ public class ClipShareActivity extends AppCompatActivity {
               outputSetText(data.getMessage());
               List<File> files = data.getFiles();
               showShareButton(files, false);
+              if (files != null && files.size() == 1) showViewFileButton(files.get(0));
               break;
             } while (true);
           } catch (Exception ignored) {
@@ -581,6 +585,29 @@ public class ClipShareActivity extends AppCompatActivity {
             }
           });
       runOnUiThread(() -> shareFileLayout.setVisibility(View.VISIBLE));
+    } catch (Exception ignored) {
+    }
+  }
+
+  private void showViewFileButton(File file) {
+    try {
+      String filename = file.getName();
+      String ext = filename.substring(filename.lastIndexOf(".") + 1).toLowerCase();
+      String mimetype = MimeTypeMap.getSingleton().getMimeTypeFromExtension(ext);
+      if (mimetype == null) return;
+      Uri uri = FileProvider.getUriForFile(context, context.getPackageName() + ".provider", file);
+      Button btnViewFile = findViewById(R.id.btnViewFile);
+      btnViewFile.setOnClickListener(
+          view -> {
+            try {
+              Intent intent = new Intent(Intent.ACTION_VIEW);
+              intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+              intent.setDataAndType(uri, mimetype);
+              startActivity(intent);
+            } catch (Exception ignored) {
+            }
+          });
+      runOnUiThread(() -> viewFileLayout.setVisibility(View.VISIBLE));
     } catch (Exception ignored) {
     }
   }
@@ -975,6 +1002,7 @@ public class ClipShareActivity extends AppCompatActivity {
                 utils.vibrate();
                 List<File> files = proto.dataContainer.getFiles();
                 showShareButton(files, true);
+                if (files != null && files.size() == 1) showViewFileButton(files.get(0));
               } else {
                 runOnUiThread(
                     () ->
@@ -1115,6 +1143,7 @@ public class ClipShareActivity extends AppCompatActivity {
         () -> {
           openBrowserLayout.setVisibility(View.GONE);
           shareFileLayout.setVisibility(View.GONE);
+          viewFileLayout.setVisibility(View.GONE);
           output.setText("");
         });
   }

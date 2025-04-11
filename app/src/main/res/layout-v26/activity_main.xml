@@ -117,6 +117,38 @@
     </LinearLayout>
 
     <LinearLayout
+        android:id="@+id/layoutViewFile"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:orientation="horizontal"
+        android:visibility="gone">
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="0.02" />
+
+        <Button
+            android:id="@+id/btnViewFile"
+            android:text="@string/openFile"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="0.96"
+            android:backgroundTint="#FF7F7F7F"
+            android:autoSizeTextType="uniform"
+            android:autoSizeMinTextSize="16sp"
+            android:autoSizeMaxTextSize="22sp"
+            android:autoSizeStepGranularity="1sp"
+            android:textAppearance="@style/TextAppearance.AppCompat.Body2"
+            android:textStyle="normal" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="0.02" />
+    </LinearLayout>
+
+    <LinearLayout
         android:id="@+id/layoutShareFile"
         android:layout_width="match_parent"
         android:layout_height="48dp"
