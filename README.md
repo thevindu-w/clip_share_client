@@ -3,7 +3,6 @@
 ### Client application of ClipShare for Android devices.
 
 ![Build and Test](https://github.com/thevindu-w/clip_share_client/actions/workflows/build-test.yml/badge.svg?branch=master)
-![Check Style](https://github.com/thevindu-w/clip_share_client/actions/workflows/check-style.yml/badge.svg?branch=master)
 ![Last commit](https://img.shields.io/github/last-commit/thevindu-w/clip_share_client.svg?color=yellow)
 ![License](https://img.shields.io/github/license/thevindu-w/clip_share_client.svg?color=blue)
 
