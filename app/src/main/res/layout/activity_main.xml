@@ -100,9 +100,12 @@
         <Button
             android:id="@+id/btnOpenLink"
             android:text="@string/btnOpenLink"
-            android:layout_width="0dp"
+            android:drawableEnd="@drawable/open_icon_resized"
+            android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_weight="0.96"
+            android:layout_marginHorizontal="12dp"
+            android:paddingStart="150dp"
+            android:paddingEnd="118dp"
             android:backgroundTint="#FF7F7F7F"
             app:autoSizeTextType="uniform"
             app:autoSizeMinTextSize="16sp"
@@ -132,7 +135,7 @@
         <Button
             android:id="@+id/btnViewFile"
             android:text="@string/openFile"
-            android:drawableEnd="@drawable/share_icon_resized"
+            android:drawableEnd="@drawable/open_icon_resized"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_marginHorizontal="12dp"
