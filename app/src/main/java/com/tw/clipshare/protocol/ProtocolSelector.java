@@ -71,9 +71,9 @@ public class ProtocolSelector {
       return null;
     }
     return switch (selectedProto) {
-      case 1 -> new Proto_v1(connection, utils, notifier);
-      case 2 -> new Proto_v2(connection, utils, notifier);
-      case 3 -> new Proto_v3(connection, utils, notifier);
+      case 1 -> new ProtoV1(connection, utils, notifier);
+      case 2 -> new ProtoV2(connection, utils, notifier);
+      case 3 -> new ProtoV3(connection, utils, notifier);
       default -> throw new ProtocolException("Unknown protocol");
     };
   }

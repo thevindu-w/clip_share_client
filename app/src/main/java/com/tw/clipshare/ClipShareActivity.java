@@ -59,7 +59,7 @@ import com.tw.clipshare.platformUtils.directoryTree.Directory;
 import com.tw.clipshare.platformUtils.directoryTree.DirectoryTreeNode;
 import com.tw.clipshare.platformUtils.directoryTree.RegularFile;
 import com.tw.clipshare.protocol.Proto;
-import com.tw.clipshare.protocol.Proto_v3;
+import com.tw.clipshare.protocol.ProtoV3;
 import com.tw.clipshare.protocol.ProtocolSelector;
 import java.io.File;
 import java.io.InputStream;
@@ -982,7 +982,7 @@ public class ClipShareActivity extends AppCompatActivity {
               FSUtils utils = new FSUtils(context, ClipShareActivity.this);
               Proto proto = getProtoWrapper(address, utils);
               if (proto == null) return;
-              if (method != GET_IMAGE && !(proto instanceof Proto_v3)) {
+              if (method != GET_IMAGE && !(proto instanceof ProtoV3)) {
                 runOnUiThread(
                     () ->
                         Toast.makeText(
@@ -995,8 +995,8 @@ public class ClipShareActivity extends AppCompatActivity {
               }
               boolean status = false;
               if (method == GET_IMAGE) status = proto.getImage();
-              else if (method == GET_COPIED_IMAGE) status = ((Proto_v3) proto).getCopiedImage();
-              else if (method == GET_SCREENSHOT) status = ((Proto_v3) proto).getScreenshot(display);
+              else if (method == GET_COPIED_IMAGE) status = ((ProtoV3) proto).getCopiedImage();
+              else if (method == GET_SCREENSHOT) status = ((ProtoV3) proto).getScreenshot(display);
               proto.close();
               if (status) {
                 utils.vibrate();

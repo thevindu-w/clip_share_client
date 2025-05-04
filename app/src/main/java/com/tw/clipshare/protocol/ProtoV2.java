@@ -28,9 +28,9 @@ import com.tw.clipshare.netConnection.ServerConnection;
 import com.tw.clipshare.platformUtils.AndroidUtils;
 import com.tw.clipshare.platformUtils.StatusNotifier;
 
-public class Proto_v3 extends Proto {
+public class ProtoV2 extends Proto {
 
-  Proto_v3(ServerConnection serverConnection, AndroidUtils utils, StatusNotifier notifier) {
+  ProtoV2(ServerConnection serverConnection, AndroidUtils utils, StatusNotifier notifier) {
     super(serverConnection, utils, notifier);
   }
 
@@ -46,25 +46,17 @@ public class Proto_v3 extends Proto {
 
   @Override
   public boolean getFile() {
-    return this.protoMethods.v3_getFiles();
+    return this.protoMethods.v2_getFiles();
   }
 
   @Override
   public boolean sendFile() {
-    return this.protoMethods.v3_sendFiles();
+    return this.protoMethods.v2_sendFiles();
   }
 
   @Override
   public boolean getImage() {
     return this.protoMethods.v1_getImage();
-  }
-
-  public boolean getCopiedImage() {
-    return this.protoMethods.v3_getCopiedImage();
-  }
-
-  public boolean getScreenshot(int display) {
-    return this.protoMethods.v3_getScreenshot(display);
   }
 
   @Override

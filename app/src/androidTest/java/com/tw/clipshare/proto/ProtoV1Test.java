@@ -59,7 +59,7 @@ import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 
 @RunWith(AndroidJUnit4.class)
-public class Proto_v1Test {
+public class ProtoV1Test {
   private static Context context;
   private static Activity activity;
   private StatusNotifier notifier;
@@ -77,7 +77,7 @@ public class Proto_v1Test {
       scenario.onActivity(
           activity -> {
             synchronized (lock) {
-              Proto_v1Test.activity = activity;
+              ProtoV1Test.activity = activity;
               lock.notifyAll();
             }
           });

@@ -24,7 +24,7 @@
 
 package com.tw.clipshare.proto;
 
-import static com.tw.clipshare.Utils.PROTOCOL_SUPPORTED;
+import static com.tw.clipshare.Utils.PROTOCOL_UNKNOWN;
 import static com.tw.clipshare.proto.ProtocolSelectorTest.MAX_PROTO;
 import static org.junit.Assert.*;
 
@@ -32,7 +32,6 @@ import android.app.Activity;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.net.Uri;
-import android.os.Environment;
 import androidx.core.app.NotificationCompat;
 import androidx.test.core.app.ActivityScenario;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -44,16 +43,12 @@ import com.tw.clipshare.R;
 import com.tw.clipshare.netConnection.MockConnection;
 import com.tw.clipshare.platformUtils.FSUtils;
 import com.tw.clipshare.platformUtils.StatusNotifier;
-import com.tw.clipshare.platformUtils.directoryTree.Directory;
-import com.tw.clipshare.platformUtils.directoryTree.RegularFile;
 import com.tw.clipshare.protocol.Proto;
-import com.tw.clipshare.protocol.Proto_v3;
 import com.tw.clipshare.protocol.ProtocolSelector;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 import java.util.Random;
 import org.junit.Before;
@@ -64,7 +59,7 @@ import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 
 @RunWith(AndroidJUnit4.class)
-public class Proto_v3Test {
+public class ProtoV2Test {
   private static Context context;
   private static Activity activity;
   private StatusNotifier notifier;
@@ -82,7 +77,7 @@ public class Proto_v3Test {
       scenario.onActivity(
           activity -> {
             synchronized (lock) {
-              Proto_v3Test.activity = activity;
+              ProtoV2Test.activity = activity;
               lock.notifyAll();
             }
           });
@@ -109,7 +104,8 @@ public class Proto_v3Test {
 
   private BAOStreamBuilder initProto(boolean methodOk) {
     BAOStreamBuilder builder = new BAOStreamBuilder();
-    builder.addByte(PROTOCOL_SUPPORTED);
+    builder.addByte(PROTOCOL_UNKNOWN);
+    builder.addByte(2);
     if (methodOk) builder.addByte(1);
     return builder;
   }
@@ -139,17 +135,17 @@ public class Proto_v3Test {
     istream.reset();
 
     connection = new MockConnection(istream);
-    proto = ProtocolSelector.getProto(connection, fsUtils, notifier);
+    proto = ProtocolSelector.getProto(connection, fsUtils, this.notifier);
     assertFalse(proto.getFile());
     istream.reset();
 
     connection = new MockConnection(istream);
-    proto = ProtocolSelector.getProto(connection, fsUtils, notifier);
+    proto = ProtocolSelector.getProto(connection, fsUtils, this.notifier);
     assertFalse(proto.sendFile());
     istream.reset();
 
     connection = new MockConnection(istream);
-    proto = ProtocolSelector.getProto(connection, fsUtils, notifier);
+    proto = ProtocolSelector.getProto(connection, fsUtils, this.notifier);
     assertFalse(proto.getImage());
     istream.reset();
 
@@ -253,6 +249,7 @@ public class Proto_v3Test {
     builder = new BAOStreamBuilder();
     builder.addByte(MAX_PROTO);
     builder.addByte(2);
+    builder.addByte(2);
     builder.addString(sample);
     byte[] expected = builder.getArray();
     assertArrayEquals(expected, receivedBytes);
@@ -277,90 +274,9 @@ public class Proto_v3Test {
     ByteArrayInputStream istream = builder.getStream();
     MockConnection connection = new MockConnection(istream);
     FSUtils utils = new FSUtils(context, activity);
-    Proto proto = ProtocolSelector.getProto(connection, utils, notifier);
+    Proto proto = ProtocolSelector.getProto(connection, utils, this.notifier);
     assertTrue(proto.getImage());
-    byte[] receivedBytes = connection.getOutputBytes();
     proto.close();
-
-    builder = new BAOStreamBuilder();
-    builder.addByte(MAX_PROTO);
-    builder.addByte(5);
-    byte[] expected = builder.getArray();
-    assertArrayEquals(expected, receivedBytes);
-    assertEquals(-1, istream.read());
-  }
-
-  @Test
-  public void testGetCopiedImage() throws IOException {
-    byte[] png = {(byte) 137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0};
-    BAOStreamBuilder builder = initProto(true);
-    builder.addData(png);
-    ByteArrayInputStream istream = builder.getStream();
-    MockConnection connection = new MockConnection(istream);
-    FSUtils utils = new FSUtils(context, activity);
-    Proto proto = ProtocolSelector.getProto(connection, utils, notifier);
-    if (!(proto instanceof Proto_v3)) fail();
-    Proto_v3 protoV3 = (Proto_v3) proto;
-    assertTrue(protoV3.getCopiedImage());
-    byte[] receivedBytes = connection.getOutputBytes();
-    proto.close();
-
-    builder = new BAOStreamBuilder();
-    builder.addByte(MAX_PROTO);
-    builder.addByte(6);
-    byte[] expected = builder.getArray();
-    assertArrayEquals(expected, receivedBytes);
-    assertEquals(-1, istream.read());
-  }
-
-  @Test
-  public void testGetScreenshot() throws IOException {
-    byte[] png = {(byte) 137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0};
-    int display = 1;
-    BAOStreamBuilder builder = initProto(true);
-    builder.addByte(1);
-    builder.addData(png);
-    ByteArrayInputStream istream = builder.getStream();
-    MockConnection connection = new MockConnection(istream);
-    FSUtils utils = new FSUtils(context, activity);
-    Proto proto = ProtocolSelector.getProto(connection, utils, notifier);
-    if (!(proto instanceof Proto_v3)) fail();
-    Proto_v3 protoV3 = (Proto_v3) proto;
-    assertTrue(protoV3.getScreenshot(display));
-    byte[] receivedBytes = connection.getOutputBytes();
-    proto.close();
-
-    builder = new BAOStreamBuilder();
-    builder.addByte(MAX_PROTO);
-    builder.addByte(7);
-    builder.addSize(display);
-    byte[] expected = builder.getArray();
-    assertArrayEquals(expected, receivedBytes);
-    assertEquals(-1, istream.read());
-  }
-
-  @Test
-  public void testGetScreenshotNoData() throws IOException {
-    int display = 2;
-    BAOStreamBuilder builder = initProto(true);
-    builder.addByte(2);
-    ByteArrayInputStream istream = builder.getStream();
-    MockConnection connection = new MockConnection(istream);
-    FSUtils utils = new FSUtils(context, activity);
-    Proto proto = ProtocolSelector.getProto(connection, utils, notifier);
-    if (!(proto instanceof Proto_v3)) fail();
-    Proto_v3 protoV3 = (Proto_v3) proto;
-    assertFalse(protoV3.getScreenshot(display));
-    byte[] receivedBytes = connection.getOutputBytes();
-    proto.close();
-
-    builder = new BAOStreamBuilder();
-    builder.addByte(MAX_PROTO);
-    builder.addByte(7);
-    builder.addSize(display);
-    byte[] expected = builder.getArray();
-    assertArrayEquals(expected, receivedBytes);
-    assertEquals(-1, istream.read());
   }
 
   @Test
@@ -380,21 +296,16 @@ public class Proto_v3Test {
     files[0] = new byte[] {'a', 'b', 'c'};
     files[1] = new byte[] {'1', '2'};
     files[2] = new byte[] {};
-    String[] dirNames = {"dir2/", "dir3/sub"};
     BAOStreamBuilder builder = initProto(true);
     builder.addSize(files.length);
     for (int i = 0; i < files.length; i++) {
       builder.addString(fileNames[i]);
       builder.addData(files[i]);
     }
-    for (String dirName : dirNames) {
-      builder.addString(dirName);
-      builder.addSize(-1);
-    }
     ByteArrayInputStream istream = builder.getStream();
     MockConnection connection = new MockConnection(istream);
     FSUtils utils = new FSUtils(context, activity);
-    Proto proto = ProtocolSelector.getProto(connection, utils, notifier);
+    Proto proto = ProtocolSelector.getProto(connection, utils, this.notifier);
     assertTrue(proto.getFile());
     proto.close();
   }
@@ -406,7 +317,7 @@ public class Proto_v3Test {
     ByteArrayInputStream istream = builder.getStream();
     MockConnection connection = new MockConnection(istream);
     FSUtils utils = new FSUtils(context, activity);
-    Proto proto = ProtocolSelector.getProto(connection, utils, notifier);
+    Proto proto = ProtocolSelector.getProto(connection, utils, this.notifier);
     assertFalse(proto.getFile());
     proto.close();
   }
@@ -430,21 +341,22 @@ public class Proto_v3Test {
       String fileName = fileNames[i];
       if (fileName.contains("/"))
         temporaryFolder.newFolder(fileName.substring(0, fileName.lastIndexOf('/')));
-      File tmpFile = temporaryFolder.newFile(fileNames[i]);
+      File tmpFile = temporaryFolder.newFile(fileName);
       FileOutputStream fileOutputStream = new FileOutputStream(tmpFile);
       fileOutputStream.write(fileContents[i]);
       fileOutputStream.close();
       Uri uri = Uri.fromFile(tmpFile);
-      PendingFile pendingFile = new PendingFile(uri, fileNames[i], size);
+      PendingFile pendingFile = new PendingFile(uri, fileName, size);
       pendingFiles.add(pendingFile);
     }
     FSUtils utils = new FSUtils(context, activity, pendingFiles);
-    Proto proto = ProtocolSelector.getProto(connection, utils, notifier);
+    Proto proto = ProtocolSelector.getProto(connection, utils, this.notifier);
     assertTrue(proto.sendFile());
     proto.close();
 
     builder = new BAOStreamBuilder();
     builder.addByte(MAX_PROTO);
+    builder.addByte(2);
     builder.addByte(4);
     builder.addSize(fileContents.length);
     for (int i = 0; i < fileContents.length; i++) {
@@ -456,59 +368,6 @@ public class Proto_v3Test {
   }
 
   @Test
-  public void testSendDir() throws IOException {
-    BAOStreamBuilder builder = initProto(true);
-    ByteArrayInputStream istream = builder.getStream();
-    MockConnection connection = new MockConnection(istream);
-
-    Directory root = new Directory("dir", 2, null);
-    root.children.add(new Directory("dir2", 0, root));
-    Directory dir3 = new Directory("dir3", 1, root);
-    root.children.add(dir3);
-    dir3.children.add(new Directory("sub", 0, dir3));
-    dir3.children.add(new Directory("sub2", 0, dir3));
-
-    String content = "Test";
-    String fName = "clip.txt";
-    byte[] fileData = content.getBytes(StandardCharsets.UTF_8);
-    String fPath =
-        Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS)
-                .getAbsolutePath()
-            + "/"
-            + fName;
-    File file = new File(fPath);
-    FileOutputStream stream = new FileOutputStream(file);
-    stream.write(fileData);
-    stream.close();
-
-    Uri uri = Uri.fromFile(file);
-    dir3.children.add(new RegularFile(fName, fileData.length, uri, dir3));
-
-    FSUtils utils = new FSUtils(context, activity, root);
-    Proto proto = ProtocolSelector.getProto(connection, utils, notifier);
-    assertTrue(proto.sendFile());
-    proto.close();
-
-    String[] dirNames = {"dir/dir2", "dir/dir3/sub", "dir/dir3/sub2"};
-    builder = new BAOStreamBuilder();
-    builder.addByte(MAX_PROTO);
-    builder.addByte(4);
-    builder.addSize(dirNames.length + 1);
-    for (String dirName : dirNames) {
-      builder.addString(dirName);
-      builder.addSize(-1);
-    }
-    builder.addString("dir/dir3/" + fName);
-    builder.addData(fileData);
-
-    byte[] expected = builder.getArray();
-    byte[] received = connection.getOutputBytes();
-    assertArrayEquals(expected, received);
-    //noinspection ResultOfMethodCallIgnored
-    file.delete();
-  }
-
-  @Test
   public void testCheckInfo() throws IOException {
     String info = "ClipShare";
     BAOStreamBuilder builder = initProto(true);
@@ -517,7 +376,7 @@ public class Proto_v3Test {
     MockConnection connection = new MockConnection(istream);
     Proto proto = ProtocolSelector.getProto(connection, null, null);
     assertEquals(info, proto.checkInfo());
-    assertArrayEquals(new byte[] {MAX_PROTO, 125}, connection.getOutputBytes());
+    assertArrayEquals(new byte[] {MAX_PROTO, 2, 125}, connection.getOutputBytes());
     proto.close();
   }
 

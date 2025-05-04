@@ -63,17 +63,17 @@ public class ProtocolSelectorTest {
     switch (MAX_PROTO) {
       case 1:
         {
-          protoClass = Proto_v1.class;
+          protoClass = ProtoV1.class;
           break;
         }
       case 2:
         {
-          protoClass = Proto_v2.class;
+          protoClass = ProtoV2.class;
           break;
         }
       case 3:
         {
-          protoClass = Proto_v3.class;
+          protoClass = ProtoV3.class;
           break;
         }
       default:

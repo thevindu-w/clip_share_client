@@ -138,8 +138,8 @@ public final class StatusNotifier {
   public void setProgress(long current) {
     try {
       long curTime = System.currentTimeMillis();
+      if (curTime < this.prevNotifyTime + 800 || curTime % 1000 > 200) return;
       long speed = getSpeed(current, curTime);
-      if (curTime < this.prevNotifyTime + 500) return;
       DataSize progress = new DataSize(current);
       TimeContainer timeRemaining = getRemainingTime(current, speed);
       if (progress.equals(prevProgress) && timeRemaining.equals(prevTimeRemaining)) return;
