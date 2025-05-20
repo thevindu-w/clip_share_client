@@ -1,3 +1,27 @@
-<p>Share the clipboard between your phone and desktop. Share files and screenshots securely.
-This is a lightweight, cross-platform app to share copied text, files, and screenshots between an Android phone and a desktop.</p>
-<p>This is the Android client of ClipShare. You will need the server on your desktop to connect with it. The ClipShare server is simple and lightweight. Simply run the server on your Windows or Linux machine to use the ClipShare app. You can find the server <a href='https://github.com/thevindu-w/clip_share_server'>here at Github</a>.</p>
+<p>Share the clipboard between your phone and desktop. Securely share text, files, and screenshots.
+ClipShare is a simple, lightweight, and cross-platform app for sharing copied text, files, and screenshots between an Android phone and a desktop.</p>
+<p>
+<b>Features</b>
+<ul>
+<li>Share copied text</li>
+<li>Share files</li>
+<li>Share copied images</li>
+<li>Get a screenshot of the desktop to the mobile</li>
+<li>Open the received links, files, and images from the app</li>
+<li>Re-share received files and images with other apps</li>
+<li>Scan the local network to find server devices to connect with</li>
+<li>Highly configurable</li>
+</ul>
+<b>Configuration options (of the Android app)</b>
+<ul>
+<li>Enable secure mode and add trusted devices</li>
+<li>Option to auto-send files and text</li>
+<li>Limit auto-sending only to trusted devices</li>
+<li>Option to save previously connected devices' addresses</li>
+<li>Automatically close the app if it is kept idle (Idle time duration is adjustable)</li>
+<li>Enable IPv6 network scanning</li>
+<li>Import and export the above settings to move them to another device or to backup settings</li>
+</ul>
+</p>
+<p>This is the Android client of ClipShare. You need the server program running on your desktop to connect with it. The server is available for Windows, macOS, and Linux. You can find the server <a href='https://github.com/thevindu-w/clip_share_server/releases/latest'>here on GitHub</a>.
+A desktop client for ClipShare is also available <a href='https://github.com/thevindu-w/clip_share_desktop/releases/latest'>on GitHub</a>.</p>
