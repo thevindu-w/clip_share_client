@@ -18,7 +18,7 @@
             android:text="@string/addressLbl"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="0.24"
+            android:layout_weight="0.23"
             android:id="@+id/textView"
             android:textSize="20sp"
             android:textStyle="bold"
@@ -32,12 +32,12 @@
         <EditText
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="0.48"
+            android:layout_weight="0.49"
             android:id="@+id/hostTxt"
             android:inputType="text"
             android:textSize="17sp"
-            android:layout_marginStart="4dp"
-            android:layout_marginEnd="10dp"
+            android:layout_marginStart="3dp"
+            android:layout_marginEnd="6dp"
             android:gravity="start|center_vertical"
             android:hint="@string/addressHint"
             android:importantForAutofill="no" />
@@ -45,14 +45,28 @@
         <View
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="0.02" />
+            android:layout_weight="0.01" />
+
+        <Button
+            android:id="@+id/btnHistory"
+            android:drawableEnd="@drawable/history_icon_resized"
+            android:paddingStart="3dp"
+            android:paddingEnd="7dp"
+            android:layout_width="40dp"
+            android:layout_height="match_parent"
+            android:backgroundTint="#999999" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="0.01" />
 
         <Button
             android:id="@+id/btnScanHost"
             android:text="@string/scanBtnTxt"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="0.2"
+            android:layout_weight="0.22"
             android:backgroundTint="#FF6666FF"
             app:autoSizeTextType="uniform"
             app:autoSizeMinTextSize="14sp"
@@ -64,7 +78,7 @@
         <View
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="0.05" />
+            android:layout_weight="0.03" />
     </LinearLayout>
 
     <TextView

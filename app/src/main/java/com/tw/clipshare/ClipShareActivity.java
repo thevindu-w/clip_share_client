@@ -70,6 +70,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 public class ClipShareActivity extends AppCompatActivity {
   public static final int WRITE_IMAGE = 222;
@@ -217,6 +218,8 @@ public class ClipShareActivity extends AppCompatActivity {
     btnSendFolder.setOnClickListener(view -> clkSendFolder(null));
     Button btnScanHost = findViewById(R.id.btnScanHost);
     btnScanHost.setOnClickListener(this::clkScanBtn);
+    Button btnHistory = findViewById(R.id.btnHistory);
+    btnHistory.setOnClickListener(this::clkHistoryBtn);
     openBrowserLayout = findViewById(R.id.layoutOpenBrowser);
     shareFileLayout = findViewById(R.id.layoutShareFile);
     viewFileLayout = findViewById(R.id.layoutViewFile);
@@ -626,43 +629,11 @@ public class ClipShareActivity extends AppCompatActivity {
                           Toast.makeText(context, "No servers found!", Toast.LENGTH_SHORT).show());
                   return;
                 }
-                if (serverAddresses.size() == 1) {
-                  InetAddress serverAddress = serverAddresses.get(0);
-                  runOnUiThread(() -> editAddress.setText(serverAddress.getHostAddress()));
-                  return;
-                }
-                LayoutInflater inflater =
-                    (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
-                View popupView =
-                    inflater.inflate(R.layout.popup_servers, findViewById(R.id.main_layout), false);
-                popupView
-                    .findViewById(R.id.popupLinearWrap)
-                    .setOnClickListener(v -> popupView.performClick());
-
-                final PopupWindow popupWindow =
-                    new PopupWindow(
-                        popupView,
-                        LinearLayout.LayoutParams.MATCH_PARENT,
-                        LinearLayout.LayoutParams.MATCH_PARENT,
-                        true);
-                runOnUiThread(() -> popupWindow.showAtLocation(parent, Gravity.CENTER, 0, 0));
-
-                LinearLayout popupLayout = popupView.findViewById(R.id.popupLayout);
-                if (popupLayout == null) return;
-                View popupElemView;
-                TextView txtView;
-                for (InetAddress serverAddress : serverAddresses) {
-                  popupElemView = View.inflate(this, R.layout.popup_elem, null);
-                  txtView = popupElemView.findViewById(R.id.popElemTxt);
-                  txtView.setText(serverAddress.getHostAddress());
-                  txtView.setOnClickListener(
-                      view -> {
-                        runOnUiThread(() -> editAddress.setText(((TextView) view).getText()));
-                        popupView.performClick();
-                      });
-                  popupLayout.addView(popupElemView);
-                }
-                popupView.setOnClickListener(v -> popupWindow.dismiss());
+                List<String> addresses =
+                    serverAddresses.stream()
+                        .map(InetAddress::getHostAddress)
+                        .collect(Collectors.toList());
+                showAddressList(addresses, parent);
               } catch (Exception ignored) {
               } finally {
                 ClipShareActivity.this.lastActivityTime = System.currentTimeMillis();
@@ -670,6 +641,69 @@ public class ClipShareActivity extends AppCompatActivity {
               }
             })
         .start();
+  }
+
+  private void clkHistoryBtn(View parent) {
+    startActiveTask();
+    new Thread(
+            () -> {
+              try {
+                Settings settings = Settings.getInstance();
+                List<String> serverAddresses =
+                    settings.getSavedServersList().stream()
+                        .filter(addr -> !"0.0.0.0".equals(addr))
+                        .collect(Collectors.toList());
+                if (serverAddresses.isEmpty()) {
+                  runOnUiThread(
+                      () ->
+                          Toast.makeText(context, "No saved servers!", Toast.LENGTH_SHORT).show());
+                  return;
+                }
+                showAddressList(serverAddresses, parent);
+              } catch (Exception ignored) {
+              } finally {
+                ClipShareActivity.this.lastActivityTime = System.currentTimeMillis();
+                endActiveTask();
+              }
+            })
+        .start();
+  }
+
+  private void showAddressList(List<String> addresses, View parent) {
+    if (addresses.size() == 1) {
+      String serverAddress = addresses.get(0);
+      runOnUiThread(() -> editAddress.setText(serverAddress));
+      return;
+    }
+    LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
+    View popupView =
+        inflater.inflate(R.layout.popup_servers, findViewById(R.id.main_layout), false);
+    popupView.findViewById(R.id.popupLinearWrap).setOnClickListener(v -> popupView.performClick());
+
+    final PopupWindow popupWindow =
+        new PopupWindow(
+            popupView,
+            LinearLayout.LayoutParams.MATCH_PARENT,
+            LinearLayout.LayoutParams.MATCH_PARENT,
+            true);
+    runOnUiThread(() -> popupWindow.showAtLocation(parent, Gravity.CENTER, 0, 0));
+
+    LinearLayout popupLayout = popupView.findViewById(R.id.popupLayout);
+    if (popupLayout == null) return;
+    View popupElemView;
+    TextView txtView;
+    for (String serverAddress : addresses) {
+      popupElemView = View.inflate(this, R.layout.popup_elem, null);
+      txtView = popupElemView.findViewById(R.id.popElemTxt);
+      txtView.setText(serverAddress);
+      txtView.setOnClickListener(
+          view -> {
+            runOnUiThread(() -> editAddress.setText(((TextView) view).getText()));
+            popupView.performClick();
+          });
+      popupLayout.addView(popupElemView);
+    }
+    popupView.setOnClickListener(v -> popupWindow.dismiss());
   }
 
   /**
