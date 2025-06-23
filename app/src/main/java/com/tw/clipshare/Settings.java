@@ -134,6 +134,7 @@ public class Settings implements Serializable {
       if (savedServersList != null) {
         settings.savedServersList.clear();
         settings.savedServersList.addAll(savedServersList);
+        settings.savedServersList.removeAll(List.of("0.0.0.0"));
       }
     } catch (Exception ignored) {
     }
@@ -301,6 +302,7 @@ public class Settings implements Serializable {
   public String toString(boolean includePassword) {
     HashMap<String, Object> map = new HashMap<>(19);
     try {
+      this.savedServersList.removeAll(List.of("0.0.0.0"));
       if (this.caCert != null)
         map.put("caCert", Base64.encodeToString(this.caCert, Base64.DEFAULT));
       if (this.cert != null) map.put("cert", Base64.encodeToString(this.cert, Base64.DEFAULT));
@@ -360,6 +362,7 @@ public class Settings implements Serializable {
         INSTANCE.autoCloseDelay = strSet.autoCloseDelay;
         INSTANCE.savedServersList.clear();
         INSTANCE.savedServersList.addAll(strSet.savedServersList);
+        INSTANCE.savedServersList.removeAll(List.of("0.0.0.0"));
         INSTANCE.saveServers = strSet.saveServers;
       } catch (Exception ignored) {
       }

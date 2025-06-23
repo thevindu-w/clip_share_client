@@ -160,7 +160,7 @@ public class SettingsActivity extends AppCompatActivity {
               if (uri == null) {
                 return;
               }
-              String jsonStr = settings.toString(true);
+              String jsonStr = settings.toString();
               try (OutputStream fileOutputStream = getContentResolver().openOutputStream(uri)) {
                 fileOutputStream.write(jsonStr.getBytes(StandardCharsets.UTF_8));
                 runOnUiThread(
