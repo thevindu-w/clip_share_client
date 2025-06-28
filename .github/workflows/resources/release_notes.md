@@ -8,5 +8,5 @@ There are 2 APK files included in the release assets for compatibility.
 Refer to the [README](https://github.com/thevindu-w/clip_share_client/#how-to-use) for usage information.
 <br>
 **Changes:**
-- Reduce file transfer estimated time fluctuations.
-- UI improvements.
+- Add a history button to select a server address from the saved addresses.
+- Remove the default 0.0.0.0 address from the saved servers list if present.
