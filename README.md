@@ -23,11 +23,11 @@ and a desktop.
     </tr>
     <tr>
         <td align="center">
-            <a href="https://github.com/thevindu-w/clip_share_server/releases"><img src="https://raw.githubusercontent.com/thevindu-w/clip_share_client/master/fastlane/metadata/android/en-US/images/icon.png" alt="Get it on GitHub" height="100"/></a><br>
+            <a href="https://github.com/thevindu-w/clip_share_server/releases"><img src="https://raw.githubusercontent.com/thevindu-w/clip_share_client/master/fastlane/metadata/android/en-US/images/icon.png" alt="Get it on GitHub" width="100"/></a><br>
             Download the server from <a href="https://github.com/thevindu-w/clip_share_server/releases">Releases</a>.
         </td>
         <td align="center">
-            <a href="https://apt.izzysoft.de/fdroid/index/apk/com.tw.clipshare"><img src="https://gitlab.com/IzzyOnDroid/repo/-/raw/master/assets/IzzyOnDroid.png" alt="Get it on IzzyOnDroid" height="100"/></a><br>
+            <a href="https://apt.izzysoft.de/fdroid/index/apk/com.tw.clipshare"><img src="https://gitlab.com/IzzyOnDroid/repo/-/raw/master/assets/IzzyOnDroid.png" alt="Get it on IzzyOnDroid" width="250"/></a><br>
             Download the client app
             from <a href="https://apt.izzysoft.de/fdroid/index/apk/com.tw.clipshare">apt.izzysoft.de/fdroid/index/apk/com.tw.clipshare</a>.<br>
             or from <a href="https://github.com/thevindu-w/clip_share_client/releases">GitHub Releases</a>.
@@ -52,6 +52,8 @@ app. You can find more information on running the server on Windows, macOS, or L
 <img src="https://raw.githubusercontent.com/thevindu-w/clip_share_client/master/fastlane/metadata/android/en-US/images/phoneScreenshots/2.jpg" alt="dark theme" height="500">
 &nbsp;&nbsp;&nbsp;&nbsp;
 </p>
+
+#### Get and Send operations
 
 - **Get text**: To get copied text from the server (ex: laptop) to the phone.
 
@@ -115,11 +117,19 @@ app. You can find more information on running the server on Windows, macOS, or L
 
 &emsp; Note: These options require a server version 3.x or later to work.
 
+#### Other operations
+
 - **Scan**: To scan the network to find available servers in the network.
 
   If there is any server in the network, scanning will find that. If the scan finds only one server, its address will be
   placed in the _Server_ address input area. If the scan finds many servers, a popup will appear to select any server
   out of them, and the selected address will be placed in the _Server_ address input area.
+
+- **History**: To select a previously saved server address.
+
+  The _History_ option will display the server addresses, which were saved previously, to select one as the server
+  address. If there are any saved server addresses available, a popup will appear to select any address out of them, and
+  the selected address will be placed in the _Server_ address input area.
 
 ### Settings
 
