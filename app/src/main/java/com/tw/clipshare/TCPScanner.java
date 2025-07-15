@@ -34,7 +34,7 @@ import java.net.UnknownHostException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-class SubnetScanner {
+class TCPScanner {
 
   private final byte[] addressBytes;
   private final InetAddress myAddress;
@@ -43,7 +43,7 @@ class SubnetScanner {
   private final int port;
   private volatile InetAddress serverAddress;
 
-  public SubnetScanner(InetAddress address, int port, short subLen) {
+  public TCPScanner(InetAddress address, int port, short subLen) {
     this.lock = new Object();
     this.myAddress = address;
     this.port = port;

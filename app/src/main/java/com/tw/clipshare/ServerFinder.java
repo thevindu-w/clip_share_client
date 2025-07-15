@@ -143,8 +143,8 @@ class ServerFinder implements Runnable {
                     }
                   }
                 }
-                if (!serverAddresses.isEmpty()) parent.interrupt();
                 socket.close();
+                if (!serverAddresses.isEmpty()) parent.interrupt();
               } catch (IOException | RuntimeException ignored) {
               }
             })
@@ -185,8 +185,8 @@ class ServerFinder implements Runnable {
                     }
                   }
                 }
-                if (!serverAddresses.isEmpty()) parent.interrupt();
                 socket.close();
+                if (!serverAddresses.isEmpty()) parent.interrupt();
               } catch (IOException | RuntimeException ignored) {
               }
             })
@@ -200,9 +200,10 @@ class ServerFinder implements Runnable {
         return;
       }
       List<InterfaceAddress> addresses = netIF.getInterfaceAddresses();
+      Settings settings = Settings.getInstance();
       for (InterfaceAddress intAddress : addresses) {
         InetAddress address = intAddress.getAddress();
-        if (address instanceof Inet6Address && Settings.getInstance().getScanIPv6()) {
+        if (address instanceof Inet6Address && settings.getScanIPv6()) {
           myAddresses.add(address);
         }
       }
@@ -214,10 +215,11 @@ class ServerFinder implements Runnable {
             if (broadcastAddress instanceof Inet4Address) {
               scanBroadcast((Inet4Address) broadcastAddress, (Inet4Address) address);
             }
+            if (!settings.getScanTCP()) continue;
             short subLen = intAddress.getNetworkPrefixLength();
             if (subLen <= 22) subLen = 23;
-            SubnetScanner subnetScanner = new SubnetScanner(address, port, subLen);
-            InetAddress server = subnetScanner.scan(subLen >= 24 ? 32 : 64);
+            TCPScanner TCPScanner = new TCPScanner(address, port, subLen);
+            InetAddress server = TCPScanner.scan(subLen >= 24 ? 32 : 64);
             if (server != null) {
               String addressStr = server.getHostAddress();
               if (addressStr != null) {
@@ -228,12 +230,13 @@ class ServerFinder implements Runnable {
               }
               break;
             }
-          } else if (address instanceof Inet6Address && Settings.getInstance().getScanIPv6()) {
+          } else if (address instanceof Inet6Address && settings.getScanIPv6()) {
             scanMulticast((Inet6Address) address);
           }
         } catch (RuntimeException ignored) {
         }
       }
+      if (serverAddresses.isEmpty()) Thread.sleep(3000);
     } catch (Exception ignored) {
     }
   }

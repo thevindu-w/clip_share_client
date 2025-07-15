@@ -73,6 +73,7 @@ public class SettingsActivity extends AppCompatActivity {
   private SwitchCompat autoSendFileSwitch;
   private SwitchCompat vibrateSwitch;
   private SwitchCompat scanIPv6Switch;
+  private SwitchCompat scanTCPSwitch;
   private SwitchCompat autoCloseSwitch;
   private EditText editAutoCloseDelay;
   private LinearLayout layoutAutoCloseDelay;
@@ -229,6 +230,7 @@ public class SettingsActivity extends AppCompatActivity {
                 }
                 vibrateSwitch.setChecked(settings.getVibrate());
                 scanIPv6Switch.setChecked(settings.getScanIPv6());
+                scanTCPSwitch.setChecked(settings.getScanTCP());
                 boolean autoClose = settings.getCloseIfIdle();
                 autoCloseSwitch.setChecked(autoClose);
                 editAutoCloseDelay.setText(String.valueOf(settings.getAutoCloseDelay()));
@@ -456,6 +458,7 @@ public class SettingsActivity extends AppCompatActivity {
     this.autoSendFileSwitch = findViewById(R.id.autoSendFileSwitch);
     this.vibrateSwitch = findViewById(R.id.vibrateSwitch);
     this.scanIPv6Switch = findViewById(R.id.scanIPv6Switch);
+    this.scanTCPSwitch = findViewById(R.id.scanTCPSwitch);
     this.autoCloseSwitch = findViewById(R.id.autoCloseSwitch);
     this.editAutoCloseDelay = findViewById(R.id.editAutoCloseDelay);
     this.layoutAutoCloseDelay = findViewById(R.id.layoutAutoCloseDelay);
@@ -586,6 +589,9 @@ public class SettingsActivity extends AppCompatActivity {
 
     scanIPv6Switch.setOnClickListener(view -> settings.setScanIPv6(scanIPv6Switch.isChecked()));
     scanIPv6Switch.setChecked(settings.getScanIPv6());
+
+    scanTCPSwitch.setOnClickListener(view -> settings.setScanTCP(scanTCPSwitch.isChecked()));
+    scanTCPSwitch.setChecked(settings.getScanTCP());
 
     autoCloseSwitch.setOnClickListener(
         view -> {

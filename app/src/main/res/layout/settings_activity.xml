@@ -499,6 +499,17 @@
                 android:background="@color/settingsTopic2BG"
                 android:layout_marginTop="1dp" />
 
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/scanTCPSwitch"
+                android:text="@string/tcp_scan"
+                android:padding="12dp"
+                android:textSize="20sp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:checked="false"
+                android:background="@color/settingsTopic2BG"
+                android:layout_marginTop="1dp" />
+
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

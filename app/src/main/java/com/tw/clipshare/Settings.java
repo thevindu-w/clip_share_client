@@ -57,6 +57,7 @@ public class Settings implements Serializable {
   private boolean autoSendFiles;
   private boolean vibrate;
   private boolean scanIPv6;
+  private boolean scanTCP;
   private boolean closeIfIdle;
   private int autoCloseDelay;
   private boolean saveServers;
@@ -78,6 +79,7 @@ public class Settings implements Serializable {
     this.savedServersList = new ArrayList<>(1);
     this.vibrate = true;
     this.scanIPv6 = true;
+    this.scanTCP = false;
     this.closeIfIdle = true;
     this.autoCloseDelay = 120;
     this.saveServers = true;
@@ -261,6 +263,15 @@ public class Settings implements Serializable {
     } catch (Exception ignored) {
     }
 
+    // Set scanTCP
+    try {
+      Object attributeO = map.get("scanTCP");
+      if (attributeO instanceof Boolean) {
+        settings.scanTCP = (Boolean) attributeO;
+      }
+    } catch (Exception ignored) {
+    }
+
     // Set closeIfIdle
     try {
       Object attributeO = map.get("closeIfIdle");
@@ -319,6 +330,7 @@ public class Settings implements Serializable {
       map.put("autoSendTrustedList", this.autoSendTrustedList);
       map.put("vibrate", this.vibrate);
       map.put("scanIPv6", this.scanIPv6);
+      map.put("scanTCP", this.scanTCP);
       map.put("closeIfIdle", this.closeIfIdle);
       map.put("autoCloseDelay", this.autoCloseDelay);
       map.put("savedServersList", this.savedServersList);
@@ -358,6 +370,7 @@ public class Settings implements Serializable {
         INSTANCE.autoSendTrustedList.addAll(strSet.autoSendTrustedList);
         INSTANCE.vibrate = strSet.vibrate;
         INSTANCE.scanIPv6 = strSet.scanIPv6;
+        INSTANCE.scanTCP = strSet.scanTCP;
         INSTANCE.closeIfIdle = strSet.closeIfIdle;
         INSTANCE.autoCloseDelay = strSet.autoCloseDelay;
         INSTANCE.savedServersList.clear();
@@ -456,6 +469,10 @@ public class Settings implements Serializable {
     return scanIPv6;
   }
 
+  public boolean getScanTCP() {
+    return scanTCP;
+  }
+
   public boolean getCloseIfIdle() {
     return closeIfIdle;
   }
@@ -546,6 +563,10 @@ public class Settings implements Serializable {
 
   public void setScanIPv6(boolean scanIPv6) {
     this.scanIPv6 = scanIPv6;
+  }
+
+  public void setScanTCP(boolean scanTCP) {
+    this.scanTCP = scanTCP;
   }
 
   public void setCloseIfIdle(boolean closeIfIdle) {
