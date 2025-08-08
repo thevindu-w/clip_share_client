@@ -178,6 +178,11 @@ app. You can find more information on running the server on Windows, macOS, or L
   closing. This setting is visible only when the _Close app if idle_ setting is enabled.
 - **Vibration alerts:** When this setting is enabled, the phone will give a short vibration pulse after each successful
   operation (ex: _Get Files_) as feedback to the user.
+- **IPv6 Scan:** When this setting is enabled, the [scan operation](#other-operations) will scan the network for IPv6 
+  addresses of servers in addition to IPv4 addresses.
+- **TCP Scan:** When this setting is enabled, the [scan operation](#other-operations) will scan using TCP connections in
+  addition to UDP broadcast (or multicast for IPv6) scanning. It is recommended to keep this turned off, as TCP scanning
+  is slower and more resource-intensive than UDP scanning. Enable this only if there is any issue with the UDP scanning.
 
 #### Ports
 
