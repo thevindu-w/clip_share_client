@@ -659,6 +659,7 @@ public class ClipShareActivity extends AppCompatActivity {
                           Toast.makeText(context, "No saved servers!", Toast.LENGTH_SHORT).show());
                   return;
                 }
+                serverAddresses.sort(String::compareTo);
                 showAddressList(serverAddresses, parent);
               } catch (Exception ignored) {
               } finally {
