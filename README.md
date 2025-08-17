@@ -16,23 +16,39 @@ and a desktop.
 
 ## Download
 
+### Server
+
 <table>
-    <tr>
-        <th style="text-align:center">Server</th>
-        <th style="text-align:center">Client</th>
-    </tr>
-    <tr>
-        <td align="center">
-            <a href="https://github.com/thevindu-w/clip_share_server/releases"><img src="https://raw.githubusercontent.com/thevindu-w/clip_share_client/master/fastlane/metadata/android/en-US/images/icon.png" alt="Get it on GitHub" width="100"/></a><br>
-            Download the server from <a href="https://github.com/thevindu-w/clip_share_server/releases">Releases</a>.
-        </td>
-        <td align="center">
-            <a href="https://apt.izzysoft.de/fdroid/index/apk/com.tw.clipshare"><img src="https://gitlab.com/IzzyOnDroid/repo/-/raw/master/assets/IzzyOnDroid.png" alt="Get it on IzzyOnDroid" width="250"/></a><br>
-            Download the client app
-            from <a href="https://apt.izzysoft.de/fdroid/index/apk/com.tw.clipshare">apt.izzysoft.de/fdroid/index/apk/com.tw.clipshare</a>.<br>
-            or from <a href="https://github.com/thevindu-w/clip_share_client/releases">GitHub Releases</a>.
-        </td>
-    </tr>
+<tr>
+<th style="text-align:center">Desktop</th>
+</tr>
+<tr>
+<td align="center">
+<a href="https://github.com/thevindu-w/clip_share_server/releases"><img src="https://raw.githubusercontent.com/thevindu-w/clip_share_client/master/fastlane/metadata/android/en-US/images/icon.png" alt="Get it on GitHub" width="100"/></a><br>
+Download the server from <a href="https://github.com/thevindu-w/clip_share_server/releases">GitHub Releases</a>.
+</td>
+</tr>
+</table>
+
+### Client
+
+<table>
+<tr>
+<th style="text-align:center">Android</th>
+<th style="text-align:center">Desktop</th>
+</tr>
+<tr>
+<td align="center">
+<a href="https://apt.izzysoft.de/fdroid/index/apk/com.tw.clipshare"><img src="https://gitlab.com/IzzyOnDroid/repo/-/raw/master/assets/IzzyOnDroid.png" alt="Get it on IzzyOnDroid" width="250"/></a><br>
+Download the Android client app
+from <a href="https://apt.izzysoft.de/fdroid/index/apk/com.tw.clipshare">apt.izzysoft.de/fdroid/index/apk/com.tw.clipshare</a>.<br>
+or from <a href="https://github.com/thevindu-w/clip_share_client/releases">GitHub Releases</a>.
+</td>
+<td align="center">
+<a href="https://github.com/thevindu-w/clip_share_desktop/releases"><img src="https://raw.githubusercontent.com/thevindu-w/clip_share_client/master/fastlane/metadata/android/en-US/images/icon.png" alt="Get it on GitHub" width="100"/></a><br>
+Download the desktop client from <a href="https://github.com/thevindu-w/clip_share_desktop/releases">GitHub Releases</a>.
+</td>
+</tr>
 </table>
 
 <br>
