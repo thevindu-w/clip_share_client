@@ -118,7 +118,7 @@ public class ProtoV1Test {
     MockConnection connection;
     Proto proto;
 
-    PendingFile pendingFile = new PendingFile(null, "name", 0);
+    PendingFile pendingFile = new PendingFile(null);
     LinkedList<PendingFile> files = new LinkedList<>();
     files.push(pendingFile);
     FSUtils fsUtils = new FSUtils(context, activity, files);
@@ -335,7 +335,9 @@ public class ProtoV1Test {
     fileOutputStream.write(fileContent);
     fileOutputStream.close();
     Uri uri = Uri.fromFile(tmpFile);
-    PendingFile pendingFile = new PendingFile(uri, fileName, fileContent.length);
+    PendingFile pendingFile = new PendingFile(uri);
+    pendingFile.setName(fileName);
+    pendingFile.setSize(fileContent.length);
     LinkedList<PendingFile> files = new LinkedList<>();
     files.push(pendingFile);
     FSUtils utils = new FSUtils(context, activity, files);

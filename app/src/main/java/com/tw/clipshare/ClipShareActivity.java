@@ -856,22 +856,7 @@ public class ClipShareActivity extends AppCompatActivity {
         return;
       }
       LinkedList<PendingFile> pendingFiles = new LinkedList<>();
-      for (Uri uri : uris) {
-        Cursor cursor = getContentResolver().query(uri, null, null, null, null);
-        if (cursor.getCount() <= 0) {
-          cursor.close();
-          continue;
-        }
-        cursor.moveToFirst();
-        String fileName =
-            cursor.getString(cursor.getColumnIndexOrThrow(OpenableColumns.DISPLAY_NAME));
-        String fileSizeStr = cursor.getString(cursor.getColumnIndexOrThrow(OpenableColumns.SIZE));
-        cursor.close();
-
-        long fileSize = fileSizeStr != null ? Long.parseLong(fileSizeStr) : -1;
-        PendingFile pendingFile = new PendingFile(uri, fileName, fileSize);
-        pendingFiles.add(pendingFile);
-      }
+      uris.forEach(uri -> pendingFiles.add(new PendingFile(uri)));
 
       boolean status = false;
       try {

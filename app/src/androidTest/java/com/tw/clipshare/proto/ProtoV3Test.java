@@ -121,7 +121,7 @@ public class ProtoV3Test {
     ByteArrayInputStream istream = builder.getStream();
     MockConnection connection;
     Proto proto;
-    PendingFile pendingFile = new PendingFile(null, "name", 0);
+    PendingFile pendingFile = new PendingFile(null);
     LinkedList<PendingFile> files = new LinkedList<>();
     files.push(pendingFile);
     FSUtils fsUtils = new FSUtils(context, activity, files);
@@ -425,8 +425,6 @@ public class ProtoV3Test {
     LinkedList<PendingFile> pendingFiles = new LinkedList<>();
     for (int i = 0; i < fileContents.length; i++) {
       byte[] file = fileContents[i];
-      long size = file.length;
-      if (i == 1) size = -1;
       String fileName = fileNames[i];
       if (fileName.contains("/"))
         temporaryFolder.newFolder(fileName.substring(0, fileName.lastIndexOf('/')));
@@ -435,7 +433,9 @@ public class ProtoV3Test {
       fileOutputStream.write(fileContents[i]);
       fileOutputStream.close();
       Uri uri = Uri.fromFile(tmpFile);
-      PendingFile pendingFile = new PendingFile(uri, fileNames[i], size);
+      PendingFile pendingFile = new PendingFile(uri);
+      pendingFile.setName(fileName);
+      pendingFile.setSize(file.length);
       pendingFiles.add(pendingFile);
     }
     FSUtils utils = new FSUtils(context, activity, pendingFiles);

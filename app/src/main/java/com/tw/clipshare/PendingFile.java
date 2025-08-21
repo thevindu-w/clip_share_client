@@ -26,4 +26,32 @@ package com.tw.clipshare;
 
 import android.net.Uri;
 
-public record PendingFile(Uri uri, String name, long size) {}
+public class PendingFile {
+  private final Uri uri;
+  private String name;
+  private long size;
+
+  public PendingFile(Uri uri) {
+    this.uri = uri;
+  }
+
+  public Uri uri() {
+    return this.uri;
+  }
+
+  public String getName() {
+    return this.name;
+  }
+
+  public long size() {
+    return this.size;
+  }
+
+  public void setName(String name) {
+    this.name = name;
+  }
+
+  public void setSize(long size) {
+    this.size = size;
+  }
+}

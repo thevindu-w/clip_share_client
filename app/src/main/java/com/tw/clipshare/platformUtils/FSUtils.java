@@ -25,16 +25,20 @@
 package com.tw.clipshare.platformUtils;
 
 import android.app.Activity;
+import android.content.ContentResolver;
 import android.content.Context;
+import android.database.Cursor;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
+import android.provider.OpenableColumns;
 import com.tw.clipshare.PendingFile;
 import com.tw.clipshare.platformUtils.directoryTree.DirectoryTreeNode;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.NoSuchElementException;
 import java.util.Random;
 
 /** Utility to access files */
@@ -45,6 +49,8 @@ public class FSUtils extends AndroidUtils {
   private final String id;
   private String outFilePath;
   private final LinkedList<PendingFile> pendingFiles;
+  private final LinkedList<PendingFile> loadedPendingFiles;
+  private boolean loadingCompleted;
   private final DirectoryTreeNode directoryTree;
   private DataContainer dataContainer;
 
@@ -68,6 +74,13 @@ public class FSUtils extends AndroidUtils {
       idNum++;
     } while (file.exists());
     this.id = id;
+    loadingCompleted = false;
+    if (pendingFiles != null) {
+      this.loadedPendingFiles = new LinkedList<>();
+      this.loadPendingFileInfo();
+    } else {
+      this.loadedPendingFiles = null;
+    }
   }
 
   public FSUtils(Context context, Activity activity, LinkedList<PendingFile> pendingFiles) {
@@ -248,13 +261,72 @@ public class FSUtils extends AndroidUtils {
   }
 
   public int getRemainingFileCount(boolean includeLeafDirs) {
-    if (this.pendingFiles != null) return this.pendingFiles.size();
+    if (this.pendingFiles != null) {
+      synchronized (loadedPendingFiles) {
+        return this.pendingFiles.size() + this.loadedPendingFiles.size();
+      }
+    }
     if (this.directoryTree != null) return this.directoryTree.getLeafCount(includeLeafDirs);
     return -1;
   }
 
   public int getRemainingFileCount() {
     return this.getRemainingFileCount(false);
+  }
+
+  private void loadPendingFileInfo() {
+    if (this.loadedPendingFiles == null) return;
+    ContentResolver contentResolver = activity.getContentResolver();
+    (new Thread(
+            () -> {
+              PendingFile file;
+              try {
+                while ((file = this.pendingFiles.peek()) != null) {
+                  if (file.getName() == null) {
+                    Cursor cursor = contentResolver.query(file.uri(), null, null, null, null);
+                    if (cursor.getCount() <= 0) {
+                      cursor.close();
+                      break;
+                    }
+                    cursor.moveToFirst();
+                    String fileName =
+                        cursor.getString(
+                            cursor.getColumnIndexOrThrow(OpenableColumns.DISPLAY_NAME));
+                    String fileSizeStr =
+                        cursor.getString(cursor.getColumnIndexOrThrow(OpenableColumns.SIZE));
+                    cursor.close();
+
+                    long fileSize = fileSizeStr != null ? Long.parseLong(fileSizeStr) : -1;
+                    file.setName(fileName);
+                    file.setSize(fileSize);
+                  }
+                  synchronized (loadedPendingFiles) {
+                    pendingFiles.pop();
+                    loadedPendingFiles.add(file);
+                    loadedPendingFiles.notifyAll();
+                  }
+                }
+              } catch (Exception ignored) {
+              } finally {
+                synchronized (loadedPendingFiles) {
+                  loadingCompleted = true;
+                  loadedPendingFiles.notifyAll();
+                }
+              }
+            }))
+        .start();
+  }
+
+  private PendingFile getNextFile() throws InterruptedException {
+    if (loadedPendingFiles.isEmpty()) {
+      synchronized (loadedPendingFiles) {
+        if (loadedPendingFiles.isEmpty()) {
+          if (loadingCompleted) throw new NoSuchElementException();
+          loadedPendingFiles.wait();
+        }
+      }
+    }
+    return loadedPendingFiles.pop();
   }
 
   public boolean prepareNextFile(boolean allowDirs) {
@@ -269,8 +341,8 @@ public class FSUtils extends AndroidUtils {
         return true;
       }
       if (this.pendingFiles != null) {
-        PendingFile pendingFile = this.pendingFiles.pop();
-        this.inFileName = pendingFile.name();
+        PendingFile pendingFile = this.getNextFile();
+        this.inFileName = pendingFile.getName();
         this.fileSize = pendingFile.size();
         if (pendingFile.uri() != null)
           this.inStream = activity.getContentResolver().openInputStream(pendingFile.uri());
