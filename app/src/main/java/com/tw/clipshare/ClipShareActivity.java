@@ -33,10 +33,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.database.Cursor;
 import android.net.Uri;
 import android.os.*;
-import android.provider.OpenableColumns;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Patterns;
 import android.view.*;
@@ -351,27 +349,15 @@ public class ClipShareActivity extends AppCompatActivity {
   }
 
   private DirectoryTreeNode createDirectoryTreeNode(DocumentFile documentFile, Directory parent) {
-    String name = documentFile.getName();
     if (!documentFile.isDirectory()) {
-      Uri uri = documentFile.getUri();
-      Cursor cursor = getContentResolver().query(uri, null, null, null, null);
-      if (cursor.getCount() <= 0) {
-        cursor.close();
-        return null;
-      }
-      cursor.moveToFirst();
-      String fileSizeStr = cursor.getString(cursor.getColumnIndexOrThrow(OpenableColumns.SIZE));
-      cursor.close();
-      long fileSize = fileSizeStr != null ? Long.parseLong(fileSizeStr) : -1;
-      return new RegularFile(name, fileSize, uri, parent);
+      return new RegularFile(documentFile.getUri(), parent);
     }
+    String name = documentFile.getName();
     DocumentFile[] children = documentFile.listFiles();
     Directory root = new Directory(name, children.length, parent);
     for (DocumentFile child : children) {
       DirectoryTreeNode node = createDirectoryTreeNode(child, root);
-      if (node != null) {
-        root.children.add(node);
-      }
+      root.children.add(node);
     }
     return root;
   }

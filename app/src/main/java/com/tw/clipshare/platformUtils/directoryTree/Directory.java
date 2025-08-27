@@ -54,20 +54,4 @@ public class Directory extends DirectoryTreeNode {
   public Uri getUri() {
     return null;
   }
-
-  @Override
-  public DirectoryTreeNode pop(boolean includeDirs) {
-    if (this.children.isEmpty() && includeDirs) return this;
-    for (DirectoryTreeNode child : this.children) {
-      if (child instanceof RegularFile) {
-        this.children.remove(child);
-        return child;
-      }
-      Directory childDir = (Directory) child;
-      DirectoryTreeNode node = childDir.pop(includeDirs);
-      if (childDir.children.isEmpty()) this.children.remove(child);
-      if (node != null) return node;
-    }
-    return null;
-  }
 }

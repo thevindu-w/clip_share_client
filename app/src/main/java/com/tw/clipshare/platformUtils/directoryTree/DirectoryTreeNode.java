@@ -28,7 +28,7 @@ import android.net.Uri;
 import java.util.LinkedList;
 
 public abstract class DirectoryTreeNode {
-  public final String name;
+  public String name;
   private final Directory parent;
 
   DirectoryTreeNode(String name, Directory parent) {
@@ -41,8 +41,6 @@ public abstract class DirectoryTreeNode {
   public abstract long getFileSize();
 
   public abstract Uri getUri();
-
-  public abstract DirectoryTreeNode pop(boolean includeDirs);
 
   public String getFullName() {
     LinkedList<DirectoryTreeNode> stack = new LinkedList<>();

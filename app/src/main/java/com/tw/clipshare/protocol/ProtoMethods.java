@@ -304,7 +304,7 @@ public final class ProtoMethods {
     try {
       if (sendSize(fileCnt)) return false;
       for (int fileNum = 0; fileNum < fileCnt && isRunning; fileNum++) {
-        fsUtils.prepareNextFile(version >= 3);
+        if (!fsUtils.prepareNextFile(version >= 3)) return false;
         String fileName = fsUtils.getFileName();
         if (fileName == null || fileName.isEmpty()) return false;
         long fileSize = fsUtils.getFileSize();

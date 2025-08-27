@@ -482,7 +482,10 @@ public class ProtoV3Test {
     stream.close();
 
     Uri uri = Uri.fromFile(file);
-    dir3.children.add(new RegularFile(fName, fileData.length, uri, dir3));
+    RegularFile regFile = new RegularFile(uri, dir3);
+    regFile.name = fName;
+    regFile.size = fileData.length;
+    dir3.children.add(regFile);
 
     FSUtils utils = new FSUtils(context, activity, root);
     Proto proto = ProtocolSelector.getProto(connection, utils, notifier);

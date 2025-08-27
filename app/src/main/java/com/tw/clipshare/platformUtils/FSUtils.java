@@ -34,7 +34,9 @@ import android.os.Build;
 import android.os.Environment;
 import android.provider.OpenableColumns;
 import com.tw.clipshare.PendingFile;
+import com.tw.clipshare.platformUtils.directoryTree.Directory;
 import com.tw.clipshare.platformUtils.directoryTree.DirectoryTreeNode;
+import com.tw.clipshare.platformUtils.directoryTree.RegularFile;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -50,6 +52,7 @@ public class FSUtils extends AndroidUtils {
   private String outFilePath;
   private final LinkedList<PendingFile> pendingFiles;
   private final LinkedList<PendingFile> loadedPendingFiles;
+  private final LinkedList<DirectoryTreeNode> loadedTreeNodes;
   private boolean loadingCompleted;
   private final DirectoryTreeNode directoryTree;
   private DataContainer dataContainer;
@@ -80,6 +83,12 @@ public class FSUtils extends AndroidUtils {
       this.loadPendingFileInfo();
     } else {
       this.loadedPendingFiles = null;
+    }
+    if (directoryTree != null) {
+      this.loadedTreeNodes = new LinkedList<>();
+      this.loadTreeNodeInfo();
+    } else {
+      this.loadedTreeNodes = null;
     }
   }
 
@@ -317,6 +326,59 @@ public class FSUtils extends AndroidUtils {
         .start();
   }
 
+  private void recursivelyLoad(Directory root, ContentResolver contentResolver) {
+    if (root.children.isEmpty()) {
+      synchronized (loadedTreeNodes) {
+        loadedTreeNodes.add(root);
+        loadedTreeNodes.notifyAll();
+      }
+      return;
+    }
+    for (DirectoryTreeNode node : root.children) {
+      if (node instanceof Directory dirNode) {
+        recursivelyLoad(dirNode, contentResolver);
+        continue;
+      }
+      if (node.name == null) {
+        Cursor cursor = contentResolver.query(node.getUri(), null, null, null, null);
+        if (cursor.getCount() <= 0) {
+          cursor.close();
+          break;
+        }
+        cursor.moveToFirst();
+        String fileName =
+            cursor.getString(cursor.getColumnIndexOrThrow(OpenableColumns.DISPLAY_NAME));
+        String fileSizeStr = cursor.getString(cursor.getColumnIndexOrThrow(OpenableColumns.SIZE));
+        cursor.close();
+        long fileSize = fileSizeStr != null ? Long.parseLong(fileSizeStr) : -1;
+        node.name = fileName;
+        ((RegularFile) node).size = fileSize;
+      }
+      synchronized (loadedTreeNodes) {
+        loadedTreeNodes.add(node);
+        loadedTreeNodes.notifyAll();
+      }
+    }
+  }
+
+  private void loadTreeNodeInfo() {
+    if (this.loadedTreeNodes == null) return;
+    ContentResolver contentResolver = activity.getContentResolver();
+    (new Thread(
+            () -> {
+              try {
+                recursivelyLoad((Directory) this.directoryTree, contentResolver);
+              } catch (Exception ignored) {
+              } finally {
+                synchronized (loadedTreeNodes) {
+                  loadingCompleted = true;
+                  loadedTreeNodes.notifyAll();
+                }
+              }
+            }))
+        .start();
+  }
+
   private PendingFile getNextFile() throws InterruptedException {
     if (loadedPendingFiles.isEmpty()) {
       synchronized (loadedPendingFiles) {
@@ -329,10 +391,25 @@ public class FSUtils extends AndroidUtils {
     return loadedPendingFiles.pop();
   }
 
+  private DirectoryTreeNode getNextTreeNode(boolean allowDirs) throws InterruptedException {
+    while (true) {
+      if (loadedTreeNodes.isEmpty()) {
+        synchronized (loadedTreeNodes) {
+          if (loadedTreeNodes.isEmpty()) {
+            if (loadingCompleted) throw new NoSuchElementException();
+            loadedTreeNodes.wait();
+          }
+        }
+      }
+      DirectoryTreeNode node = loadedTreeNodes.pop();
+      if (allowDirs || (node instanceof RegularFile)) return node;
+    }
+  }
+
   public boolean prepareNextFile(boolean allowDirs) {
     try {
       if (this.directoryTree != null) {
-        DirectoryTreeNode node = this.directoryTree.pop(allowDirs);
+        DirectoryTreeNode node = this.getNextTreeNode(allowDirs);
         this.inFileName = node.getFullName();
         this.fileSize = node.getFileSize();
         Uri uri = node.getUri();

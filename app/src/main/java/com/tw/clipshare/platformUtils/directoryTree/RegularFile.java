@@ -29,11 +29,10 @@ import android.net.Uri;
 public class RegularFile extends DirectoryTreeNode {
 
   public final Uri uri;
-  public final long size;
+  public long size;
 
-  public RegularFile(String name, long size, Uri uri, Directory parent) {
-    super(name, parent);
-    this.size = size;
+  public RegularFile(Uri uri, Directory parent) {
+    super(null, parent);
     this.uri = uri;
   }
 
@@ -50,10 +49,5 @@ public class RegularFile extends DirectoryTreeNode {
   @Override
   public Uri getUri() {
     return this.uri;
-  }
-
-  @Override
-  public DirectoryTreeNode pop(boolean includeDirs) {
-    return this;
   }
 }
