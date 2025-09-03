@@ -32,7 +32,6 @@ import android.app.Activity;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.net.Uri;
-import android.os.Environment;
 import androidx.core.app.NotificationCompat;
 import androidx.test.core.app.ActivityScenario;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -471,12 +470,7 @@ public class ProtoV3Test {
     String content = "Test";
     String fName = "clip.txt";
     byte[] fileData = content.getBytes(StandardCharsets.UTF_8);
-    String fPath =
-        Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS)
-                .getAbsolutePath()
-            + "/"
-            + fName;
-    File file = new File(fPath);
+    File file = temporaryFolder.newFile(fName);
     FileOutputStream stream = new FileOutputStream(file);
     stream.write(fileData);
     stream.close();
