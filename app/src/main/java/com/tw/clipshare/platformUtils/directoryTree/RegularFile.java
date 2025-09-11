@@ -36,6 +36,10 @@ public class RegularFile extends DirectoryTreeNode {
     this.uri = uri;
   }
 
+  public RegularFile(Uri uri) {
+    this(uri, null);
+  }
+
   @Override
   public int getLeafCount(boolean includeLeafDirs) {
     return 1;

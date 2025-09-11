@@ -33,7 +33,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.provider.OpenableColumns;
-import com.tw.clipshare.PendingFile;
 import com.tw.clipshare.platformUtils.directoryTree.Directory;
 import com.tw.clipshare.platformUtils.directoryTree.DirectoryTreeNode;
 import com.tw.clipshare.platformUtils.directoryTree.RegularFile;
@@ -50,8 +49,8 @@ public class FSUtils extends AndroidUtils {
   private InputStream inStream;
   private final String id;
   private String outFilePath;
-  private final LinkedList<PendingFile> pendingFiles;
-  private final LinkedList<PendingFile> loadedPendingFiles;
+  private final LinkedList<RegularFile> regularFiles;
+  private final LinkedList<RegularFile> loadedRegFiles;
   private final LinkedList<DirectoryTreeNode> loadedTreeNodes;
   private boolean loadingCompleted;
   private final DirectoryTreeNode directoryTree;
@@ -60,10 +59,10 @@ public class FSUtils extends AndroidUtils {
   private FSUtils(
       Context context,
       Activity activity,
-      LinkedList<PendingFile> pendingFiles,
+      LinkedList<RegularFile> regularFiles,
       DirectoryTreeNode directoryTree) {
     super(context, activity);
-    this.pendingFiles = pendingFiles;
+    this.regularFiles = regularFiles;
     this.directoryTree = directoryTree;
     Random rnd = new Random();
     long idNum = Math.abs(rnd.nextLong());
@@ -78,22 +77,22 @@ public class FSUtils extends AndroidUtils {
     } while (file.exists());
     this.id = id;
     loadingCompleted = false;
-    if (pendingFiles != null) {
-      this.loadedPendingFiles = new LinkedList<>();
-      this.loadPendingFileInfo();
+    if (regularFiles != null) {
+      this.loadedRegFiles = new LinkedList<>();
+      this.loadRegularFiles();
     } else {
-      this.loadedPendingFiles = null;
+      this.loadedRegFiles = null;
     }
     if (directoryTree != null) {
       this.loadedTreeNodes = new LinkedList<>();
-      this.loadTreeNodeInfo();
+      this.loadTreeNodes();
     } else {
       this.loadedTreeNodes = null;
     }
   }
 
-  public FSUtils(Context context, Activity activity, LinkedList<PendingFile> pendingFiles) {
-    this(context, activity, pendingFiles, null);
+  public FSUtils(Context context, Activity activity, LinkedList<RegularFile> regularFiles) {
+    this(context, activity, regularFiles, null);
   }
 
   public FSUtils(Context context, Activity activity, DirectoryTreeNode directoryTree) {
@@ -270,9 +269,9 @@ public class FSUtils extends AndroidUtils {
   }
 
   public int getRemainingFileCount(boolean includeLeafDirs) {
-    if (this.pendingFiles != null) {
-      synchronized (loadedPendingFiles) {
-        return this.pendingFiles.size() + this.loadedPendingFiles.size();
+    if (this.regularFiles != null) {
+      synchronized (loadedRegFiles) {
+        return this.regularFiles.size() + this.loadedRegFiles.size();
       }
     }
     if (this.directoryTree != null) return this.directoryTree.getLeafCount(includeLeafDirs);
@@ -283,47 +282,52 @@ public class FSUtils extends AndroidUtils {
     return this.getRemainingFileCount(false);
   }
 
-  private void loadPendingFileInfo() {
-    if (this.loadedPendingFiles == null) return;
-    ContentResolver contentResolver = activity.getContentResolver();
-    (new Thread(
-            () -> {
-              PendingFile file;
-              try {
-                while ((file = this.pendingFiles.peek()) != null) {
-                  if (file.getName() == null) {
-                    Cursor cursor = contentResolver.query(file.uri(), null, null, null, null);
-                    if (cursor.getCount() <= 0) {
-                      cursor.close();
-                      break;
-                    }
-                    cursor.moveToFirst();
-                    String fileName =
-                        cursor.getString(
-                            cursor.getColumnIndexOrThrow(OpenableColumns.DISPLAY_NAME));
-                    String fileSizeStr =
-                        cursor.getString(cursor.getColumnIndexOrThrow(OpenableColumns.SIZE));
-                    cursor.close();
+  private boolean loadFileInfo(RegularFile file, ContentResolver resolver) {
+    if (file.name == null) {
+      Cursor cursor = resolver.query(file.getUri(), null, null, null, null);
+      if (cursor.getCount() <= 0) {
+        cursor.close();
+        return true;
+      }
+      cursor.moveToFirst();
+      file.name = cursor.getString(cursor.getColumnIndexOrThrow(OpenableColumns.DISPLAY_NAME));
+      String sizeStr = cursor.getString(cursor.getColumnIndexOrThrow(OpenableColumns.SIZE));
+      cursor.close();
+      file.size = sizeStr != null ? Long.parseLong(sizeStr) : -1;
+    }
+    return false;
+  }
 
-                    long fileSize = fileSizeStr != null ? Long.parseLong(fileSizeStr) : -1;
-                    file.setName(fileName);
-                    file.setSize(fileSize);
-                  }
-                  synchronized (loadedPendingFiles) {
-                    pendingFiles.pop();
-                    loadedPendingFiles.add(file);
-                    loadedPendingFiles.notifyAll();
+  private void loadRegularFiles() {
+    if (this.loadedRegFiles == null) return;
+    ContentResolver contentResolver = activity.getContentResolver();
+    Thread t =
+        new Thread(
+            () -> {
+              try {
+                RegularFile file;
+                while ((file = this.regularFiles.peek()) != null) {
+                  if (loadFileInfo(file, contentResolver)) break;
+                  synchronized (loadedRegFiles) {
+                    regularFiles.pop();
+                    loadedRegFiles.add(file);
+                    loadedRegFiles.notifyAll();
                   }
                 }
               } catch (Exception ignored) {
               } finally {
-                synchronized (loadedPendingFiles) {
+                synchronized (loadedRegFiles) {
                   loadingCompleted = true;
-                  loadedPendingFiles.notifyAll();
+                  loadedRegFiles.notifyAll();
                 }
               }
-            }))
-        .start();
+            });
+    try {
+      t.setDaemon(true);
+      t.setPriority(Thread.MIN_PRIORITY);
+    } catch (Exception ignored) {
+    }
+    t.start();
   }
 
   private void recursivelyLoad(Directory root, ContentResolver contentResolver) {
@@ -339,21 +343,7 @@ public class FSUtils extends AndroidUtils {
         recursivelyLoad(dirNode, contentResolver);
         continue;
       }
-      if (node.name == null) {
-        Cursor cursor = contentResolver.query(node.getUri(), null, null, null, null);
-        if (cursor.getCount() <= 0) {
-          cursor.close();
-          break;
-        }
-        cursor.moveToFirst();
-        String fileName =
-            cursor.getString(cursor.getColumnIndexOrThrow(OpenableColumns.DISPLAY_NAME));
-        String fileSizeStr = cursor.getString(cursor.getColumnIndexOrThrow(OpenableColumns.SIZE));
-        cursor.close();
-        long fileSize = fileSizeStr != null ? Long.parseLong(fileSizeStr) : -1;
-        node.name = fileName;
-        ((RegularFile) node).size = fileSize;
-      }
+      if (loadFileInfo((RegularFile) node, contentResolver)) break;
       synchronized (loadedTreeNodes) {
         loadedTreeNodes.add(node);
         loadedTreeNodes.notifyAll();
@@ -361,10 +351,11 @@ public class FSUtils extends AndroidUtils {
     }
   }
 
-  private void loadTreeNodeInfo() {
+  private void loadTreeNodes() {
     if (this.loadedTreeNodes == null) return;
     ContentResolver contentResolver = activity.getContentResolver();
-    (new Thread(
+    Thread t =
+        new Thread(
             () -> {
               try {
                 recursivelyLoad((Directory) this.directoryTree, contentResolver);
@@ -375,20 +366,25 @@ public class FSUtils extends AndroidUtils {
                   loadedTreeNodes.notifyAll();
                 }
               }
-            }))
-        .start();
+            });
+    try {
+      t.setDaemon(true);
+      t.setPriority(Thread.MIN_PRIORITY);
+    } catch (Exception ignored) {
+    }
+    t.start();
   }
 
-  private PendingFile getNextFile() throws InterruptedException {
-    if (loadedPendingFiles.isEmpty()) {
-      synchronized (loadedPendingFiles) {
-        if (loadedPendingFiles.isEmpty()) {
+  private RegularFile getNextFile() throws InterruptedException {
+    if (loadedRegFiles.isEmpty()) {
+      synchronized (loadedRegFiles) {
+        if (loadedRegFiles.isEmpty()) {
           if (loadingCompleted) throw new NoSuchElementException();
-          loadedPendingFiles.wait();
+          loadedRegFiles.wait();
         }
       }
     }
-    return loadedPendingFiles.pop();
+    return loadedRegFiles.pop();
   }
 
   private DirectoryTreeNode getNextTreeNode(boolean allowDirs) throws InterruptedException {
@@ -415,24 +411,20 @@ public class FSUtils extends AndroidUtils {
         Uri uri = node.getUri();
         if (uri != null) this.inStream = activity.getContentResolver().openInputStream(uri);
         else this.inStream = null;
-        return true;
+        return false;
       }
-      if (this.pendingFiles != null) {
-        PendingFile pendingFile = this.getNextFile();
-        this.inFileName = pendingFile.getName();
-        this.fileSize = pendingFile.size();
-        if (pendingFile.uri() != null)
-          this.inStream = activity.getContentResolver().openInputStream(pendingFile.uri());
+      if (this.regularFiles != null) {
+        RegularFile file = this.getNextFile();
+        this.inFileName = file.name;
+        this.fileSize = file.size;
+        Uri uri = file.getUri();
+        if (uri != null) this.inStream = activity.getContentResolver().openInputStream(uri);
         else this.inStream = null;
-        return true;
+        return false;
       }
     } catch (Exception ignored) {
     }
-    return false;
-  }
-
-  public boolean prepareNextFile() {
-    return this.prepareNextFile(false);
+    return true;
   }
 
   public void setDataContainer(DataContainer dataContainer) {

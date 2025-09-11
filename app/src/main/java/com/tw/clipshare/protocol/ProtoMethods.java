@@ -98,7 +98,7 @@ public final class ProtoMethods {
 
   boolean v1_sendFile() {
     if (!(this.utils instanceof FSUtils fsUtils)) return false;
-    if (!fsUtils.prepareNextFile()) return false;
+    if (fsUtils.prepareNextFile(false)) return false;
     String fileName = fsUtils.getFileName();
     if (fileName == null || fileName.isEmpty()) {
       return false;
@@ -304,7 +304,7 @@ public final class ProtoMethods {
     try {
       if (sendSize(fileCnt)) return false;
       for (int fileNum = 0; fileNum < fileCnt && isRunning; fileNum++) {
-        if (!fsUtils.prepareNextFile(version >= 3)) return false;
+        if (fsUtils.prepareNextFile(version >= 3)) return false;
         String fileName = fsUtils.getFileName();
         if (fileName == null || fileName.isEmpty()) return false;
         long fileSize = fsUtils.getFileSize();

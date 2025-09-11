@@ -38,11 +38,11 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
 import com.tw.clipshare.ClipShareActivity;
 import com.tw.clipshare.FileService;
-import com.tw.clipshare.PendingFile;
 import com.tw.clipshare.R;
 import com.tw.clipshare.netConnection.MockConnection;
 import com.tw.clipshare.platformUtils.FSUtils;
 import com.tw.clipshare.platformUtils.StatusNotifier;
+import com.tw.clipshare.platformUtils.directoryTree.RegularFile;
 import com.tw.clipshare.protocol.Proto;
 import com.tw.clipshare.protocol.ProtocolSelector;
 import java.io.ByteArrayInputStream;
@@ -118,9 +118,9 @@ public class ProtoV1Test {
     MockConnection connection;
     Proto proto;
 
-    PendingFile pendingFile = new PendingFile(null);
-    LinkedList<PendingFile> files = new LinkedList<>();
-    files.push(pendingFile);
+    RegularFile file = new RegularFile(null);
+    LinkedList<RegularFile> files = new LinkedList<>();
+    files.push(file);
     FSUtils fsUtils = new FSUtils(context, activity, files);
 
     connection = new MockConnection(istream);
@@ -335,11 +335,11 @@ public class ProtoV1Test {
     fileOutputStream.write(fileContent);
     fileOutputStream.close();
     Uri uri = Uri.fromFile(tmpFile);
-    PendingFile pendingFile = new PendingFile(uri);
-    pendingFile.setName(fileName);
-    pendingFile.setSize(fileContent.length);
-    LinkedList<PendingFile> files = new LinkedList<>();
-    files.push(pendingFile);
+    RegularFile file = new RegularFile(uri);
+    file.name = fileName;
+    file.size = fileContent.length;
+    LinkedList<RegularFile> files = new LinkedList<>();
+    files.push(file);
     FSUtils utils = new FSUtils(context, activity, files);
     Proto proto = ProtocolSelector.getProto(connection, utils, notifier);
     assertTrue(proto.sendFile());

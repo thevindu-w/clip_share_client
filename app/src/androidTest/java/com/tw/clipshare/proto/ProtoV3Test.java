@@ -38,7 +38,6 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
 import com.tw.clipshare.ClipShareActivity;
 import com.tw.clipshare.FileService;
-import com.tw.clipshare.PendingFile;
 import com.tw.clipshare.R;
 import com.tw.clipshare.netConnection.MockConnection;
 import com.tw.clipshare.platformUtils.FSUtils;
@@ -120,9 +119,9 @@ public class ProtoV3Test {
     ByteArrayInputStream istream = builder.getStream();
     MockConnection connection;
     Proto proto;
-    PendingFile pendingFile = new PendingFile(null);
-    LinkedList<PendingFile> files = new LinkedList<>();
-    files.push(pendingFile);
+    RegularFile file = new RegularFile(null);
+    LinkedList<RegularFile> files = new LinkedList<>();
+    files.push(file);
     FSUtils fsUtils = new FSUtils(context, activity, files);
 
     connection = new MockConnection(istream);
@@ -421,7 +420,7 @@ public class ProtoV3Test {
     ByteArrayInputStream istream = builder.getStream();
     MockConnection connection = new MockConnection(istream);
 
-    LinkedList<PendingFile> pendingFiles = new LinkedList<>();
+    LinkedList<RegularFile> files = new LinkedList<>();
     for (int i = 0; i < fileContents.length; i++) {
       byte[] file = fileContents[i];
       String fileName = fileNames[i];
@@ -432,12 +431,12 @@ public class ProtoV3Test {
       fileOutputStream.write(fileContents[i]);
       fileOutputStream.close();
       Uri uri = Uri.fromFile(tmpFile);
-      PendingFile pendingFile = new PendingFile(uri);
-      pendingFile.setName(fileName);
-      pendingFile.setSize(file.length);
-      pendingFiles.add(pendingFile);
+      RegularFile regularFile = new RegularFile(uri);
+      regularFile.name = fileName;
+      regularFile.size = file.length;
+      files.add(regularFile);
     }
-    FSUtils utils = new FSUtils(context, activity, pendingFiles);
+    FSUtils utils = new FSUtils(context, activity, files);
     Proto proto = ProtocolSelector.getProto(connection, utils, notifier);
     assertTrue(proto.sendFile());
     proto.close();

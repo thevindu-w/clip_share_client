@@ -841,12 +841,12 @@ public class ClipShareActivity extends AppCompatActivity {
         }
         return;
       }
-      LinkedList<PendingFile> pendingFiles = new LinkedList<>();
-      uris.forEach(uri -> pendingFiles.add(new PendingFile(uri)));
+      LinkedList<RegularFile> files = new LinkedList<>();
+      uris.forEach(uri -> files.add(new RegularFile(uri)));
 
       boolean status = false;
       try {
-        FSUtils utils = new FSUtils(context, ClipShareActivity.this, pendingFiles);
+        FSUtils utils = new FSUtils(context, ClipShareActivity.this, files);
         if (utils.getRemainingFileCount() > 0) {
           if (handleTaskFromService(address, utils, PendingTask.SEND_FILES)) {
             status = true;
