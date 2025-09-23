@@ -278,10 +278,6 @@ public class FSUtils extends AndroidUtils {
     return -1;
   }
 
-  public int getRemainingFileCount() {
-    return this.getRemainingFileCount(false);
-  }
-
   private boolean loadFileInfo(RegularFile file, ContentResolver resolver) {
     if (file.name == null) {
       Cursor cursor = resolver.query(file.getUri(), null, null, null, null);

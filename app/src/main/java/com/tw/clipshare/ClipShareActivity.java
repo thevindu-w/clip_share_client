@@ -812,7 +812,7 @@ public class ClipShareActivity extends AppCompatActivity {
       String address = this.getServerAddress();
       if (address == null) return;
       FSUtils utils = new FSUtils(context, ClipShareActivity.this, dirTree);
-      if (utils.getRemainingFileCount() > 0) {
+      if (utils.getRemainingFileCount(true) > 0) {
         if (handleTaskFromService(address, utils, PendingTask.SEND_FILES)) {
           outputSetText(R.string.sendingFiles);
         }
@@ -847,7 +847,7 @@ public class ClipShareActivity extends AppCompatActivity {
       boolean status = false;
       try {
         FSUtils utils = new FSUtils(context, ClipShareActivity.this, files);
-        if (utils.getRemainingFileCount() > 0) {
+        if (utils.getRemainingFileCount(false) > 0) {
           if (handleTaskFromService(address, utils, PendingTask.SEND_FILES)) {
             status = true;
             outputSetText(R.string.sendingFiles);

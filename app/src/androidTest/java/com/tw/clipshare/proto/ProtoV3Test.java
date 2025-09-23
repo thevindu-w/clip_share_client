@@ -505,6 +505,30 @@ public class ProtoV3Test {
   }
 
   @Test
+  public void testSendEmptyDir() throws IOException {
+    BAOStreamBuilder builder = initProto(true);
+    ByteArrayInputStream istream = builder.getStream();
+    MockConnection connection = new MockConnection(istream);
+
+    Directory root = new Directory("empty", 0, null);
+    FSUtils utils = new FSUtils(context, activity, root);
+    Proto proto = ProtocolSelector.getProto(connection, utils, notifier);
+    assertTrue(proto.sendFile());
+    proto.close();
+
+    builder = new BAOStreamBuilder();
+    builder.addByte(MAX_PROTO);
+    builder.addByte(4);
+    builder.addSize(1);
+    builder.addString("empty");
+    builder.addSize(-1);
+
+    byte[] expected = builder.getArray();
+    byte[] received = connection.getOutputBytes();
+    assertArrayEquals(expected, received);
+  }
+
+  @Test
   public void testCheckInfo() throws IOException {
     String info = "ClipShare";
     BAOStreamBuilder builder = initProto(true);
