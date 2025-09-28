@@ -84,21 +84,13 @@ public class SettingsActivity extends AppCompatActivity {
           new ActivityResultContracts.StartActivityForResult(),
           result -> {
             if (result.getResultCode() != Activity.RESULT_OK) return;
-            Intent intent1 = result.getData();
-            if (intent1 == null) return;
             try {
-              Uri uri = intent1.getData();
-              Cursor cursor = getContentResolver().query(uri, null, null, null, null);
-              if (cursor.getCount() <= 0) {
-                cursor.close();
-                return;
-              }
-              cursor.moveToFirst();
-              String fileSizeStr =
-                  cursor.getString(cursor.getColumnIndexOrThrow(OpenableColumns.SIZE));
-              int size = Integer.parseInt(fileSizeStr);
+              Intent intent1 = result.getData();
+              Cursor cursor = getCursorFromIntentUri(intent1);
+              String sizeStr = cursor.getString(cursor.getColumnIndexOrThrow(OpenableColumns.SIZE));
+              int size = Integer.parseInt(sizeStr);
               cursor.close();
-              InputStream fileInputStream = getContentResolver().openInputStream(uri);
+              InputStream fileInputStream = getContentResolver().openInputStream(intent1.getData());
               char[] passwd = editPass.getText().toString().toCharArray();
               Settings st = Settings.getInstance();
               String cn = st.setCertPass(passwd, fileInputStream, size);
@@ -118,21 +110,14 @@ public class SettingsActivity extends AppCompatActivity {
           new ActivityResultContracts.StartActivityForResult(),
           result -> {
             if (result.getResultCode() != Activity.RESULT_OK) return;
-            Intent intent1 = result.getData();
-            if (intent1 == null) return;
             try {
-              Uri uri = intent1.getData();
-              Cursor cursor = getContentResolver().query(uri, null, null, null, null);
-              if (cursor.getCount() <= 0) {
-                cursor.close();
-                return;
-              }
-              cursor.moveToFirst();
-              String fileSizeStr =
-                  cursor.getString(cursor.getColumnIndexOrThrow(OpenableColumns.SIZE));
-              int size = Integer.parseInt(fileSizeStr);
+              Intent intent1 = result.getData();
+              Cursor cursor = getCursorFromIntentUri(intent1);
+              String sizeStr = cursor.getString(cursor.getColumnIndexOrThrow(OpenableColumns.SIZE));
+              int size = Integer.parseInt(sizeStr);
               cursor.close();
-              InputStream fileInputStream = getContentResolver().openInputStream(uri);
+              if (size > 65536) throw new RuntimeException();
+              InputStream fileInputStream = getContentResolver().openInputStream(intent1.getData());
               Settings st = Settings.getInstance();
               String CA_CN = st.setCACert(fileInputStream, size);
               if (CA_CN != null) {
@@ -150,26 +135,19 @@ public class SettingsActivity extends AppCompatActivity {
           new ActivityResultContracts.StartActivityForResult(),
           result -> {
             try {
-              if (result.getResultCode() != Activity.RESULT_OK) {
-                return;
-              }
+              if (result.getResultCode() != Activity.RESULT_OK) throw new RuntimeException();
               Intent intent1 = result.getData();
-              if (intent1 == null) {
-                return;
-              }
+              if (intent1 == null) throw new RuntimeException();
               Uri uri = intent1.getData();
-              if (uri == null) {
-                return;
-              }
+              if (uri == null) throw new RuntimeException();
               String jsonStr = settings.toString();
               try (OutputStream fileOutputStream = getContentResolver().openOutputStream(uri)) {
                 fileOutputStream.write(jsonStr.getBytes(StandardCharsets.UTF_8));
-                runOnUiThread(
-                    () ->
-                        Toast.makeText(
-                                SettingsActivity.this, "Exported settings", Toast.LENGTH_SHORT)
-                            .show());
               }
+              runOnUiThread(
+                  () ->
+                      Toast.makeText(SettingsActivity.this, "Exported settings", Toast.LENGTH_SHORT)
+                          .show());
             } catch (Exception ignored) {
               runOnUiThread(
                   () ->
@@ -182,30 +160,16 @@ public class SettingsActivity extends AppCompatActivity {
           new ActivityResultContracts.StartActivityForResult(),
           result -> {
             try {
-              if (result.getResultCode() != Activity.RESULT_OK) {
-                return;
-              }
+              if (result.getResultCode() != Activity.RESULT_OK) throw new RuntimeException();
               Intent intent1 = result.getData();
-              if (intent1 == null) {
-                return;
-              }
-              Uri uri = intent1.getData();
-              if (uri == null) {
-                return;
-              }
-              Cursor cursor = getContentResolver().query(uri, null, null, null, null);
-              if (cursor.getCount() <= 0) {
-                cursor.close();
-                return;
-              }
-              cursor.moveToFirst();
-              String fileSizeStr =
-                  cursor.getString(cursor.getColumnIndexOrThrow(OpenableColumns.SIZE));
-              int size = Integer.parseInt(fileSizeStr);
+              Cursor cursor = getCursorFromIntentUri(intent1);
+              String sizeStr = cursor.getString(cursor.getColumnIndexOrThrow(OpenableColumns.SIZE));
+              int size = Integer.parseInt(sizeStr);
               cursor.close();
-              try (InputStream fileInputStream = getContentResolver().openInputStream(uri)) {
+              if (size > 262144) throw new RuntimeException();
+              try (InputStream stream = getContentResolver().openInputStream(intent1.getData())) {
                 byte[] data = new byte[size];
-                if (fileInputStream.read(data) < size) return;
+                if (stream.read(data) < size) throw new RuntimeException();
                 String jsonStr = new String(data, StandardCharsets.UTF_8);
                 Settings.loadInstance(jsonStr);
                 editPort.setText(String.valueOf(settings.getPort()));
@@ -234,23 +198,18 @@ public class SettingsActivity extends AppCompatActivity {
                 boolean autoClose = settings.getCloseIfIdle();
                 autoCloseSwitch.setChecked(autoClose);
                 editAutoCloseDelay.setText(String.valueOf(settings.getAutoCloseDelay()));
-                if (autoClose) {
-                  layoutAutoCloseDelay.setVisibility(View.VISIBLE);
-                } else {
-                  layoutAutoCloseDelay.setVisibility(View.GONE);
-                }
+                layoutAutoCloseDelay.setVisibility(autoClose ? View.VISIBLE : View.GONE);
                 saveAddressesSwitch.setChecked(settings.getSaveServers());
                 List<String> savedServers = settings.getSavedServersList();
                 savedServersList.removeAllViews();
                 for (String server : savedServers) {
                   addRowToSavedServersList(false, server);
                 }
-                runOnUiThread(
-                    () ->
-                        Toast.makeText(
-                                SettingsActivity.this, "Imported settings", Toast.LENGTH_SHORT)
-                            .show());
               }
+              runOnUiThread(
+                  () ->
+                      Toast.makeText(SettingsActivity.this, "Imported settings", Toast.LENGTH_SHORT)
+                          .show());
             } catch (Exception ignored) {
               runOnUiThread(
                   () ->
@@ -258,6 +217,19 @@ public class SettingsActivity extends AppCompatActivity {
                           .show());
             }
           });
+
+  private Cursor getCursorFromIntentUri(Intent intent) {
+    if (intent == null) throw new RuntimeException();
+    Uri uri = intent.getData();
+    if (uri == null) throw new RuntimeException();
+    Cursor cursor = getContentResolver().query(uri, null, null, null, null);
+    if (cursor.getCount() <= 0) {
+      cursor.close();
+      throw new RuntimeException();
+    }
+    cursor.moveToFirst();
+    return cursor;
+  }
 
   private void addRowToTrustList(boolean addToList, String name) {
     try {
