@@ -249,8 +249,8 @@ public class ClipShareActivity extends AppCompatActivity {
     }
     try {
       Settings settings = Settings.getInstance();
-      if (settings != null && settings.getCloseIfIdle())
-        closeIfIdle(settings.getAutoCloseDelay() * 1000);
+      if (settings.getCloseIfIdle()) closeIfIdle(settings.getAutoCloseDelay() * 1000);
+      clkScanBtn(btnScanHost);
     } catch (Exception ignored) {
     }
   }
