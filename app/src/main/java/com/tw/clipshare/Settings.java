@@ -58,6 +58,7 @@ public class Settings implements Serializable {
   private boolean vibrate;
   private boolean scanIPv6;
   private boolean scanTCP;
+  private boolean autoScan;
   private boolean closeIfIdle;
   private int autoCloseDelay;
   private boolean saveServers;
@@ -80,6 +81,7 @@ public class Settings implements Serializable {
     this.vibrate = true;
     this.scanIPv6 = true;
     this.scanTCP = false;
+    this.autoScan = false;
     this.closeIfIdle = true;
     this.autoCloseDelay = 120;
     this.saveServers = true;
@@ -272,6 +274,15 @@ public class Settings implements Serializable {
     } catch (Exception ignored) {
     }
 
+    // Set autoScan
+    try {
+      Object attributeO = map.get("autoScan");
+      if (attributeO instanceof Boolean) {
+        settings.autoScan = (Boolean) attributeO;
+      }
+    } catch (Exception ignored) {
+    }
+
     // Set closeIfIdle
     try {
       Object attributeO = map.get("closeIfIdle");
@@ -331,6 +342,7 @@ public class Settings implements Serializable {
       map.put("vibrate", this.vibrate);
       map.put("scanIPv6", this.scanIPv6);
       map.put("scanTCP", this.scanTCP);
+      map.put("autoScan", this.autoScan);
       map.put("closeIfIdle", this.closeIfIdle);
       map.put("autoCloseDelay", this.autoCloseDelay);
       map.put("savedServersList", this.savedServersList);
@@ -371,6 +383,7 @@ public class Settings implements Serializable {
         INSTANCE.vibrate = strSet.vibrate;
         INSTANCE.scanIPv6 = strSet.scanIPv6;
         INSTANCE.scanTCP = strSet.scanTCP;
+        INSTANCE.autoScan = strSet.autoScan;
         INSTANCE.closeIfIdle = strSet.closeIfIdle;
         INSTANCE.autoCloseDelay = strSet.autoCloseDelay;
         INSTANCE.savedServersList.clear();
@@ -473,6 +486,10 @@ public class Settings implements Serializable {
     return scanTCP;
   }
 
+  public boolean getAutoScan() {
+    return autoScan;
+  }
+
   public boolean getCloseIfIdle() {
     return closeIfIdle;
   }
@@ -567,6 +584,10 @@ public class Settings implements Serializable {
 
   public void setScanTCP(boolean scanTCP) {
     this.scanTCP = scanTCP;
+  }
+
+  public void setAutoScan(boolean autoScan) {
+    this.autoScan = autoScan;
   }
 
   public void setCloseIfIdle(boolean closeIfIdle) {

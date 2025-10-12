@@ -250,7 +250,7 @@ public class ClipShareActivity extends AppCompatActivity {
     try {
       Settings settings = Settings.getInstance();
       if (settings.getCloseIfIdle()) closeIfIdle(settings.getAutoCloseDelay() * 1000);
-      clkScanBtn(btnScanHost);
+      if (settings.getAutoScan()) clkScanBtn(btnScanHost);
     } catch (Exception ignored) {
     }
   }
