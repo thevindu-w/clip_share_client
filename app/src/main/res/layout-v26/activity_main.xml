@@ -49,6 +49,7 @@
         <Button
             android:id="@+id/btnHistory"
             android:drawableEnd="@drawable/history_icon_resized"
+            android:tooltipText="@string/tt_history"
             android:paddingStart="3dp"
             android:paddingEnd="7dp"
             android:layout_width="40dp"
@@ -63,6 +64,7 @@
         <Button
             android:id="@+id/btnScanHost"
             android:text="@string/scanBtnTxt"
+            android:tooltipText="@string/tt_scan"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="0.22"
@@ -244,6 +246,7 @@
         <Button
             android:id="@+id/btnSendTxt"
             android:text="@string/btnTxt"
+            android:tooltipText="@string/tt_send_text"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="0.23"
@@ -263,6 +266,7 @@
         <Button
             android:id="@+id/btnSendFolder"
             android:text="@string/btnFolderTxt"
+            android:tooltipText="@string/tt_send_dir"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="0.23"
@@ -341,6 +345,7 @@
         <Button
             android:id="@+id/btnGetTxt"
             android:text="@string/btnTxt"
+            android:tooltipText="@string/tt_get_text"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="0.23"
@@ -379,6 +384,7 @@
         <Button
             android:id="@+id/btnGetFile"
             android:text="@string/btnFileTxt"
+            android:tooltipText="@string/tt_get_file"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="0.23"

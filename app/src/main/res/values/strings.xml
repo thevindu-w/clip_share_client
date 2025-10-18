@@ -27,16 +27,16 @@
     <string name="add" translatable="false">Add</string>
     <string name="trusted_servers" translatable="false">Trusted servers</string>
     <string name="saved_servers" translatable="false">Saved servers</string>
-    <string name="auto_send_trusted_servers" translatable="false">Auto send to</string>
+    <string name="auto_send_trusted_servers" translatable="false">Auto-send to</string>
     <string name="enter_server_name" translatable="false">Enter server name</string>
     <string name="password" translatable="false">Password :</string>
     <string name="client_certificate" translatable="false">Client Certificate</string>
     <string name="name" translatable="false">Name :</string>
     <string name="browse" translatable="false">Browse</string>
     <string name="ca_certificate" translatable="false">CA Certificate</string>
-    <string name="auto_send" translatable="false">Auto send</string>
-    <string name="auto_send_text" translatable="false">Auto send text</string>
-    <string name="auto_send_file" translatable="false">Auto send files</string>
+    <string name="auto_send" translatable="false">Auto-send</string>
+    <string name="auto_send_text" translatable="false">Auto-send text</string>
+    <string name="auto_send_file" translatable="false">Auto-send files</string>
     <string name="sendingFiles" translatable="false">Sending files\n</string>
     <string name="tunnel" translatable="false">Tunnel</string>
     <string name="textSelected" translatable="false">Text is selected. Press the Send button.\nEnable auto-send text in
@@ -64,4 +64,10 @@
     <string name="get">Get</string>
     <string name="openFile">Open File</string>
     <string name="auto_scan">Auto-scan at start</string>
+    <string name="tt_history">Address history</string>
+    <string name="tt_scan">Scan network</string>
+    <string name="tt_send_text">Send copied text</string>
+    <string name="tt_send_dir">Send folder</string>
+    <string name="tt_get_text">Get copied text</string>
+    <string name="tt_get_file">Get copied files</string>
 </resources>
