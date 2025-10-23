@@ -7,6 +7,8 @@ There are 2 APK files included in the release assets for compatibility.
 
 Refer to the [README](https://github.com/thevindu-w/clip_share_client/#how-to-use) for usage information.<br>
 **Changes:**
-- Reduce the initial delay when sharing many files.
-- Sort the addresses shown with the history button.
-- Code quality improvements.
+- Fix Send Folder not sending empty folders.
+- Automatically scan for servers at application start.
+- Enable/disable the auto-scan feature from settings.
+- Android material and other library version upgrades.
+- Other UI and functionality improvements.
