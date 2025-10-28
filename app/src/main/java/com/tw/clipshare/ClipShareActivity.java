@@ -811,7 +811,7 @@ public class ClipShareActivity extends AppCompatActivity {
       outputReset();
       String address = this.getServerAddress();
       if (address == null) return;
-      FSUtils utils = new FSUtils(context, ClipShareActivity.this, dirTree);
+      FSUtils utils = new FSUtils(context, dirTree);
       if (utils.getRemainingFileCount(true) > 0) {
         if (handleTaskFromService(address, utils, PendingTask.SEND_FILES)) {
           outputSetText(R.string.sendingFiles);
@@ -846,7 +846,7 @@ public class ClipShareActivity extends AppCompatActivity {
 
       boolean status = false;
       try {
-        FSUtils utils = new FSUtils(context, ClipShareActivity.this, files);
+        FSUtils utils = new FSUtils(context, files);
         if (utils.getRemainingFileCount(false) > 0) {
           if (handleTaskFromService(address, utils, PendingTask.SEND_FILES)) {
             status = true;
@@ -985,7 +985,7 @@ public class ClipShareActivity extends AppCompatActivity {
       Runnable getImg =
           () -> {
             try {
-              FSUtils utils = new FSUtils(context, ClipShareActivity.this);
+              FSUtils utils = new FSUtils(context);
               Proto proto = getProtoWrapper(address, utils);
               if (proto == null) return;
               if (method != GET_IMAGE && !(proto instanceof ProtoV3)) {
@@ -1040,7 +1040,7 @@ public class ClipShareActivity extends AppCompatActivity {
       Runnable getFile =
           () -> {
             try {
-              FSUtils utils = new FSUtils(context, ClipShareActivity.this);
+              FSUtils utils = new FSUtils(context);
               if (handleTaskFromService(address, utils, PendingTask.GET_FILES)) {
                 outputAppend("Getting files\n");
               }

@@ -122,7 +122,7 @@ public class ProtoV3Test {
     RegularFile file = new RegularFile(null);
     LinkedList<RegularFile> files = new LinkedList<>();
     files.push(file);
-    FSUtils fsUtils = new FSUtils(context, activity, files);
+    FSUtils fsUtils = new FSUtils(context, files);
 
     connection = new MockConnection(istream);
     proto = ProtocolSelector.getProto(connection, null, null);
@@ -274,7 +274,7 @@ public class ProtoV3Test {
     builder.addData(png);
     ByteArrayInputStream istream = builder.getStream();
     MockConnection connection = new MockConnection(istream);
-    FSUtils utils = new FSUtils(context, activity);
+    FSUtils utils = new FSUtils(context);
     Proto proto = ProtocolSelector.getProto(connection, utils, notifier);
     assertTrue(proto.getImage());
     byte[] receivedBytes = connection.getOutputBytes();
@@ -295,7 +295,7 @@ public class ProtoV3Test {
     builder.addData(png);
     ByteArrayInputStream istream = builder.getStream();
     MockConnection connection = new MockConnection(istream);
-    FSUtils utils = new FSUtils(context, activity);
+    FSUtils utils = new FSUtils(context);
     Proto proto = ProtocolSelector.getProto(connection, utils, notifier);
     if (!(proto instanceof ProtoV3)) fail();
     ProtoV3 protoV3 = (ProtoV3) proto;
@@ -320,7 +320,7 @@ public class ProtoV3Test {
     builder.addData(png);
     ByteArrayInputStream istream = builder.getStream();
     MockConnection connection = new MockConnection(istream);
-    FSUtils utils = new FSUtils(context, activity);
+    FSUtils utils = new FSUtils(context);
     Proto proto = ProtocolSelector.getProto(connection, utils, notifier);
     if (!(proto instanceof ProtoV3)) fail();
     ProtoV3 protoV3 = (ProtoV3) proto;
@@ -344,7 +344,7 @@ public class ProtoV3Test {
     builder.addByte(2);
     ByteArrayInputStream istream = builder.getStream();
     MockConnection connection = new MockConnection(istream);
-    FSUtils utils = new FSUtils(context, activity);
+    FSUtils utils = new FSUtils(context);
     Proto proto = ProtocolSelector.getProto(connection, utils, notifier);
     if (!(proto instanceof ProtoV3)) fail();
     ProtoV3 protoV3 = (ProtoV3) proto;
@@ -391,7 +391,7 @@ public class ProtoV3Test {
     }
     ByteArrayInputStream istream = builder.getStream();
     MockConnection connection = new MockConnection(istream);
-    FSUtils utils = new FSUtils(context, activity);
+    FSUtils utils = new FSUtils(context);
     Proto proto = ProtocolSelector.getProto(connection, utils, notifier);
     assertTrue(proto.getFile());
     proto.close();
@@ -403,7 +403,7 @@ public class ProtoV3Test {
     builder.addByte(2);
     ByteArrayInputStream istream = builder.getStream();
     MockConnection connection = new MockConnection(istream);
-    FSUtils utils = new FSUtils(context, activity);
+    FSUtils utils = new FSUtils(context);
     Proto proto = ProtocolSelector.getProto(connection, utils, notifier);
     assertFalse(proto.getFile());
     proto.close();
@@ -436,7 +436,7 @@ public class ProtoV3Test {
       regularFile.size = file.length;
       files.add(regularFile);
     }
-    FSUtils utils = new FSUtils(context, activity, files);
+    FSUtils utils = new FSUtils(context, files);
     Proto proto = ProtocolSelector.getProto(connection, utils, notifier);
     assertTrue(proto.sendFile());
     proto.close();
@@ -480,7 +480,7 @@ public class ProtoV3Test {
     regFile.size = fileData.length;
     dir3.children.add(regFile);
 
-    FSUtils utils = new FSUtils(context, activity, root);
+    FSUtils utils = new FSUtils(context, root);
     Proto proto = ProtocolSelector.getProto(connection, utils, notifier);
     assertTrue(proto.sendFile());
     proto.close();
@@ -511,7 +511,7 @@ public class ProtoV3Test {
     MockConnection connection = new MockConnection(istream);
 
     Directory root = new Directory("empty", 0, null);
-    FSUtils utils = new FSUtils(context, activity, root);
+    FSUtils utils = new FSUtils(context, root);
     Proto proto = ProtocolSelector.getProto(connection, utils, notifier);
     assertTrue(proto.sendFile());
     proto.close();

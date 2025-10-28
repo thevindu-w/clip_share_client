@@ -24,7 +24,6 @@
 
 package com.tw.clipshare.platformUtils;
 
-import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.database.Cursor;
@@ -57,11 +56,8 @@ public class FSUtils extends AndroidUtils {
   private DataContainer dataContainer;
 
   private FSUtils(
-      Context context,
-      Activity activity,
-      LinkedList<RegularFile> regularFiles,
-      DirectoryTreeNode directoryTree) {
-    super(context, activity);
+      Context context, LinkedList<RegularFile> regularFiles, DirectoryTreeNode directoryTree) {
+    super(context, null);
     this.regularFiles = regularFiles;
     this.directoryTree = directoryTree;
     Random rnd = new Random();
@@ -91,16 +87,16 @@ public class FSUtils extends AndroidUtils {
     }
   }
 
-  public FSUtils(Context context, Activity activity, LinkedList<RegularFile> regularFiles) {
-    this(context, activity, regularFiles, null);
+  public FSUtils(Context context, LinkedList<RegularFile> regularFiles) {
+    this(context, regularFiles, null);
   }
 
-  public FSUtils(Context context, Activity activity, DirectoryTreeNode directoryTree) {
-    this(context, activity, null, directoryTree);
+  public FSUtils(Context context, DirectoryTreeNode directoryTree) {
+    this(context, null, directoryTree);
   }
 
-  public FSUtils(Context context, Activity activity) {
-    this(context, activity, null, null);
+  public FSUtils(Context context) {
+    this(context, null, null);
   }
 
   private String getDocumentDir() {
@@ -235,7 +231,7 @@ public class FSUtils extends AndroidUtils {
   }
 
   public void scanMediaFile(String filePath) {
-    if (this.activity == null) return;
+    if (this.context == null) return;
     int dotIndex = filePath.lastIndexOf('.');
     if (dotIndex <= 0) return;
     String extension = filePath.substring(dotIndex + 1);
@@ -245,8 +241,7 @@ public class FSUtils extends AndroidUtils {
     };
     for (String mediaExtension : mediaExtensions) {
       if (mediaExtension.equalsIgnoreCase(extension)) {
-        MediaScannerConnection.scanFile(
-            this.activity.getApplicationContext(), new String[] {filePath}, null, null);
+        MediaScannerConnection.scanFile(this.context, new String[] {filePath}, null, null);
         break;
       }
     }
@@ -296,7 +291,7 @@ public class FSUtils extends AndroidUtils {
 
   private void loadRegularFiles() {
     if (this.loadedRegFiles == null) return;
-    ContentResolver contentResolver = activity.getContentResolver();
+    ContentResolver contentResolver = context.getContentResolver();
     Thread t =
         new Thread(
             () -> {
@@ -349,7 +344,7 @@ public class FSUtils extends AndroidUtils {
 
   private void loadTreeNodes() {
     if (this.loadedTreeNodes == null) return;
-    ContentResolver contentResolver = activity.getContentResolver();
+    ContentResolver contentResolver = context.getContentResolver();
     Thread t =
         new Thread(
             () -> {
@@ -405,7 +400,7 @@ public class FSUtils extends AndroidUtils {
         this.inFileName = node.getFullName();
         this.fileSize = node.getFileSize();
         Uri uri = node.getUri();
-        if (uri != null) this.inStream = activity.getContentResolver().openInputStream(uri);
+        if (uri != null) this.inStream = context.getContentResolver().openInputStream(uri);
         else this.inStream = null;
         return false;
       }
@@ -414,7 +409,7 @@ public class FSUtils extends AndroidUtils {
         this.inFileName = file.name;
         this.fileSize = file.size;
         Uri uri = file.getUri();
-        if (uri != null) this.inStream = activity.getContentResolver().openInputStream(uri);
+        if (uri != null) this.inStream = context.getContentResolver().openInputStream(uri);
         else this.inStream = null;
         return false;
       }

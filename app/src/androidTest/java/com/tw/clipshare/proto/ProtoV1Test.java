@@ -121,7 +121,7 @@ public class ProtoV1Test {
     RegularFile file = new RegularFile(null);
     LinkedList<RegularFile> files = new LinkedList<>();
     files.push(file);
-    FSUtils fsUtils = new FSUtils(context, activity, files);
+    FSUtils fsUtils = new FSUtils(context, files);
 
     connection = new MockConnection(istream);
     proto = ProtocolSelector.getProto(connection, null, null);
@@ -274,7 +274,7 @@ public class ProtoV1Test {
     builder.addData(png);
     ByteArrayInputStream istream = builder.getStream();
     MockConnection connection = new MockConnection(istream);
-    FSUtils utils = new FSUtils(context, activity);
+    FSUtils utils = new FSUtils(context);
     Proto proto = ProtocolSelector.getProto(connection, utils, null);
     assertTrue(proto.getImage());
     proto.close();
@@ -304,7 +304,7 @@ public class ProtoV1Test {
     }
     ByteArrayInputStream istream = builder.getStream();
     MockConnection connection = new MockConnection(istream);
-    FSUtils utils = new FSUtils(context, activity);
+    FSUtils utils = new FSUtils(context);
     Proto proto = ProtocolSelector.getProto(connection, utils, notifier);
     assertTrue(proto.getFile());
     proto.close();
@@ -316,7 +316,7 @@ public class ProtoV1Test {
     builder.addByte(2);
     ByteArrayInputStream istream = builder.getStream();
     MockConnection connection = new MockConnection(istream);
-    FSUtils utils = new FSUtils(context, activity);
+    FSUtils utils = new FSUtils(context);
     Proto proto = ProtocolSelector.getProto(connection, utils, notifier);
     assertFalse(proto.getFile());
     proto.close();
@@ -340,7 +340,7 @@ public class ProtoV1Test {
     file.size = fileContent.length;
     LinkedList<RegularFile> files = new LinkedList<>();
     files.push(file);
-    FSUtils utils = new FSUtils(context, activity, files);
+    FSUtils utils = new FSUtils(context, files);
     Proto proto = ProtocolSelector.getProto(connection, utils, notifier);
     assertTrue(proto.sendFile());
     proto.close();

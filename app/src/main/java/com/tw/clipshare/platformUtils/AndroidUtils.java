@@ -39,7 +39,7 @@ public class AndroidUtils {
   private static long lastToastTime = 0;
 
   protected final Context context;
-  protected final Activity activity;
+  private final Activity activity;
 
   public AndroidUtils(Context context, Activity activity) {
     this.context = context;
