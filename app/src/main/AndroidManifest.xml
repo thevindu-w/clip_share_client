@@ -17,11 +17,11 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.ClipShare"
         android:testOnly="false"
         android:requestLegacyExternalStorage="true">
         <activity
             android:name="com.tw.clipshare.ClipShareActivity"
+            android:theme="@style/Theme.ClipShare"
             android:launchMode="singleTask"
             android:exported="true">
             <intent-filter>
@@ -41,13 +41,24 @@
         </activity>
         <activity
             android:name="com.tw.clipshare.SettingsActivity"
+            android:theme="@style/Theme.ClipShare"
             android:label="Settings" />
+        <activity
+            android:name="com.tw.clipshare.InvisibleActivity"
+            android:label="Overlay"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar.Fullscreen"
+            android:configChanges="orientation|keyboardHidden" />
 
         <service
             android:name="com.tw.clipshare.FileService"
             android:foregroundServiceType="dataSync"
             android:exported="false" />
         <receiver android:name="com.tw.clipshare.FileService$StopEventReceiver" />
+        <service
+            android:name="com.tw.clipshare.BackgroundService"
+            android:foregroundServiceType="dataSync"
+            android:exported="false" />
+        <receiver android:name="com.tw.clipshare.BackgroundService$EventReceiver" />
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.provider"

@@ -24,7 +24,17 @@
 
 package com.tw.clipshare;
 
+import androidx.annotation.NonNull;
+import com.tw.clipshare.netConnection.PlainConnection;
+import com.tw.clipshare.netConnection.SecureConnection;
+import com.tw.clipshare.netConnection.ServerConnection;
+import com.tw.clipshare.platformUtils.AndroidUtils;
+import com.tw.clipshare.protocol.Proto;
+import com.tw.clipshare.protocol.ProtocolSelector;
+import java.io.InputStream;
 import java.net.Inet6Address;
+import java.net.InetAddress;
+import java.net.ProtocolException;
 
 public class Utils {
   public static final byte PROTOCOL_SUPPORTED = 1;
@@ -42,6 +52,54 @@ public class Utils {
     } catch (Exception ignored) {
     }
     return false;
+  }
+
+  /** Opens a ServerConnection. Returns null on error. */
+  private static ServerConnection getServerConnection(@NonNull String addressStr) {
+    int retries = 2;
+    do {
+      try {
+        Settings settings = Settings.getInstance();
+        if (settings.getSecure()) {
+          InputStream caCertIn = settings.getCACertInputStream();
+          InputStream clientCertKeyIn = settings.getCertInputStream();
+          char[] clientPass = settings.getPasswd();
+          if (clientCertKeyIn == null || clientPass == null) {
+            return null;
+          }
+          String[] acceptedServers = settings.getTrustedList().toArray(new String[0]);
+          return new SecureConnection(
+              InetAddress.getByName(addressStr),
+              settings.getPortSecure(),
+              caCertIn,
+              clientCertKeyIn,
+              clientPass,
+              acceptedServers);
+        } else {
+          return new PlainConnection(InetAddress.getByName(addressStr), settings.getPort());
+        }
+      } catch (Exception ignored) {
+      }
+    } while (retries-- > 0);
+    return null;
+  }
+
+  public static Proto getProtoWrapper(@NonNull String address, AndroidUtils utils)
+      throws ProtocolException {
+    int retries = 1;
+    do {
+      try {
+        ServerConnection connection = getServerConnection(address);
+        if (connection == null) continue;
+        Proto proto = ProtocolSelector.getProto(connection, utils, null);
+        if (proto != null) return proto;
+        connection.close();
+      } catch (ProtocolException ex) {
+        throw ex;
+      } catch (Exception ignored) {
+      }
+    } while (retries-- > 0);
+    return null;
   }
 
   private Utils() {}

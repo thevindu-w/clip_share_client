@@ -47,6 +47,7 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.IdRes;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SwitchCompat;
+import androidx.core.content.ContextCompat;
 import com.tw.clipshare.netConnection.SecureConnection;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -694,6 +695,16 @@ public class SettingsActivity extends AppCompatActivity {
             String[] mimeTypes = {"application/json", "application/octet-stream"};
             intent.putExtra(Intent.EXTRA_MIME_TYPES, mimeTypes);
             importActivityLauncher.launch(intent);
+          } catch (Exception ignored) {
+          }
+        });
+
+    Button startServiceBtn = findViewById(R.id.btnStartService);
+    startServiceBtn.setOnClickListener(
+        view -> {
+          try {
+            Intent bgIntent = new Intent(this, BackgroundService.class);
+            ContextCompat.startForegroundService(getApplicationContext(), bgIntent);
           } catch (Exception ignored) {
           }
         });

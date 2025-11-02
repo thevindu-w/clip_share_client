@@ -49,20 +49,12 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 import androidx.documentfile.provider.DocumentFile;
-import com.tw.clipshare.netConnection.*;
-import com.tw.clipshare.platformUtils.AndroidUtils;
-import com.tw.clipshare.platformUtils.DataContainer;
-import com.tw.clipshare.platformUtils.FSUtils;
-import com.tw.clipshare.platformUtils.directoryTree.Directory;
-import com.tw.clipshare.platformUtils.directoryTree.DirectoryTreeNode;
-import com.tw.clipshare.platformUtils.directoryTree.RegularFile;
+import com.tw.clipshare.platformUtils.*;
+import com.tw.clipshare.platformUtils.directoryTree.*;
 import com.tw.clipshare.protocol.Proto;
 import com.tw.clipshare.protocol.ProtoV3;
-import com.tw.clipshare.protocol.ProtocolSelector;
 import java.io.File;
-import java.io.InputStream;
 import java.net.InetAddress;
-import java.net.ProtocolException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -80,6 +72,7 @@ public class ClipShareActivity extends AppCompatActivity {
   private static final byte GET_IMAGE = 5;
   private static final byte GET_COPIED_IMAGE = 6;
   private static final byte GET_SCREENSHOT = 7;
+  static volatile String lastAddress = null;
   public TextView output;
   private EditText editAddress;
   private Context context;
@@ -221,6 +214,13 @@ public class ClipShareActivity extends AppCompatActivity {
     openBrowserLayout = findViewById(R.id.layoutOpenBrowser);
     shareFileLayout = findViewById(R.id.layoutShareFile);
     viewFileLayout = findViewById(R.id.layoutViewFile);
+    editAddress.setOnFocusChangeListener(
+        (ignored, hasFocus) -> {
+          if (!hasFocus) {
+            String address = editAddress.getText().toString();
+            if (Utils.isValidIP(address)) lastAddress = address;
+          }
+        });
 
     try {
       Settings.loadInstance(sharedPref.getString("settings", null));
@@ -228,7 +228,7 @@ public class ClipShareActivity extends AppCompatActivity {
     }
     try {
       List<String> servers = Settings.getInstance().getSavedServersList();
-      if (!servers.isEmpty()) editAddress.setText(servers.get(servers.size() - 1));
+      if (!servers.isEmpty()) setAddress(servers.get(servers.size() - 1));
     } catch (Exception ignored) {
     }
 
@@ -487,69 +487,6 @@ public class ClipShareActivity extends AppCompatActivity {
     autoSendExecutorService.submit(runnableAutoSendText);
   }
 
-  /**
-   * Opens a ServerConnection. Returns null on error.
-   *
-   * @param addressStr IPv4 address of the server as a String in dotted decimal notation.
-   * @return opened ServerConnection or null
-   */
-  @Nullable
-  ServerConnection getServerConnection(@NonNull String addressStr) {
-    int retries = 2;
-    do {
-      try {
-        Settings settings = Settings.getInstance();
-        if (settings.getSecure()) {
-          InputStream caCertIn = settings.getCACertInputStream();
-          InputStream clientCertKeyIn = settings.getCertInputStream();
-          char[] clientPass = settings.getPasswd();
-          if (clientCertKeyIn == null || clientPass == null) {
-            return null;
-          }
-          String[] acceptedServers = settings.getTrustedList().toArray(new String[0]);
-          return new SecureConnection(
-              InetAddress.getByName(addressStr),
-              settings.getPortSecure(),
-              caCertIn,
-              clientCertKeyIn,
-              clientPass,
-              acceptedServers);
-        } else {
-          return new PlainConnection(InetAddress.getByName(addressStr), settings.getPort());
-        }
-      } catch (Exception ignored) {
-      }
-    } while (retries-- > 0);
-    return null;
-  }
-
-  /**
-   * Wrapper to get connection and protocol selector
-   *
-   * @param address of the server
-   * @param utils object or null
-   * @return a Proto object if success, or null otherwise
-   */
-  @Nullable
-  private Proto getProtoWrapper(@NonNull String address, AndroidUtils utils) {
-    int retries = 1;
-    do {
-      try {
-        ServerConnection connection = getServerConnection(address);
-        if (connection == null) continue;
-        Proto proto = ProtocolSelector.getProto(connection, utils, null);
-        if (proto != null) return proto;
-        connection.close();
-      } catch (ProtocolException ex) {
-        outputAppend(ex.getMessage());
-        return null;
-      } catch (Exception ignored) {
-      }
-    } while (retries-- > 0);
-    outputAppend("Couldn't connect");
-    return null;
-  }
-
   private void showShareButton(List<File> files, boolean isImage) {
     try {
       if (files == null || files.isEmpty()) return;
@@ -658,8 +595,8 @@ public class ClipShareActivity extends AppCompatActivity {
 
   private void showAddressList(List<String> addresses, View parent) {
     if (addresses.size() == 1) {
-      String serverAddress = addresses.get(0);
-      runOnUiThread(() -> editAddress.setText(serverAddress));
+      String address = addresses.get(0);
+      runOnUiThread(() -> setAddress(address));
       return;
     }
     LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
@@ -685,12 +622,29 @@ public class ClipShareActivity extends AppCompatActivity {
       txtView.setText(serverAddress);
       txtView.setOnClickListener(
           view -> {
-            runOnUiThread(() -> editAddress.setText(((TextView) view).getText()));
+            runOnUiThread(() -> setAddress(((TextView) view).getText().toString()));
             popupView.performClick();
           });
       popupLayout.addView(popupElemView);
     }
     popupView.setOnClickListener(v -> popupWindow.dismiss());
+  }
+
+  private void setAddress(String address) {
+    editAddress.setText(address);
+    if (Utils.isValidIP(address)) lastAddress = address;
+  }
+
+  /** Wrapper to get connection and protocol selector. Returns null on error. */
+  private Proto getProtoWrapper(@NonNull String address, AndroidUtils utils) {
+    try {
+      Proto proto = Utils.getProtoWrapper(address, utils);
+      if (proto == null) outputAppend("Couldn't connect");
+      return proto;
+    } catch (Exception ex) {
+      outputAppend(ex.getMessage());
+    }
+    return null;
   }
 
   /**
@@ -738,15 +692,14 @@ public class ClipShareActivity extends AppCompatActivity {
           () -> {
             try {
               AndroidUtils utils = new AndroidUtils(context, ClipShareActivity.this);
-              String clipDataString = utils.getClipboardText();
-              if (clipDataString == null) return;
+              String clipData = utils.getClipboardText();
               Proto proto = getProtoWrapper(address, utils);
               if (proto == null) return;
-              boolean status = proto.sendText(clipDataString);
+              boolean status = proto.sendText(clipData);
               proto.close();
               if (!status) return;
-              if (clipDataString.length() < 16384) outputSetText("Sent: " + clipDataString);
-              else outputSetText("Sent: " + clipDataString.substring(0, 1024) + " ... (truncated)");
+              if (clipData.length() < 16384) outputSetText("Sent: " + clipData);
+              else outputSetText("Sent: " + clipData.substring(0, 1024) + " ... (truncated)");
               utils.vibrate();
             } catch (Exception e) {
               outputAppend("Error " + e.getMessage());
@@ -1119,7 +1072,7 @@ public class ClipShareActivity extends AppCompatActivity {
     }
   }
 
-  public void outputSetText(CharSequence text) {
+  private void outputSetText(CharSequence text) {
     try {
       runOnUiThread(() -> output.setText(text));
     } catch (Exception ignored) {
