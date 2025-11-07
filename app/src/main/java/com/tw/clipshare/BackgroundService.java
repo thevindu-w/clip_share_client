@@ -38,6 +38,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class BackgroundService extends Service {
+  private static final int GET_TEXT = 1;
   private static final int SEND_TEXT = 2;
   private static volatile boolean running = false;
   private static volatile int command;
@@ -64,6 +65,10 @@ public class BackgroundService extends Service {
       intentStop.putExtra("stop", true);
       PendingIntent pendingIntentStop =
           PendingIntent.getBroadcast(ctx, 0, intentStop, PendingIntent.FLAG_IMMUTABLE);
+      Intent intentGet = new Intent(ctx, EventReceiver.class);
+      intentGet.putExtra("command", GET_TEXT);
+      PendingIntent pendingIntentGet =
+          PendingIntent.getBroadcast(ctx, GET_TEXT, intentGet, PendingIntent.FLAG_IMMUTABLE);
       Intent intentSend = new Intent(ctx, EventReceiver.class);
       intentSend.putExtra("command", SEND_TEXT);
       PendingIntent pendingIntentSend =
@@ -73,6 +78,7 @@ public class BackgroundService extends Service {
               .setContentIntent(pendingIntent)
               .setContentTitle(getApplicationContext().getString(R.string.app_name))
               .setSmallIcon(R.drawable.clip_share_icon_mono)
+              .addAction(0, "Get", pendingIntentGet)
               .addAction(0, "Send", pendingIntentSend)
               .addAction(0, "Stop", pendingIntentStop);
       running = true;
@@ -96,9 +102,44 @@ public class BackgroundService extends Service {
       synchronized (LOCK) {
         LOCK.wait();
       }
-      if (command == SEND_TEXT) sendText();
+      if (command == GET_TEXT) getText();
+      else if (command == SEND_TEXT) sendText();
     }
     stopForeground(STOP_FOREGROUND_REMOVE);
+  }
+
+  private void getText() {
+    if (ClipShareActivity.lastAddress == null) return;
+    ExecutorService executorService = Executors.newSingleThreadExecutor();
+    Runnable runnable =
+        () -> {
+          try {
+            AndroidUtils utils = new AndroidUtils(getApplicationContext(), null);
+            Proto proto = Utils.getProtoWrapper(ClipShareActivity.lastAddress, utils);
+            if (proto == null) {
+              utils.showToast("Couldn't connect");
+              return;
+            }
+            boolean status = proto.getText();
+            proto.close();
+            String text = null;
+            if (status) text = proto.dataContainer.getString();
+            if (text == null) {
+              utils.showToast("Couldn't get text");
+              return;
+            }
+            synchronized (TEXT_LOCK) {
+              copiedText = text;
+              command = GET_TEXT;
+            }
+            Intent intent = new Intent(this, InvisibleActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+            utils.vibrate();
+          } catch (Exception ignored) {
+          }
+        };
+    executorService.submit(runnable);
   }
 
   private void sendText() {
@@ -137,7 +178,15 @@ public class BackgroundService extends Service {
   }
 
   public static void doUIOperation(AndroidUtils utils) {
-    if (command == SEND_TEXT) {
+    if (command == GET_TEXT) {
+      String text;
+      synchronized (TEXT_LOCK) {
+        text = copiedText;
+        command = 0;
+        copiedText = null;
+      }
+      utils.setClipboardText(text);
+    } else if (command == SEND_TEXT) {
       String text = utils.getClipboardText();
       (new Thread(
               () -> {
