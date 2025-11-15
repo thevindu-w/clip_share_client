@@ -1035,7 +1035,7 @@ public class ClipShareActivity extends AppCompatActivity {
    */
   private boolean needsPermission(int requestCode) {
     String permission = Manifest.permission.WRITE_EXTERNAL_STORAGE;
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) return false;
+    if (Build.VERSION.SDK_INT > Build.VERSION_CODES.Q) return false;
     if (ContextCompat.checkSelfPermission(ClipShareActivity.this, permission)
         == PackageManager.PERMISSION_DENIED) {
       ActivityCompat.requestPermissions(

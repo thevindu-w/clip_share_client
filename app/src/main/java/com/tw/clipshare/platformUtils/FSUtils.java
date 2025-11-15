@@ -101,7 +101,7 @@ public class FSUtils extends AndroidUtils {
 
   private String getDocumentDir() {
     String baseDirName;
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+    if (Build.VERSION.SDK_INT > Build.VERSION_CODES.Q) {
       baseDirName =
           Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS)
               .getAbsolutePath();
@@ -185,7 +185,7 @@ public class FSUtils extends AndroidUtils {
 
   public OutputStream getImageOutStream() {
     String baseDirName;
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+    if (Build.VERSION.SDK_INT > Build.VERSION_CODES.Q) {
       baseDirName =
           String.valueOf(
               Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES));
