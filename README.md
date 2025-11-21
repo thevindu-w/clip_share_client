@@ -199,6 +199,8 @@ app. You can find more information on running the server on Windows, macOS, or L
 - **TCP Scan:** When this setting is enabled, the [scan operation](#other-operations) will scan using TCP connections in
   addition to UDP broadcast (or multicast for IPv6) scanning. It is recommended to keep this turned off, as TCP scanning
   is slower and more resource-intensive than UDP scanning. Enable this only if there is any issue with the UDP scanning.
+- **Auto-scan at start:** When this setting is enabled, [scan operation](#other-operations) will scan the network for
+  available servers when the app starts.
 
 #### Ports
 
@@ -211,6 +213,11 @@ app. You can find more information on running the server on Windows, macOS, or L
 - **UDP Port:** This is the port on which the server on your laptop listens for UDP scanning requests. The default value
   for this port is `4337`. If a different port is assigned for the server according to the
   [server configuration](https://github.com/thevindu-w/clip_share_server#configuration), enter the same port here.
+
+#### Run in background
+
+- **Run in background:** This will make the app run in the background with a notification. The notification has buttons
+  to get and send copied text without opening the app.
 
 #### Import/Export settings
 
