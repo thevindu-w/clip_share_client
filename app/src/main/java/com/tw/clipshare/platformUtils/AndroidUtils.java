@@ -83,11 +83,10 @@ public class AndroidUtils {
     try {
       ClipboardManager clipboard = this.getClipboardManager();
       if (clipboard == null
-          || !(clipboard.hasPrimaryClip())
+          || !clipboard.hasPrimaryClip()
           || !(clipboard.getPrimaryClipDescription().hasMimeType(MIMETYPE_TEXT_PLAIN)
-              || !clipboard.getPrimaryClipDescription().hasMimeType(MIMETYPE_TEXT_HTML))) {
+              || clipboard.getPrimaryClipDescription().hasMimeType(MIMETYPE_TEXT_HTML)))
         return null;
-      }
       ClipData.Item item = clipboard.getPrimaryClip().getItemAt(0);
       CharSequence clipDataSequence = item.getText();
       if (clipDataSequence == null) {
