@@ -682,6 +682,15 @@
                 android:layout_height="wrap_content"
                 android:backgroundTint="#FF5555FF"
                 android:textAppearance="@style/TextAppearance.AppCompat.Body2" />
+
+            <Button
+                android:id="@+id/btnReset"
+                android:text="@string/reset_settings"
+                android:textSize="18sp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:backgroundTint="#FFFF5555"
+                android:textAppearance="@style/TextAppearance.AppCompat.Body2" />
         </LinearLayout>
     </LinearLayout>
 </ScrollView>

@@ -51,8 +51,9 @@
     <string name="display" translatable="false">Display :</string>
     <string name="copied_image" translatable="false">Copied Image</string>
     <string name="screenshot" translatable="false">Screenshot</string>
-    <string name="export_settings" translatable="false">Export settings</string>
-    <string name="import_settings" translatable="false">Import settings</string>
+    <string name="export_settings" translatable="false">Export Settings</string>
+    <string name="import_settings" translatable="false">Import Settings</string>
+    <string name="reset_settings" translatable="false">Reset Settings</string>
     <string name="close_app_if_idle" translatable="false">Close app if idle</string>
     <string name="autoCloseDelayDefault" translatable="false">120</string>
     <string name="auto_close_delay" translatable="false">Auto-close delay (seconds)</string>

@@ -173,41 +173,7 @@ public class SettingsActivity extends AppCompatActivity {
                 byte[] data = new byte[size];
                 if (stream.read(data) < size) throw new RuntimeException();
                 String jsonStr = new String(data, StandardCharsets.UTF_8);
-                Settings.loadInstance(jsonStr);
-                editPort.setText(String.valueOf(settings.getPort()));
-                editPortSecure.setText(String.valueOf(settings.getPortSecure()));
-                editPortUDP.setText(String.valueOf(settings.getPortUDP()));
-                String caCertCN1 = settings.getCACertCN();
-                if (caCertCN1 != null) this.caCnTxt.setText(caCertCN1);
-                String certCN1 = settings.getCertCN();
-                if (certCN1 != null) this.cnTxt.setText(certCN1);
-                List<String> servers1 = settings.getTrustedList();
-                trustList.removeAllViews();
-                for (String server : servers1) {
-                  addRowToTrustList(false, server);
-                }
-                this.secureSwitch.setChecked(settings.getSecure());
-                autoSendTextSwitch.setChecked(settings.getAutoSendText());
-                autoSendFileSwitch.setChecked(settings.getAutoSendFiles());
-                List<String> autoSendServers = settings.getAutoSendTrustedList();
-                autoSendTrustList.removeAllViews();
-                for (String server : autoSendServers) {
-                  addRowToAutoSendTrustList(false, server);
-                }
-                vibrateSwitch.setChecked(settings.getVibrate());
-                scanIPv6Switch.setChecked(settings.getScanIPv6());
-                scanTCPSwitch.setChecked(settings.getScanTCP());
-                autoScanSwitch.setChecked(settings.getAutoScan());
-                boolean autoClose = settings.getCloseIfIdle();
-                autoCloseSwitch.setChecked(autoClose);
-                editAutoCloseDelay.setText(String.valueOf(settings.getAutoCloseDelay()));
-                layoutAutoCloseDelay.setVisibility(autoClose ? View.VISIBLE : View.GONE);
-                saveAddressesSwitch.setChecked(settings.getSaveServers());
-                List<String> savedServers = settings.getSavedServersList();
-                savedServersList.removeAllViews();
-                for (String server : savedServers) {
-                  addRowToSavedServersList(false, server);
-                }
+                loadSettingsAndUpdateUI(jsonStr);
               }
               runOnUiThread(
                   () ->
@@ -220,6 +186,44 @@ public class SettingsActivity extends AppCompatActivity {
                           .show());
             }
           });
+
+  private void loadSettingsAndUpdateUI(String jsonStr) {
+    Settings.loadInstance(jsonStr);
+    editPort.setText(String.valueOf(settings.getPort()));
+    editPortSecure.setText(String.valueOf(settings.getPortSecure()));
+    editPortUDP.setText(String.valueOf(settings.getPortUDP()));
+    String caCertCN1 = settings.getCACertCN();
+    if (caCertCN1 != null) this.caCnTxt.setText(caCertCN1);
+    String certCN1 = settings.getCertCN();
+    if (certCN1 != null) this.cnTxt.setText(certCN1);
+    List<String> servers1 = settings.getTrustedList();
+    trustList.removeAllViews();
+    for (String server : servers1) {
+      addRowToTrustList(false, server);
+    }
+    this.secureSwitch.setChecked(settings.getSecure());
+    autoSendTextSwitch.setChecked(settings.getAutoSendText());
+    autoSendFileSwitch.setChecked(settings.getAutoSendFiles());
+    List<String> autoSendServers = settings.getAutoSendTrustedList();
+    autoSendTrustList.removeAllViews();
+    for (String server : autoSendServers) {
+      addRowToAutoSendTrustList(false, server);
+    }
+    vibrateSwitch.setChecked(settings.getVibrate());
+    scanIPv6Switch.setChecked(settings.getScanIPv6());
+    scanTCPSwitch.setChecked(settings.getScanTCP());
+    autoScanSwitch.setChecked(settings.getAutoScan());
+    boolean autoClose = settings.getCloseIfIdle();
+    autoCloseSwitch.setChecked(autoClose);
+    editAutoCloseDelay.setText(String.valueOf(settings.getAutoCloseDelay()));
+    layoutAutoCloseDelay.setVisibility(autoClose ? View.VISIBLE : View.GONE);
+    saveAddressesSwitch.setChecked(settings.getSaveServers());
+    List<String> savedServers = settings.getSavedServersList();
+    savedServersList.removeAllViews();
+    for (String server : savedServers) {
+      addRowToSavedServersList(false, server);
+    }
+  }
 
   private Cursor getCursorFromIntentUri(Intent intent) {
     if (intent == null) throw new RuntimeException();
@@ -695,6 +699,15 @@ public class SettingsActivity extends AppCompatActivity {
             String[] mimeTypes = {"application/json", "application/octet-stream"};
             intent.putExtra(Intent.EXTRA_MIME_TYPES, mimeTypes);
             importActivityLauncher.launch(intent);
+          } catch (Exception ignored) {
+          }
+        });
+
+    Button resetBtn = findViewById(R.id.btnReset);
+    resetBtn.setOnClickListener(
+        view -> {
+          try {
+            loadSettingsAndUpdateUI("{}");
           } catch (Exception ignored) {
           }
         });
