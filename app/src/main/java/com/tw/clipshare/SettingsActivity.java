@@ -37,6 +37,8 @@ import android.os.Environment;
 import android.provider.DocumentsContract;
 import android.provider.OpenableColumns;
 import android.text.method.ScrollingMovementMethod;
+import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -707,7 +709,31 @@ public class SettingsActivity extends AppCompatActivity {
     resetBtn.setOnClickListener(
         view -> {
           try {
-            loadSettingsAndUpdateUI("{}");
+            LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
+            View popupView =
+                inflater.inflate(R.layout.popup_reset, findViewById(R.id.settings_layout), false);
+            final PopupWindow popupWindow =
+                new PopupWindow(
+                    popupView,
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    true);
+            popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0);
+
+            popupView
+                .findViewById(R.id.btnResetConfirm)
+                .setOnClickListener(
+                    v -> {
+                      try {
+                        loadSettingsAndUpdateUI("{}");
+                        popupWindow.dismiss();
+                      } catch (Exception ignored) {
+                      }
+                    });
+
+            popupView.findViewById(R.id.popup_bg).setOnClickListener(v -> {});
+            popupView.findViewById(R.id.btnCancel).setOnClickListener(v -> popupWindow.dismiss());
+            popupView.setOnClickListener(v -> popupWindow.dismiss());
           } catch (Exception ignored) {
           }
         });
