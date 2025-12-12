@@ -921,6 +921,7 @@ public class ClipShareActivity extends AppCompatActivity {
             popupWindow.dismiss();
           });
 
+      popupView.findViewById(R.id.popup_bg).setOnClickListener(v -> {});
       popupView.setOnClickListener(v -> popupWindow.dismiss());
     } catch (Exception ignored) {
     }
