@@ -7,6 +7,5 @@ There are 2 APK files included in the release assets for compatibility.
 
 Refer to the [README](https://github.com/thevindu-w/clip_share_client/#how-to-use) for usage information.<br>
 **Changes:**
-- Add a new option to get and send text from a notification button.
-- Fix storage permission issue on Android 10.
-- Code quality improvements.
+- Add a new settings option to reset settings.
+- Minor bug fixes.
