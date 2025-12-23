@@ -37,10 +37,7 @@ import android.os.Environment;
 import android.provider.DocumentsContract;
 import android.provider.OpenableColumns;
 import android.text.method.ScrollingMovementMethod;
-import android.view.Gravity;
-import android.view.LayoutInflater;
-import android.view.MotionEvent;
-import android.view.View;
+import android.view.*;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.*;
 import androidx.activity.OnBackPressedCallback;
@@ -410,6 +407,29 @@ public class SettingsActivity extends AppCompatActivity {
     expandButton.setImageResource(android.R.drawable.arrow_down_float);
     expandButton.setTag(false);
     expandButton.setOnClickListener(view -> toggleLayout((ImageButton) view, layout));
+  }
+
+  @Override
+  public boolean onCreateOptionsMenu(Menu menu) {
+    MenuInflater inflater = getMenuInflater();
+    inflater.inflate(R.menu.settings_action_bar, menu);
+    return true;
+  }
+
+  @Override
+  public boolean onOptionsItemSelected(MenuItem item) {
+    try {
+      int itemID = item.getItemId();
+      if (itemID == R.id.action_info) {
+        Intent intent =
+            new Intent(
+                Intent.ACTION_VIEW,
+                Uri.parse("https://github.com/thevindu-w/clip_share_client#settings"));
+        startActivity(intent);
+      }
+    } catch (Exception ignored) {
+    }
+    return true;
   }
 
   @Override
