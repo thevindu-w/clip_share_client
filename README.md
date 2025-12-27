@@ -58,6 +58,23 @@ ClipShare is lightweight and easy to use. Run the server on your Windows, macOS,
 app. You can find more information on running the server on Windows, macOS, or Linux at
 [github.com/thevindu-w/clip_share_server](https://github.com/thevindu-w/clip_share_server#how-to-use).
 
+## Table of Contents
+
+- [How to Use](#how-to-use)
+  - [Main screen](#main-screen)
+    - [Get and Send operations](#get-and-send-operations)
+    - [Other operations](#other-operations)
+  - [Settings](#settings)
+    - [Auto send](#auto-send)
+    - [Saved addresses](#saved-addresses)
+    - [Secure mode](#secure-mode)
+    - [Other settings](#other-settings)
+      - [Ports](#ports)
+      - [Run in background](#run-in-background)
+    - [Import/Export settings](#importexport-settings)
+
+<br>
+
 ## How to use
 
 ### Main screen
