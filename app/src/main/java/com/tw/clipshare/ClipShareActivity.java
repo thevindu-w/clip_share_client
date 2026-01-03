@@ -164,14 +164,24 @@ public class ClipShareActivity extends AppCompatActivity {
 
   @Override
   public boolean onOptionsItemSelected(MenuItem item) {
-    int itemID = item.getItemId();
-    if (itemID == R.id.action_settings) {
-      if (!Settings.isIsSettingsLoaded()) return true;
-      Intent settingsIntent = new Intent(ClipShareActivity.this, SettingsActivity.class);
-      settingsActivityLauncher.launch(settingsIntent);
-      startActiveTask();
-    } else if (itemID == R.id.action_secure) {
-      Toast.makeText(ClipShareActivity.this, "Change this in settings", Toast.LENGTH_SHORT).show();
+    try {
+      int itemID = item.getItemId();
+      if (itemID == R.id.action_settings) {
+        if (!Settings.isIsSettingsLoaded()) return true;
+        Intent settingsIntent = new Intent(ClipShareActivity.this, SettingsActivity.class);
+        settingsActivityLauncher.launch(settingsIntent);
+        startActiveTask();
+      } else if (itemID == R.id.action_info) {
+        Intent intent =
+            new Intent(
+                Intent.ACTION_VIEW,
+                Uri.parse("https://github.com/thevindu-w/clip_share_client#how-to-use"));
+        startActivity(intent);
+      } else if (itemID == R.id.action_secure) {
+        Toast.makeText(ClipShareActivity.this, "Change this in settings", Toast.LENGTH_SHORT)
+            .show();
+      }
+    } catch (Exception ignored) {
     }
     return true;
   }
