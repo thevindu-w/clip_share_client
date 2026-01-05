@@ -78,6 +78,7 @@ public class ClipShareActivity extends AppCompatActivity {
   private Context context;
   private SharedPreferences sharedPref;
   private ArrayList<Uri> fileURIs;
+  private DirectoryTreeNode selectedDirs;
   private Menu menu;
   private LinearLayout openBrowserLayout;
   private LinearLayout shareFileLayout;
@@ -116,8 +117,9 @@ public class ClipShareActivity extends AppCompatActivity {
                           if (result.getResultCode() != Activity.RESULT_OK) return;
                           Intent intent1 = result.getData();
                           if (intent1 == null) return;
-                          DirectoryTreeNode root = ClipShareActivity.this.getDirectoryTree(intent1);
-                          clkSendFolder(root);
+                          ClipShareActivity.this.selectedDirs =
+                              ClipShareActivity.this.getDirectoryTree(intent1);
+                          clkSendFolder();
                         } catch (Exception e) {
                           outputAppend("Error " + e.getMessage());
                         } finally {
@@ -216,7 +218,7 @@ public class ClipShareActivity extends AppCompatActivity {
           return true;
         });
     Button btnSendFolder = findViewById(R.id.btnSendFolder);
-    btnSendFolder.setOnClickListener(view -> clkSendFolder(null));
+    btnSendFolder.setOnClickListener(view -> clkSendFolder());
     Button btnScanHost = findViewById(R.id.btnScanHost);
     btnScanHost.setOnClickListener(this::clkScanBtn);
     Button btnHistory = findViewById(R.id.btnHistory);
@@ -748,17 +750,19 @@ public class ClipShareActivity extends AppCompatActivity {
     }
   }
 
-  private void clkSendFolder(DirectoryTreeNode dirTree) {
+  private void clkSendFolder() {
     try {
-      if (dirTree == null) {
+      if (this.selectedDirs == null) {
         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
         intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
         folderSelectActivityLauncher.launch(intent);
         startActiveTask();
       } else {
+        DirectoryTreeNode tmp = this.selectedDirs;
+        this.selectedDirs = null;
         ExecutorService executorService = Executors.newSingleThreadExecutor();
-        Runnable sendURIs = () -> sendFromDirectoryTree(dirTree);
+        Runnable sendURIs = () -> sendFromDirectoryTree(tmp);
         executorService.submit(sendURIs);
       }
     } catch (Exception ignored) {
@@ -775,10 +779,19 @@ public class ClipShareActivity extends AppCompatActivity {
       String address = this.getServerAddress();
       if (address == null) return;
       FSUtils utils = new FSUtils(context, dirTree);
-      if (utils.getRemainingFileCount(true) > 0) {
-        if (handleTaskFromService(address, utils, PendingTask.SEND_FILES)) {
-          outputSetText(R.string.sendingFiles);
+      boolean status = false;
+      try {
+        if (utils.getRemainingFileCount(true) > 0) {
+          if (handleTaskFromService(address, utils, PendingTask.SEND_FILES)) {
+            status = true;
+            outputSetText(R.string.sendingFiles);
+          }
         }
+      } catch (Exception e) {
+        outputAppend("Error " + e.getMessage());
+      }
+      if (!status && ClipShareActivity.this.selectedDirs == null) {
+        ClipShareActivity.this.selectedDirs = dirTree;
       }
     } catch (Exception e) {
       outputAppend("Error " + e.getMessage());
