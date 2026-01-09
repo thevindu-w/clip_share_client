@@ -30,6 +30,12 @@ import android.view.WindowManager;
 import com.tw.clipshare.platformUtils.AndroidUtils;
 
 public class InvisibleActivity extends Activity {
+  private static boolean isServer = false;
+
+  public static synchronized void setIsServer(boolean isServer) {
+    InvisibleActivity.isServer = isServer;
+  }
+
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
@@ -43,7 +49,8 @@ public class InvisibleActivity extends Activity {
               | WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE;
       getWindow().setAttributes(params);
       AndroidUtils utils = new AndroidUtils(getApplicationContext(), this);
-      BackgroundService.doUIOperation(utils);
+      if (isServer) ServerService.doUIOperation(utils);
+      else BackgroundService.doUIOperation(utils);
       this.finish();
     } catch (Exception ignored) {
     }

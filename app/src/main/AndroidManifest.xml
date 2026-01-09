@@ -59,6 +59,11 @@
             android:foregroundServiceType="dataSync"
             android:exported="false" />
         <receiver android:name="com.tw.clipshare.BackgroundService$EventReceiver" />
+        <service
+            android:name="com.tw.clipshare.ServerService"
+            android:foregroundServiceType="dataSync"
+            android:exported="false" />
+        <receiver android:name="com.tw.clipshare.ServerService$EventReceiver" />
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.provider"

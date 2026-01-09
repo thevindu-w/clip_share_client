@@ -767,6 +767,16 @@ public class SettingsActivity extends AppCompatActivity {
           } catch (Exception ignored) {
           }
         });
+
+    Button startServerBtn = findViewById(R.id.btnStartServer);
+    startServerBtn.setOnClickListener(
+        view -> {
+          try {
+            Intent serverIntent = new Intent(this, ServerService.class);
+            ContextCompat.startForegroundService(getApplicationContext(), serverIntent);
+          } catch (Exception ignored) {
+          }
+        });
   }
 
   @Override

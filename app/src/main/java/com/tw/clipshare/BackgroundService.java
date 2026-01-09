@@ -134,6 +134,7 @@ public class BackgroundService extends Service {
             }
             Intent intent = new Intent(this, InvisibleActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+            InvisibleActivity.setIsServer(false);
             startActivity(intent);
             utils.vibrate();
           } catch (Exception ignored) {
@@ -172,6 +173,7 @@ public class BackgroundService extends Service {
     try {
       Intent intent = new Intent(this, InvisibleActivity.class);
       intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+      InvisibleActivity.setIsServer(false);
       startActivity(intent);
     } catch (Exception ignored) {
     }

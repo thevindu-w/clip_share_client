@@ -656,6 +656,15 @@
                     android:textAppearance="@style/TextAppearance.AppCompat.Body2"
                     android:backgroundTint="#777777" />
 
+                <Button
+                    android:id="@+id/btnStartServer"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/start_server"
+                    android:textSize="17sp"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Body2"
+                    android:backgroundTint="#777777" />
+
             </LinearLayout>
         </LinearLayout>
 
