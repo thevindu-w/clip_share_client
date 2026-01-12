@@ -37,7 +37,9 @@ import com.tw.clipshare.netConnection.ClientConnection;
 import com.tw.clipshare.platformUtils.AndroidUtils;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
-import java.util.Random;
+import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class ServerService extends Service {
   private static volatile boolean running = false;
@@ -131,7 +133,56 @@ public class ServerService extends Service {
     receivedText = null;
   }
 
+  private static ExecutorService startUDPServer() throws SocketException {
+    Enumeration<NetworkInterface> netIFEnum = NetworkInterface.getNetworkInterfaces();
+    List<NetworkInterface> netIFList = Collections.list(netIFEnum);
+    ExecutorService executorService = Executors.newCachedThreadPool();
+    for (NetworkInterface netIF : netIFList) {
+      if (netIF == null || netIF.isLoopback() || !netIF.isUp() || netIF.isVirtual()) continue;
+      Runnable r =
+          () -> {
+            try {
+              List<InterfaceAddress> addrs = netIF.getInterfaceAddresses();
+              for (InterfaceAddress intAddr : addrs) {
+                InetAddress brd = intAddr.getBroadcast();
+                if (!(brd instanceof Inet4Address)) continue;
+                InetAddress myAddr = intAddr.getAddress();
+                if (!(myAddr instanceof Inet4Address)) continue;
+                try (DatagramSocket sndSock = new DatagramSocket(4337, myAddr)) {
+                  sndSock.setSoTimeout(2000);
+                  try (DatagramSocket socket = new DatagramSocket(4337, brd)) {
+                    socket.setSoTimeout(2000);
+                    byte[] recvBuf = new byte[8];
+                    byte[] sndBuf = "clip_share".getBytes(StandardCharsets.UTF_8);
+                    while (running) {
+                      try {
+                        DatagramPacket recvPkt = new DatagramPacket(recvBuf, recvBuf.length);
+                        socket.receive(recvPkt);
+                        if (myAddr.equals(recvPkt.getAddress())) continue;
+                        String recvMsg =
+                            new String(recvPkt.getData(), StandardCharsets.UTF_8).replace("\0", "");
+                        if (!"in".equals(recvMsg)) continue;
+                        DatagramPacket pkt =
+                            new DatagramPacket(
+                                sndBuf, sndBuf.length, recvPkt.getAddress(), recvPkt.getPort());
+                        sndSock.send(pkt);
+                      } catch (Exception ignored) {
+                      }
+                    }
+                  }
+                }
+                break;
+              }
+            } catch (Exception ignored) {
+            }
+          };
+      executorService.submit(r);
+    }
+    return executorService;
+  }
+
   private void startServer() throws Exception {
+    ExecutorService udpService = startUDPServer();
     try (ServerSocket ss = new ServerSocket(4337, 3)) {
       ss.setSoTimeout(2000);
       while (running) {
@@ -160,6 +211,7 @@ public class ServerService extends Service {
         connection.close();
       }
     }
+    udpService.shutdownNow();
     stopForeground(STOP_FOREGROUND_REMOVE);
   }
 
