@@ -13,8 +13,8 @@ android {
         applicationId = "com.tw.clipshare"
         minSdkVersion 24
         targetSdkVersion 34
-        versionCode = 32000
-        versionName = "3.20.0"
+        versionCode = 32100
+        versionName = "3.21.0"
         resConfigs "en"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
