@@ -133,10 +133,11 @@ public class ServerService extends Service {
     receivedText = null;
   }
 
-  private static ExecutorService startUDPServer() throws SocketException {
+  private static ExecutorService startUDPServer() throws SocketException, InterruptedException {
     Enumeration<NetworkInterface> netIFEnum = NetworkInterface.getNetworkInterfaces();
     List<NetworkInterface> netIFList = Collections.list(netIFEnum);
     ExecutorService executorService = Executors.newCachedThreadPool();
+    Settings settings = Settings.getInstance();
     for (NetworkInterface netIF : netIFList) {
       if (netIF == null || netIF.isLoopback() || !netIF.isUp() || netIF.isVirtual()) continue;
       Runnable r =
@@ -148,9 +149,9 @@ public class ServerService extends Service {
                 if (!(brd instanceof Inet4Address)) continue;
                 InetAddress myAddr = intAddr.getAddress();
                 if (!(myAddr instanceof Inet4Address)) continue;
-                try (DatagramSocket sndSock = new DatagramSocket(4337, myAddr)) {
+                try (DatagramSocket sndSock = new DatagramSocket(settings.getPortUDP(), myAddr)) {
                   sndSock.setSoTimeout(2000);
-                  try (DatagramSocket socket = new DatagramSocket(4337, brd)) {
+                  try (DatagramSocket socket = new DatagramSocket(settings.getPortUDP(), brd)) {
                     socket.setSoTimeout(2000);
                     byte[] recvBuf = new byte[8];
                     byte[] sndBuf = "clip_share".getBytes(StandardCharsets.UTF_8);
@@ -183,7 +184,8 @@ public class ServerService extends Service {
 
   private void startServer() throws Exception {
     ExecutorService udpService = startUDPServer();
-    try (ServerSocket ss = new ServerSocket(4337, 3)) {
+    Settings settings = Settings.getInstance();
+    try (ServerSocket ss = new ServerSocket(settings.getPort(), 3)) {
       ss.setSoTimeout(2000);
       while (running) {
         Socket sock = null;
