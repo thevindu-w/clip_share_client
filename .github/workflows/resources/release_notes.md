@@ -7,6 +7,5 @@ There are 2 APK files included in the release assets for compatibility.
 
 Refer to the [README](https://github.com/thevindu-w/clip_share_client/#how-to-use) for usage information.<br>
 **Changes:**
-- Retry with the previously selected folder instead of opening the folder select prompt when _Send Folder_ fails.
-- Add info buttons to open the README "How to use" and "Settings options" sections.
-- Upgrade dependencies.
+- Add a Server mode to receive auto-sent text from other clients.
+- Add a settings option to turn on Server mode.
