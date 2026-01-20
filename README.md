@@ -236,6 +236,11 @@ app. You can find more information on running the server on Windows, macOS, or L
 - **Run in background:** This will make the app run in the background with a notification. The notification has buttons
   to get and send copied text without opening the app.
 
+#### Server mode
+
+- **Server mode (beta):** This will start the server mode in the background with a notification. Other ClipShare clients
+  on the network can send text to this device. The notification has a button to stop the server mode.
+
 #### Import/Export settings
 
 - **Import settings:** Use this to import settings from a _JSON_ file exported before. Note that the current settings
