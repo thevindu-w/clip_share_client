@@ -33,7 +33,7 @@ import android.content.Intent;
 import android.os.IBinder;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
-import com.tw.clipshare.netConnection.ClientConnection;
+import com.tw.clipshare.netConnection.PlainConnection;
 import com.tw.clipshare.platformUtils.AndroidUtils;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
@@ -87,7 +87,7 @@ public class ServerService extends Service {
     return START_REDELIVER_INTENT;
   }
 
-  private String receiveText(ClientConnection connection) {
+  private String receiveText(PlainConnection connection) {
     byte[] buf = new byte[1];
     if (connection.receive(buf)) return null;
     byte proto = buf[0];
@@ -101,7 +101,7 @@ public class ServerService extends Service {
         proto = buf[0];
       }
     }
-    if (proto != 3) return null;
+    if (proto > 3) return null;
     buf[0] = PROTOCOL_SUPPORTED;
     if (connection.send(buf)) return null;
 
@@ -194,7 +194,7 @@ public class ServerService extends Service {
         } catch (SocketTimeoutException ignored) {
         }
         if (sock == null) continue;
-        ClientConnection connection = new ClientConnection(sock);
+        PlainConnection connection = new PlainConnection(sock);
         String text = receiveText(connection);
         if (text != null) {
           receivedText = text;

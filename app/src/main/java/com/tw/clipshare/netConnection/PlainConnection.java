@@ -44,4 +44,10 @@ public class PlainConnection extends ServerConnection {
     this.inStream = this.socket.getInputStream();
     this.outStream = this.socket.getOutputStream();
   }
+
+  public PlainConnection(Socket socket) throws IOException {
+    super(socket);
+    this.inStream = this.socket.getInputStream();
+    this.outStream = this.socket.getOutputStream();
+  }
 }
