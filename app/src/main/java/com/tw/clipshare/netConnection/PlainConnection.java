@@ -29,7 +29,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 
-public class PlainConnection extends ServerConnection {
+public class PlainConnection extends SocketConnection {
 
   /**
    * Unencrypted TCP connection to the server.

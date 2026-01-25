@@ -28,14 +28,14 @@ import com.tw.clipshare.CertUtils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
-import java.security.GeneralSecurityException;
-import java.security.KeyStore;
+import java.net.ServerSocket;
+import java.security.*;
 import java.security.cert.X509Certificate;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import javax.net.ssl.*;
 
-public class SecureConnection extends ServerConnection {
+public class SecureConnection extends SocketConnection {
 
   private static final Object CTX_LOCK = new Object();
   private static SSLContext ctxInstance = null;
@@ -60,30 +60,7 @@ public class SecureConnection extends ServerConnection {
       char[] certStorePassword,
       String[] acceptedCNs)
       throws IOException, GeneralSecurityException {
-    SSLContext ctx;
-    synchronized (SecureConnection.CTX_LOCK) {
-      if (SecureConnection.ctxInstance == null) {
-        X509Certificate caCert = CertUtils.getX509fromInputStream(caCertInput);
-        TrustManagerFactory tmf =
-            TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-        KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
-        ks.load(null);
-        ks.setCertificateEntry("caCert", caCert);
-        tmf.init(ks);
-
-        KeyStore keyStore = KeyStore.getInstance("PKCS12");
-        keyStore.load(clientCertStoreInput, certStorePassword);
-        KeyManagerFactory kmf =
-            KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-        kmf.init(keyStore, certStorePassword);
-
-        ctx = SSLContext.getInstance("TLS");
-        ctx.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
-        SecureConnection.ctxInstance = ctx;
-      } else {
-        ctx = SecureConnection.ctxInstance;
-      }
-    }
+    SSLContext ctx = getCtxInstance(caCertInput, clientCertStoreInput, certStorePassword);
     SSLSocketFactory sslsocketfactory = ctx.getSocketFactory();
     SSLSocket sslsocket = (SSLSocket) sslsocketfactory.createSocket(serverAddress, port);
     SSLSession sslSession = sslsocket.getSession();
@@ -107,6 +84,51 @@ public class SecureConnection extends ServerConnection {
     this.socket = sslsocket;
     this.inStream = this.socket.getInputStream();
     this.outStream = this.socket.getOutputStream();
+  }
+
+  public SecureConnection(SSLSocket sslSocket) throws IOException {
+    this.socket = sslSocket;
+    this.inStream = this.socket.getInputStream();
+    this.outStream = this.socket.getOutputStream();
+  }
+
+  private static SSLContext getCtxInstance(
+      InputStream caCertInput, InputStream clientCertStoreInput, char[] certStorePassword)
+      throws GeneralSecurityException, IOException {
+    synchronized (SecureConnection.CTX_LOCK) {
+      if (SecureConnection.ctxInstance == null) {
+        X509Certificate caCert = CertUtils.getX509fromInputStream(caCertInput);
+        TrustManagerFactory tmf =
+            TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+        KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
+        ks.load(null);
+        ks.setCertificateEntry("caCert", caCert);
+        tmf.init(ks);
+
+        KeyStore keyStore = KeyStore.getInstance("PKCS12");
+        keyStore.load(clientCertStoreInput, certStorePassword);
+        KeyManagerFactory kmf =
+            KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+        kmf.init(keyStore, certStorePassword);
+
+        SSLContext ctx = SSLContext.getInstance("TLS");
+        ctx.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
+        SecureConnection.ctxInstance = ctx;
+        return ctx;
+      } else {
+        return SecureConnection.ctxInstance;
+      }
+    }
+  }
+
+  public static ServerSocket getSecureServerSocket(
+      int port, InputStream caCertInput, InputStream clientCertStoreInput, char[] certStorePassword)
+      throws GeneralSecurityException, IOException {
+    SSLContext ctx = getCtxInstance(caCertInput, clientCertStoreInput, certStorePassword);
+    SSLServerSocket serverSocket =
+        (SSLServerSocket) ctx.getServerSocketFactory().createServerSocket(port, 3);
+    serverSocket.setNeedClientAuth(true);
+    return serverSocket;
   }
 
   /** Reset the SSLContext instance to null */

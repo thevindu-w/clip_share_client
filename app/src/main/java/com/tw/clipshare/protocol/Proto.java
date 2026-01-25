@@ -24,7 +24,7 @@
 
 package com.tw.clipshare.protocol;
 
-import com.tw.clipshare.netConnection.ServerConnection;
+import com.tw.clipshare.netConnection.SocketConnection;
 import com.tw.clipshare.platformUtils.AndroidUtils;
 import com.tw.clipshare.platformUtils.DataContainer;
 import com.tw.clipshare.platformUtils.StatusNotifier;
@@ -33,9 +33,9 @@ public abstract class Proto {
   protected final ProtoMethods protoMethods;
   public final DataContainer dataContainer;
 
-  protected Proto(ServerConnection serverConnection, AndroidUtils utils, StatusNotifier notifier) {
+  protected Proto(SocketConnection socketConnection, AndroidUtils utils, StatusNotifier notifier) {
     this.dataContainer = new DataContainer();
-    this.protoMethods = new ProtoMethods(serverConnection, utils, notifier, dataContainer);
+    this.protoMethods = new ProtoMethods(socketConnection, utils, notifier, dataContainer);
   }
 
   public void setStatusNotifier(StatusNotifier notifier) {

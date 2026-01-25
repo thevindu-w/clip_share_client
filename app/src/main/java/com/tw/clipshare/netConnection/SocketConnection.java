@@ -30,7 +30,7 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.net.SocketException;
 
-public abstract class ServerConnection {
+public abstract class SocketConnection {
 
   protected OutputStream outStream;
   protected InputStream inStream;
@@ -38,11 +38,11 @@ public abstract class ServerConnection {
   private boolean closed;
   private boolean lastOperationSend;
 
-  protected ServerConnection() {
+  protected SocketConnection() {
     this(null);
   }
 
-  protected ServerConnection(Socket socket) {
+  protected SocketConnection(Socket socket) {
     this.socket = socket;
     this.closed = false;
     this.lastOperationSend = false;

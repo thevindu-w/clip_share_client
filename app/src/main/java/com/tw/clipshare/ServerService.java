@@ -34,12 +34,15 @@ import android.os.IBinder;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 import com.tw.clipshare.netConnection.PlainConnection;
+import com.tw.clipshare.netConnection.SecureConnection;
+import com.tw.clipshare.netConnection.SocketConnection;
 import com.tw.clipshare.platformUtils.AndroidUtils;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import javax.net.ssl.SSLSocket;
 
 public class ServerService extends Service {
   private static volatile boolean running = false;
@@ -87,7 +90,7 @@ public class ServerService extends Service {
     return START_REDELIVER_INTENT;
   }
 
-  private String receiveText(PlainConnection connection) {
+  private String receiveText(SocketConnection connection) {
     byte[] buf = new byte[1];
     if (connection.receive(buf)) return null;
     byte proto = buf[0];
@@ -182,36 +185,57 @@ public class ServerService extends Service {
     return executorService;
   }
 
+  private void startTCPServer() throws Exception {
+    Settings settings = Settings.getInstance();
+    ServerSocket ss;
+    if (settings.getSecure()) {
+      ss =
+          SecureConnection.getSecureServerSocket(
+              settings.getPortSecure(),
+              settings.getCACertInputStream(),
+              settings.getCertInputStream(),
+              settings.getPasswd());
+    } else {
+      ss = new ServerSocket(settings.getPort(), 3);
+    }
+    ss.setSoTimeout(2000);
+    while (running) {
+      Socket sock = null;
+      try {
+        sock = ss.accept();
+      } catch (SocketTimeoutException ignored) {
+      }
+      if (sock == null) continue;
+      SocketConnection connection;
+      if (settings.getSecure()) {
+        connection = new SecureConnection((SSLSocket) sock);
+      } else {
+        connection = new PlainConnection(sock);
+      }
+      String text = receiveText(connection);
+      if (text != null) {
+        receivedText = text;
+        try {
+          Intent intent = new Intent(this, InvisibleActivity.class);
+          intent.setFlags(
+              Intent.FLAG_ACTIVITY_CLEAR_TASK
+                  | Intent.FLAG_ACTIVITY_NEW_TASK
+                  | Intent.FLAG_ACTIVITY_NO_ANIMATION
+                  | Intent.FLAG_ACTIVITY_NO_USER_ACTION);
+          InvisibleActivity.setIsServer(true);
+          startActivity(intent);
+        } catch (Exception ignored) {
+        }
+      }
+      connection.close();
+    }
+  }
+
   private void startServer() throws Exception {
     ExecutorService udpService = startUDPServer();
-    Settings settings = Settings.getInstance();
-    try (ServerSocket ss = new ServerSocket(settings.getPort(), 3)) {
-      ss.setSoTimeout(2000);
-      while (running) {
-        Socket sock = null;
-        try {
-          sock = ss.accept();
-        } catch (SocketTimeoutException ignored) {
-        }
-        if (sock == null) continue;
-        PlainConnection connection = new PlainConnection(sock);
-        String text = receiveText(connection);
-        if (text != null) {
-          receivedText = text;
-          try {
-            Intent intent = new Intent(this, InvisibleActivity.class);
-            intent.setFlags(
-                Intent.FLAG_ACTIVITY_CLEAR_TASK
-                    | Intent.FLAG_ACTIVITY_NEW_TASK
-                    | Intent.FLAG_ACTIVITY_NO_ANIMATION
-                    | Intent.FLAG_ACTIVITY_NO_USER_ACTION);
-            InvisibleActivity.setIsServer(true);
-            startActivity(intent);
-          } catch (Exception ignored) {
-          }
-        }
-        connection.close();
-      }
+    try {
+      startTCPServer();
+    } catch (Exception ignored) {
     }
     udpService.shutdownNow();
     stopForeground(STOP_FOREGROUND_REMOVE);

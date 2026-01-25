@@ -25,7 +25,7 @@
 package com.tw.clipshare.protocol;
 
 import com.tw.clipshare.Utils;
-import com.tw.clipshare.netConnection.ServerConnection;
+import com.tw.clipshare.netConnection.SocketConnection;
 import com.tw.clipshare.platformUtils.AndroidUtils;
 import com.tw.clipshare.platformUtils.StatusNotifier;
 import java.net.ProtocolException;
@@ -37,7 +37,7 @@ public class ProtocolSelector {
   private ProtocolSelector() {}
 
   public static Proto getProto(
-      ServerConnection connection, AndroidUtils utils, StatusNotifier notifier)
+      SocketConnection connection, AndroidUtils utils, StatusNotifier notifier)
       throws ProtocolException {
     if (connection == null) {
       return null;
@@ -85,7 +85,7 @@ public class ProtocolSelector {
    * @param proto protocol version
    * @return false on success or true on error
    */
-  private static boolean acceptProto(ServerConnection connection, byte proto) {
+  private static boolean acceptProto(SocketConnection connection, byte proto) {
     byte[] proto_v = new byte[1];
     proto_v[0] = proto;
     return connection.send(proto_v);

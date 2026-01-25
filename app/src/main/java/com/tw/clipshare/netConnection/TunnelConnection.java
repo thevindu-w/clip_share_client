@@ -31,7 +31,7 @@ import java.net.SocketException;
 /**
  * @noinspection unused
  */
-public class TunnelConnection extends ServerConnection {
+public class TunnelConnection extends SocketConnection {
   public TunnelConnection(String address) throws IOException {
     super();
     Socket tunnel = TunnelManager.getConnection(address);

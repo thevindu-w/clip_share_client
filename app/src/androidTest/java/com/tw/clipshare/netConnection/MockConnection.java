@@ -28,7 +28,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-public class MockConnection extends ServerConnection {
+public class MockConnection extends SocketConnection {
   public MockConnection(InputStream inputStream, OutputStream outputStream) {
     super();
     this.inStream = inputStream;

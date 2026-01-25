@@ -24,7 +24,7 @@
 
 package com.tw.clipshare.protocol;
 
-import com.tw.clipshare.netConnection.ServerConnection;
+import com.tw.clipshare.netConnection.SocketConnection;
 import com.tw.clipshare.platformUtils.AndroidUtils;
 import com.tw.clipshare.platformUtils.DataContainer;
 import com.tw.clipshare.platformUtils.FSUtils;
@@ -54,18 +54,18 @@ public final class ProtoMethods {
   private static final byte STATUS_OK = 1;
   private static final int BUF_SZ = 65536;
 
-  private final ServerConnection serverConnection;
+  private final SocketConnection socketConnection;
   private final AndroidUtils utils;
   private StatusNotifier notifier;
   private final DataContainer dataContainer;
   private volatile boolean isRunning;
 
   ProtoMethods(
-      ServerConnection serverConnection,
+      SocketConnection socketConnection,
       AndroidUtils utils,
       StatusNotifier notifier,
       DataContainer dataContainer) {
-    this.serverConnection = serverConnection;
+    this.socketConnection = socketConnection;
     this.utils = utils;
     this.notifier = notifier;
     this.dataContainer = dataContainer;
@@ -139,7 +139,7 @@ public final class ProtoMethods {
         continue;
       }
       fileSize -= read_sz;
-      if (this.serverConnection.send(buf, 0, read_sz)) {
+      if (this.socketConnection.send(buf, 0, read_sz)) {
         return false;
       }
       sent_sz += read_sz;
@@ -170,7 +170,7 @@ public final class ProtoMethods {
     byte[] buf = new byte[BUF_SZ];
     while (fileSize > 0) {
       int read_sz = (int) Math.min(fileSize, BUF_SZ);
-      if (this.serverConnection.receive(buf, 0, read_sz)) {
+      if (this.socketConnection.receive(buf, 0, read_sz)) {
         return false;
       }
       fileSize -= read_sz;
@@ -263,7 +263,7 @@ public final class ProtoMethods {
         }
         while (fileSize > 0 && isRunning) {
           int read_sz = (int) Math.min(fileSize, BUF_SZ);
-          if (this.serverConnection.receive(buf, 0, read_sz)) {
+          if (this.socketConnection.receive(buf, 0, read_sz)) {
             status = false;
             break;
           }
@@ -358,7 +358,7 @@ public final class ProtoMethods {
           else if (read_sz == 0) continue;
           fileSize -= read_sz;
           sent_sz += read_sz;
-          if (this.serverConnection.send(buf, 0, read_sz)) return false;
+          if (this.socketConnection.send(buf, 0, read_sz)) return false;
           if (this.notifier != null) this.notifier.setProgress(sent_sz);
         }
       }
@@ -387,7 +387,7 @@ public final class ProtoMethods {
   private boolean selectDisplay(int display) {
     if (sendSize(display)) return true;
     byte[] status = new byte[1];
-    return (this.serverConnection.receive(status) || status[0] != STATUS_OK);
+    return (this.socketConnection.receive(status) || status[0] != STATUS_OK);
   }
 
   boolean v3_getScreenshot(int display) {
@@ -402,7 +402,7 @@ public final class ProtoMethods {
    */
   private long readSize() throws IOException {
     byte[] data = new byte[8];
-    if (this.serverConnection.receive(data)) {
+    if (this.socketConnection.receive(data)) {
       throw new IOException();
     }
     long size = 0;
@@ -424,7 +424,7 @@ public final class ProtoMethods {
       data[i] = (byte) (size & 0xFF);
       size >>= 8;
     }
-    return this.serverConnection.send(data);
+    return this.socketConnection.send(data);
   }
 
   /**
@@ -435,11 +435,11 @@ public final class ProtoMethods {
    */
   private boolean methodInit(byte method) {
     byte[] methodArr = {method};
-    if (this.serverConnection.send(methodArr)) {
+    if (this.socketConnection.send(methodArr)) {
       return true;
     }
     byte[] status = new byte[1];
-    return (this.serverConnection.receive(status) || status[0] != STATUS_OK);
+    return (this.socketConnection.receive(status) || status[0] != STATUS_OK);
   }
 
   /**
@@ -459,7 +459,7 @@ public final class ProtoMethods {
       return null;
     }
     byte[] data = new byte[(int) size];
-    if (this.serverConnection.receive(data)) {
+    if (this.socketConnection.receive(data)) {
       return null;
     }
     return new String(data, StandardCharsets.UTF_8);
@@ -477,7 +477,7 @@ public final class ProtoMethods {
     final int len = bytes.length;
     if (len >= 16777216) return true;
     if (this.sendSize(len)) return true;
-    return this.serverConnection.send(bytes);
+    return this.socketConnection.send(bytes);
   }
 
   public void setStatusNotifier(StatusNotifier notifier) {
@@ -499,7 +499,7 @@ public final class ProtoMethods {
   /** Close the connection used for communicating with the server */
   public void close() {
     try {
-      if (this.serverConnection != null) this.serverConnection.close();
+      if (this.socketConnection != null) this.socketConnection.close();
     } catch (Exception ignored) {
     }
   }

@@ -25,7 +25,7 @@
 package com.tw.clipshare;
 
 import com.tw.clipshare.netConnection.PlainConnection;
-import com.tw.clipshare.netConnection.ServerConnection;
+import com.tw.clipshare.netConnection.SocketConnection;
 import com.tw.clipshare.protocol.Proto;
 import com.tw.clipshare.protocol.ProtocolSelector;
 import java.io.IOException;
@@ -110,7 +110,7 @@ class TCPScanner {
         try {
           InetAddress address = convertAddress(addressInt);
           if (!address.equals(myAddress)) {
-            ServerConnection con = new PlainConnection(address, port);
+            SocketConnection con = new PlainConnection(address, port);
             Proto pr = ProtocolSelector.getProto(con, null, null);
             if (pr != null) {
               String serverName = pr.checkInfo();

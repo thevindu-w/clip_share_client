@@ -24,14 +24,14 @@
 
 package com.tw.clipshare.protocol;
 
-import com.tw.clipshare.netConnection.ServerConnection;
+import com.tw.clipshare.netConnection.SocketConnection;
 import com.tw.clipshare.platformUtils.AndroidUtils;
 import com.tw.clipshare.platformUtils.StatusNotifier;
 
 public class ProtoV1 extends Proto {
 
-  ProtoV1(ServerConnection serverConnection, AndroidUtils utils, StatusNotifier notifier) {
-    super(serverConnection, utils, notifier);
+  ProtoV1(SocketConnection socketConnection, AndroidUtils utils, StatusNotifier notifier) {
+    super(socketConnection, utils, notifier);
   }
 
   @Override

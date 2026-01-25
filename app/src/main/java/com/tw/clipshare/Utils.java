@@ -27,7 +27,7 @@ package com.tw.clipshare;
 import androidx.annotation.NonNull;
 import com.tw.clipshare.netConnection.PlainConnection;
 import com.tw.clipshare.netConnection.SecureConnection;
-import com.tw.clipshare.netConnection.ServerConnection;
+import com.tw.clipshare.netConnection.SocketConnection;
 import com.tw.clipshare.platformUtils.AndroidUtils;
 import com.tw.clipshare.protocol.Proto;
 import com.tw.clipshare.protocol.ProtocolSelector;
@@ -54,8 +54,8 @@ public class Utils {
     return false;
   }
 
-  /** Opens a ServerConnection. Returns null on error. */
-  private static ServerConnection getServerConnection(@NonNull String addressStr) {
+  /** Opens a SocketConnection. Returns null on error. */
+  private static SocketConnection getServerConnection(@NonNull String addressStr) {
     int retries = 2;
     do {
       try {
@@ -89,7 +89,7 @@ public class Utils {
     int retries = 1;
     do {
       try {
-        ServerConnection connection = getServerConnection(address);
+        SocketConnection connection = getServerConnection(address);
         if (connection == null) continue;
         Proto proto = ProtocolSelector.getProto(connection, utils, null);
         if (proto != null) return proto;
