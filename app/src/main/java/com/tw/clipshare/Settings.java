@@ -79,7 +79,7 @@ public class Settings implements Serializable {
     this.autoSendTrustedList = new ArrayList<>(1);
     this.savedServersList = new ArrayList<>(1);
     this.vibrate = true;
-    this.scanIPv6 = true;
+    this.scanIPv6 = false;
     this.scanTCP = false;
     this.autoScan = false;
     this.closeIfIdle = true;
