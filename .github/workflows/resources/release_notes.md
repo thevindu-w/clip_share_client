@@ -7,5 +7,5 @@ There are 2 APK files included in the release assets for compatibility.
 
 Refer to the [README](https://github.com/thevindu-w/clip_share_client/#how-to-use) for usage information.<br>
 **Changes:**
-- Add a Server mode to receive auto-sent text from other clients.
-- Add a settings option to turn on Server mode.
+- Enable Server mode to use secure connections.
+- Set the default value of the Scan IPv6 setting to false.
