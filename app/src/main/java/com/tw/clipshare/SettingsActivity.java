@@ -470,6 +470,7 @@ public class SettingsActivity extends AppCompatActivity {
     expandBlock(R.id.savedAddressLayout, R.id.expandSavedAddressBtn);
     expandBlock(R.id.secureModeLayout, R.id.expandSecureModeBtn);
     expandBlock(R.id.otherSettingsLayout, R.id.expandOtherSettingsBtn);
+    expandBlock(R.id.serverModeLayout, R.id.expandServerModeBtn);
 
     this.secureSwitch.setOnClickListener(
         view -> {
