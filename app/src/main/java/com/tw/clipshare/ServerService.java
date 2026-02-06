@@ -137,10 +137,11 @@ public class ServerService extends Service {
   }
 
   private static ExecutorService startUDPServer() throws SocketException, InterruptedException {
+    Settings settings = Settings.getInstance();
+    if (!settings.getUDPServerEnabled()) return null;
     Enumeration<NetworkInterface> netIFEnum = NetworkInterface.getNetworkInterfaces();
     List<NetworkInterface> netIFList = Collections.list(netIFEnum);
     ExecutorService executorService = Executors.newCachedThreadPool();
-    Settings settings = Settings.getInstance();
     for (NetworkInterface netIF : netIFList) {
       if (netIF == null || netIF.isLoopback() || !netIF.isUp() || netIF.isVirtual()) continue;
       Runnable r =
@@ -237,7 +238,7 @@ public class ServerService extends Service {
       startTCPServer();
     } catch (Exception ignored) {
     }
-    udpService.shutdownNow();
+    if (udpService != null) udpService.shutdownNow();
     stopForeground(STOP_FOREGROUND_REMOVE);
   }
 

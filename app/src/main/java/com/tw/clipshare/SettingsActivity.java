@@ -79,6 +79,7 @@ public class SettingsActivity extends AppCompatActivity {
   private EditText editAutoCloseDelay;
   private LinearLayout layoutAutoCloseDelay;
   private SwitchCompat saveAddressesSwitch;
+  private SwitchCompat udpServerSwitch;
   private Settings settings;
   private final ActivityResultLauncher<Intent> clientActivityLauncher =
       registerForActivityResult(
@@ -222,6 +223,7 @@ public class SettingsActivity extends AppCompatActivity {
     for (String server : savedServers) {
       addRowToSavedServersList(false, server);
     }
+    udpServerSwitch.setChecked(settings.getUDPServerEnabled());
   }
 
   private Cursor getCursorFromIntentUri(Intent intent) {
@@ -465,6 +467,7 @@ public class SettingsActivity extends AppCompatActivity {
     this.editAutoCloseDelay = findViewById(R.id.editAutoCloseDelay);
     this.layoutAutoCloseDelay = findViewById(R.id.layoutAutoCloseDelay);
     this.saveAddressesSwitch = findViewById(R.id.saveAddressesSwitch);
+    this.udpServerSwitch = findViewById(R.id.udpServerSwitch);
 
     expandBlock(R.id.autoSendLayout, R.id.expandAutoSendBtn);
     expandBlock(R.id.savedAddressLayout, R.id.expandSavedAddressBtn);
@@ -669,6 +672,10 @@ public class SettingsActivity extends AppCompatActivity {
           intent.addCategory(Intent.CATEGORY_OPENABLE);
           clientActivityLauncher.launch(intent);
         });
+
+    udpServerSwitch.setOnClickListener(
+        view -> settings.setUDPServerEnabled(udpServerSwitch.isChecked()));
+    udpServerSwitch.setChecked(settings.getUDPServerEnabled());
 
     getOnBackPressedDispatcher()
         .addCallback(

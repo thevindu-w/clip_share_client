@@ -74,6 +74,7 @@
     <string name="start_service">Run in background</string>
     <string name="server_mode">Server mode (beta)</string>
     <string name="start_server_mode">Start server mode</string>
+    <string name="udp_server">UDP server</string>
     <string name="cancel">Cancel</string>
     <string name="reset">Reset</string>
     <string name="prompt_reset">Are you sure you need to reset settings to their defaults?</string>

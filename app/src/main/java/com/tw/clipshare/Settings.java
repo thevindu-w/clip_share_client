@@ -62,6 +62,7 @@ public class Settings implements Serializable {
   private boolean closeIfIdle;
   private int autoCloseDelay;
   private boolean saveServers;
+  private boolean udpServerEnabled;
 
   private Settings() {
     this.secure = false;
@@ -85,6 +86,7 @@ public class Settings implements Serializable {
     this.closeIfIdle = true;
     this.autoCloseDelay = 120;
     this.saveServers = true;
+    this.udpServerEnabled = true;
   }
 
   private static ArrayList<String> objectToArrayList(Object listO) {
@@ -311,6 +313,15 @@ public class Settings implements Serializable {
     } catch (Exception ignored) {
     }
 
+    // Set udpServerEnabled
+    try {
+      Object attributeO = map.get("udpServerEnabled");
+      if (attributeO instanceof Boolean) {
+        settings.udpServerEnabled = (Boolean) attributeO;
+      }
+    } catch (Exception ignored) {
+    }
+
     return settings;
   }
 
@@ -322,7 +333,7 @@ public class Settings implements Serializable {
 
   @NonNull
   public String toString(boolean includePassword) {
-    HashMap<String, Object> map = new HashMap<>(19);
+    HashMap<String, Object> map = new HashMap<>(32);
     try {
       this.savedServersList.removeAll(List.of("0.0.0.0"));
       if (this.caCert != null)
@@ -347,6 +358,7 @@ public class Settings implements Serializable {
       map.put("autoCloseDelay", this.autoCloseDelay);
       map.put("savedServersList", this.savedServersList);
       map.put("saveServers", this.saveServers);
+      map.put("udpServerEnabled", this.udpServerEnabled);
     } catch (Exception ignored) {
     }
 
@@ -390,6 +402,7 @@ public class Settings implements Serializable {
         INSTANCE.savedServersList.addAll(strSet.savedServersList);
         INSTANCE.savedServersList.removeAll(List.of("0.0.0.0"));
         INSTANCE.saveServers = strSet.saveServers;
+        INSTANCE.udpServerEnabled = strSet.udpServerEnabled;
       } catch (Exception ignored) {
       }
     }
@@ -506,6 +519,10 @@ public class Settings implements Serializable {
     return this.savedServersList;
   }
 
+  public boolean getUDPServerEnabled() {
+    return udpServerEnabled;
+  }
+
   public void setSecure(boolean secure) {
     this.secure = secure;
   }
@@ -600,5 +617,9 @@ public class Settings implements Serializable {
 
   public void setSaveServers(boolean saveServers) {
     this.saveServers = saveServers;
+  }
+
+  public void setUDPServerEnabled(boolean udpServerEnabled) {
+    this.udpServerEnabled = udpServerEnabled;
   }
 }
