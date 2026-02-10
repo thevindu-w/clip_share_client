@@ -63,6 +63,7 @@ public class Settings implements Serializable {
   private int autoCloseDelay;
   private boolean saveServers;
   private boolean udpServerEnabled;
+  private int serverPort;
 
   private Settings() {
     this.secure = false;
@@ -87,6 +88,7 @@ public class Settings implements Serializable {
     this.autoCloseDelay = 120;
     this.saveServers = true;
     this.udpServerEnabled = true;
+    this.serverPort = 4337;
   }
 
   private static ArrayList<String> objectToArrayList(Object listO) {
@@ -322,6 +324,16 @@ public class Settings implements Serializable {
     } catch (Exception ignored) {
     }
 
+    // Set serverPort
+    try {
+      Object attributeO = map.get("serverPort");
+      if (attributeO instanceof Integer) {
+        int value = (Integer) attributeO;
+        if (0 < value && value < 65536) settings.serverPort = value;
+      }
+    } catch (Exception ignored) {
+    }
+
     return settings;
   }
 
@@ -359,6 +371,7 @@ public class Settings implements Serializable {
       map.put("savedServersList", this.savedServersList);
       map.put("saveServers", this.saveServers);
       map.put("udpServerEnabled", this.udpServerEnabled);
+      map.put("serverPort", this.serverPort);
     } catch (Exception ignored) {
     }
 
@@ -403,6 +416,7 @@ public class Settings implements Serializable {
         INSTANCE.savedServersList.removeAll(List.of("0.0.0.0"));
         INSTANCE.saveServers = strSet.saveServers;
         INSTANCE.udpServerEnabled = strSet.udpServerEnabled;
+        INSTANCE.serverPort = strSet.serverPort;
       } catch (Exception ignored) {
       }
     }
@@ -523,6 +537,10 @@ public class Settings implements Serializable {
     return udpServerEnabled;
   }
 
+  public int getServerPort() {
+    return serverPort;
+  }
+
   public void setSecure(boolean secure) {
     this.secure = secure;
   }
@@ -621,5 +639,9 @@ public class Settings implements Serializable {
 
   public void setUDPServerEnabled(boolean udpServerEnabled) {
     this.udpServerEnabled = udpServerEnabled;
+  }
+
+  public void setServerPort(int port) {
+    this.serverPort = port;
   }
 }

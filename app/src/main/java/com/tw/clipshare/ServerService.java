@@ -197,7 +197,7 @@ public class ServerService extends Service {
               settings.getCertInputStream(),
               settings.getPasswd());
     } else {
-      ss = new ServerSocket(settings.getPort(), 3);
+      ss = new ServerSocket(settings.getServerPort(), 3);
     }
     ss.setSoTimeout(2000);
     while (running) {

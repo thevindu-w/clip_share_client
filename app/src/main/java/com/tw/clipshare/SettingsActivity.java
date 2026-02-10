@@ -80,6 +80,7 @@ public class SettingsActivity extends AppCompatActivity {
   private LinearLayout layoutAutoCloseDelay;
   private SwitchCompat saveAddressesSwitch;
   private SwitchCompat udpServerSwitch;
+  private EditText editServerPort;
   private Settings settings;
   private final ActivityResultLauncher<Intent> clientActivityLauncher =
       registerForActivityResult(
@@ -224,6 +225,7 @@ public class SettingsActivity extends AppCompatActivity {
       addRowToSavedServersList(false, server);
     }
     udpServerSwitch.setChecked(settings.getUDPServerEnabled());
+    editServerPort.setText(String.valueOf(settings.getServerPort()));
   }
 
   private Cursor getCursorFromIntentUri(Intent intent) {
@@ -468,6 +470,7 @@ public class SettingsActivity extends AppCompatActivity {
     this.layoutAutoCloseDelay = findViewById(R.id.layoutAutoCloseDelay);
     this.saveAddressesSwitch = findViewById(R.id.saveAddressesSwitch);
     this.udpServerSwitch = findViewById(R.id.udpServerSwitch);
+    this.editServerPort = findViewById(R.id.editServerPort);
 
     expandBlock(R.id.autoSendLayout, R.id.expandAutoSendBtn);
     expandBlock(R.id.savedAddressLayout, R.id.expandSavedAddressBtn);
@@ -676,6 +679,24 @@ public class SettingsActivity extends AppCompatActivity {
     udpServerSwitch.setOnClickListener(
         view -> settings.setUDPServerEnabled(udpServerSwitch.isChecked()));
     udpServerSwitch.setChecked(settings.getUDPServerEnabled());
+
+    editServerPort.setOnFocusChangeListener(
+        (view, focus) -> {
+          try {
+            if (focus) return;
+            String portStr = ((EditText) view).getText().toString();
+            int port = Integer.parseInt(portStr);
+            if (port <= 0 || 65536 <= port) {
+              ((EditText) view).setText(settings.getServerPort());
+              Toast.makeText(SettingsActivity.this, "Invalid port", Toast.LENGTH_SHORT).show();
+              return;
+            }
+            settings.setServerPort(port);
+          } catch (Exception ignored) {
+            Toast.makeText(SettingsActivity.this, "Error occurred", Toast.LENGTH_SHORT).show();
+          }
+        });
+    editServerPort.setText(String.valueOf(settings.getServerPort()));
 
     getOnBackPressedDispatcher()
         .addCallback(

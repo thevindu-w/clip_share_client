@@ -43,7 +43,7 @@
         Settings to automatically send.
     </string>
     <string name="ports" translatable="false">Ports</string>
-    <string name="port" translatable="false">Port</string>
+    <string name="port" translatable="false">Plaintext Port</string>
     <string name="secure_port" translatable="false">Secure Port</string>
     <string name="UDP_port" translatable="false">UDP Port</string>
     <string name="port_number" translatable="false">4337</string>
