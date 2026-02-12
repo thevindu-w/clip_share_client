@@ -192,7 +192,7 @@ public class ServerService extends Service {
     if (settings.getSecure()) {
       ss =
           SecureConnection.getSecureServerSocket(
-              settings.getPortSecure(),
+              settings.getServerPortSecure(),
               settings.getCACertInputStream(),
               settings.getCertInputStream(),
               settings.getPasswd());

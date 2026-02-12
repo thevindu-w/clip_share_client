@@ -64,6 +64,7 @@ public class Settings implements Serializable {
   private boolean saveServers;
   private boolean udpServerEnabled;
   private int serverPort;
+  private int serverPortSecure;
 
   private Settings() {
     this.secure = false;
@@ -89,6 +90,7 @@ public class Settings implements Serializable {
     this.saveServers = true;
     this.udpServerEnabled = true;
     this.serverPort = 4337;
+    this.serverPortSecure = 4338;
   }
 
   private static ArrayList<String> objectToArrayList(Object listO) {
@@ -334,6 +336,16 @@ public class Settings implements Serializable {
     } catch (Exception ignored) {
     }
 
+    // Set serverPortSecure
+    try {
+      Object attributeO = map.get("serverPortSecure");
+      if (attributeO instanceof Integer) {
+        int value = (Integer) attributeO;
+        if (0 < value && value < 65536) settings.serverPortSecure = value;
+      }
+    } catch (Exception ignored) {
+    }
+
     return settings;
   }
 
@@ -372,6 +384,7 @@ public class Settings implements Serializable {
       map.put("saveServers", this.saveServers);
       map.put("udpServerEnabled", this.udpServerEnabled);
       map.put("serverPort", this.serverPort);
+      map.put("serverPortSecure", this.serverPortSecure);
     } catch (Exception ignored) {
     }
 
@@ -417,6 +430,7 @@ public class Settings implements Serializable {
         INSTANCE.saveServers = strSet.saveServers;
         INSTANCE.udpServerEnabled = strSet.udpServerEnabled;
         INSTANCE.serverPort = strSet.serverPort;
+        INSTANCE.serverPortSecure = strSet.serverPortSecure;
       } catch (Exception ignored) {
       }
     }
@@ -541,6 +555,10 @@ public class Settings implements Serializable {
     return serverPort;
   }
 
+  public int getServerPortSecure() {
+    return serverPortSecure;
+  }
+
   public void setSecure(boolean secure) {
     this.secure = secure;
   }
@@ -643,5 +661,9 @@ public class Settings implements Serializable {
 
   public void setServerPort(int port) {
     this.serverPort = port;
+  }
+
+  public void setServerPortSecure(int port) {
+    this.serverPortSecure = port;
   }
 }
