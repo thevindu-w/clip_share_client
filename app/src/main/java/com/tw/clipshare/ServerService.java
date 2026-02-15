@@ -153,9 +153,11 @@ public class ServerService extends Service {
                 if (!(brd instanceof Inet4Address)) continue;
                 InetAddress myAddr = intAddr.getAddress();
                 if (!(myAddr instanceof Inet4Address)) continue;
-                try (DatagramSocket sndSock = new DatagramSocket(settings.getPortUDP(), myAddr)) {
+                try (DatagramSocket sndSock =
+                    new DatagramSocket(settings.getServerPortUDP(), myAddr)) {
                   sndSock.setSoTimeout(2000);
-                  try (DatagramSocket socket = new DatagramSocket(settings.getPortUDP(), brd)) {
+                  try (DatagramSocket socket =
+                      new DatagramSocket(settings.getServerPortUDP(), brd)) {
                     socket.setSoTimeout(2000);
                     byte[] recvBuf = new byte[8];
                     byte[] sndBuf = "clip_share".getBytes(StandardCharsets.UTF_8);

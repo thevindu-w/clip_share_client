@@ -65,6 +65,7 @@ public class Settings implements Serializable {
   private boolean udpServerEnabled;
   private int serverPort;
   private int serverPortSecure;
+  private int serverPortUDP;
 
   private Settings() {
     this.secure = false;
@@ -91,6 +92,7 @@ public class Settings implements Serializable {
     this.udpServerEnabled = true;
     this.serverPort = 4337;
     this.serverPortSecure = 4338;
+    this.serverPortUDP = 4337;
   }
 
   private static ArrayList<String> objectToArrayList(Object listO) {
@@ -346,6 +348,16 @@ public class Settings implements Serializable {
     } catch (Exception ignored) {
     }
 
+    // Set serverPortUDP
+    try {
+      Object attributeO = map.get("serverPortUDP");
+      if (attributeO instanceof Integer) {
+        int value = (Integer) attributeO;
+        if (0 < value && value < 65536) settings.serverPortUDP = value;
+      }
+    } catch (Exception ignored) {
+    }
+
     return settings;
   }
 
@@ -385,6 +397,7 @@ public class Settings implements Serializable {
       map.put("udpServerEnabled", this.udpServerEnabled);
       map.put("serverPort", this.serverPort);
       map.put("serverPortSecure", this.serverPortSecure);
+      map.put("serverPortUDP", this.serverPortUDP);
     } catch (Exception ignored) {
     }
 
@@ -431,6 +444,7 @@ public class Settings implements Serializable {
         INSTANCE.udpServerEnabled = strSet.udpServerEnabled;
         INSTANCE.serverPort = strSet.serverPort;
         INSTANCE.serverPortSecure = strSet.serverPortSecure;
+        INSTANCE.serverPortUDP = strSet.serverPortUDP;
       } catch (Exception ignored) {
       }
     }
@@ -559,6 +573,10 @@ public class Settings implements Serializable {
     return serverPortSecure;
   }
 
+  public int getServerPortUDP() {
+    return serverPortUDP;
+  }
+
   public void setSecure(boolean secure) {
     this.secure = secure;
   }
@@ -665,5 +683,9 @@ public class Settings implements Serializable {
 
   public void setServerPortSecure(int port) {
     this.serverPortSecure = port;
+  }
+
+  public void setServerPortUDP(int port) {
+    this.serverPortUDP = port;
   }
 }
