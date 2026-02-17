@@ -7,5 +7,7 @@ There are 2 APK files included in the release assets for compatibility.
 
 Refer to the [README](https://github.com/thevindu-w/clip_share_client/#how-to-use) for usage information.<br>
 **Changes:**
-- Enable Server mode to use secure connections.
-- Set the default value of the Scan IPv6 setting to false.
+- Add new settings options.
+  - Option to enable/disable UDP server in server mode.
+  - Options to change ports used in server mode.
+- Group Server mode settings separately.
