@@ -236,9 +236,23 @@ app. You can find more information on running the server on Windows, macOS, or L
 - **Run in background:** This will make the app run in the background with a notification. The notification has buttons
   to get and send copied text without opening the app.
 
-#### Server mode
+### Server mode (beta)
 
-- **Server mode (beta):** This will start the server mode in the background with a notification. Other ClipShare clients
+- **UDP Scan:** When this setting is enabled, the server mode becomes discoverable to other devices using the scan
+  operation. It is useful when using the auto-send in the desktop client.
+
+#### Ports
+
+- **Port:** This is the port on which the server mode listens for plaintext TCP connections. The default value of this
+  port is `4337`. If a different port is assigned, configure the other clients to use the same port.
+- **Secure Port:** This is the port on which the server mode listens for TLS-encrypted connections. The default value of
+  this port is `4338`. If a different port is assigned, configure the other clients to use the same port.
+- **UDP Port:** This is the port on which the server mode listens for UDP scanning requests. The default value of this
+  port is `4337`. If a different port is assigned, configure the other clients to use the same port.
+
+#### Start server mode
+
+- **Start server mode:** This will start the server mode in the background with a notification. Other ClipShare clients
   on the network can send text to this device. The notification has a button to stop the server mode.
 
 #### Import/Export settings
