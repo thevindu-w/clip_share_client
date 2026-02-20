@@ -216,6 +216,7 @@ public class ServerService extends Service {
         connection = new PlainConnection(sock);
       }
       String text = receiveText(connection);
+      connection.close();
       if (text != null) {
         receivedText = text;
         try {
@@ -230,7 +231,6 @@ public class ServerService extends Service {
         } catch (Exception ignored) {
         }
       }
-      connection.close();
     }
   }
 

@@ -115,6 +115,23 @@ public class Settings implements Serializable {
     return null;
   }
 
+  private static boolean extractBool(JSONObject map, String key) throws JSONException {
+    Object value = map.get(key);
+    if (value instanceof Boolean) {
+      return (Boolean) value;
+    }
+    throw new JSONException(key);
+  }
+
+  private static int extractPort(JSONObject map, String key) throws JSONException {
+    Object value = map.get(key);
+    if (value instanceof Integer) {
+      int port = (Integer) value;
+      if (0 < port && port < 65536) return port;
+    }
+    throw new JSONException(key);
+  }
+
   private static Settings fromString(String s) throws JSONException {
     JSONObject map = new JSONObject(s);
 
@@ -200,103 +217,67 @@ public class Settings implements Serializable {
 
     // Set secure
     try {
-      Object attributeO = map.get("secure");
-      if (attributeO instanceof Boolean) {
-        settings.secure = (Boolean) attributeO;
-      }
+      settings.secure = extractBool(map, "secure");
     } catch (Exception ignored) {
     }
 
     // Set port
     try {
-      Object attributeO = map.get("port");
-      if (attributeO instanceof Integer) {
-        int value = (Integer) attributeO;
-        if (0 < value && value < 65536) settings.port = value;
-      }
+      settings.port = extractPort(map, "port");
     } catch (Exception ignored) {
     }
 
     // Set portSecure
     try {
-      Object attributeO = map.get("portSecure");
-      if (attributeO instanceof Integer) {
-        int value = (Integer) attributeO;
-        if (0 < value && value < 65536) settings.portSecure = value;
-      }
+      settings.portSecure = extractPort(map, "portSecure");
     } catch (Exception ignored) {
     }
 
     // Set portUDP
     try {
-      Object attributeO = map.get("portUDP");
-      if (attributeO instanceof Integer) {
-        int value = (Integer) attributeO;
-        if (0 < value && value < 65536) settings.portUDP = value;
-      }
+      settings.portUDP = extractPort(map, "portUDP");
     } catch (Exception ignored) {
     }
 
     // Set autoSendText
     try {
-      Object attributeO = map.get("autoSendText");
-      if (attributeO instanceof Boolean) {
-        settings.autoSendText = (Boolean) attributeO;
-      }
+      settings.autoSendText = extractBool(map, "autoSendText");
     } catch (Exception ignored) {
     }
 
     // Set autoSendFiles
     try {
-      Object attributeO = map.get("autoSendFiles");
-      if (attributeO instanceof Boolean) {
-        settings.autoSendFiles = (Boolean) attributeO;
-      }
+      settings.autoSendFiles = extractBool(map, "autoSendFiles");
     } catch (Exception ignored) {
     }
 
     // Set vibrate
     try {
-      Object attributeO = map.get("vibrate");
-      if (attributeO instanceof Boolean) {
-        settings.vibrate = (Boolean) attributeO;
-      }
+      settings.vibrate = extractBool(map, "vibrate");
     } catch (Exception ignored) {
     }
 
     // Set scanIPv6
     try {
-      Object attributeO = map.get("scanIPv6");
-      if (attributeO instanceof Boolean) {
-        settings.scanIPv6 = (Boolean) attributeO;
-      }
+      settings.scanIPv6 = extractBool(map, "scanIPv6");
     } catch (Exception ignored) {
     }
 
     // Set scanTCP
     try {
-      Object attributeO = map.get("scanTCP");
-      if (attributeO instanceof Boolean) {
-        settings.scanTCP = (Boolean) attributeO;
-      }
+      settings.scanTCP = extractBool(map, "scanTCP");
     } catch (Exception ignored) {
     }
 
     // Set autoScan
     try {
-      Object attributeO = map.get("autoScan");
-      if (attributeO instanceof Boolean) {
-        settings.autoScan = (Boolean) attributeO;
-      }
+      settings.autoScan = extractBool(map, "autoScan");
     } catch (Exception ignored) {
     }
 
     // Set closeIfIdle
     try {
-      Object attributeO = map.get("closeIfIdle");
-      if (attributeO instanceof Boolean) {
-        settings.closeIfIdle = (Boolean) attributeO;
-      }
+      settings.closeIfIdle = extractBool(map, "closeIfIdle");
     } catch (Exception ignored) {
     }
 
@@ -312,49 +293,31 @@ public class Settings implements Serializable {
 
     // Set saveServers
     try {
-      Object attributeO = map.get("saveServers");
-      if (attributeO instanceof Boolean) {
-        settings.saveServers = (Boolean) attributeO;
-      }
+      settings.saveServers = extractBool(map, "saveServers");
     } catch (Exception ignored) {
     }
 
     // Set udpServerEnabled
     try {
-      Object attributeO = map.get("udpServerEnabled");
-      if (attributeO instanceof Boolean) {
-        settings.udpServerEnabled = (Boolean) attributeO;
-      }
+      settings.udpServerEnabled = extractBool(map, "udpServerEnabled");
     } catch (Exception ignored) {
     }
 
     // Set serverPort
     try {
-      Object attributeO = map.get("serverPort");
-      if (attributeO instanceof Integer) {
-        int value = (Integer) attributeO;
-        if (0 < value && value < 65536) settings.serverPort = value;
-      }
+      settings.serverPort = extractPort(map, "serverPort");
     } catch (Exception ignored) {
     }
 
     // Set serverPortSecure
     try {
-      Object attributeO = map.get("serverPortSecure");
-      if (attributeO instanceof Integer) {
-        int value = (Integer) attributeO;
-        if (0 < value && value < 65536) settings.serverPortSecure = value;
-      }
+      settings.serverPortSecure = extractPort(map, "serverPortSecure");
     } catch (Exception ignored) {
     }
 
     // Set serverPortUDP
     try {
-      Object attributeO = map.get("serverPortUDP");
-      if (attributeO instanceof Integer) {
-        int value = (Integer) attributeO;
-        if (0 < value && value < 65536) settings.serverPortUDP = value;
-      }
+      settings.serverPortUDP = extractPort(map, "serverPortUDP");
     } catch (Exception ignored) {
     }
 
