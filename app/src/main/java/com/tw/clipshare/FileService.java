@@ -182,6 +182,7 @@ public class FileService extends Service {
     NotificationCompat.Builder builder =
         new NotificationCompat.Builder(context, FileService.CHANNEL_ID)
             .setContentIntent(pendingIntent)
+            .setSmallIcon(R.drawable.clip_share_icon_mono)
             .addAction(0, "Stop", pendingIntentStop);
     this.statusNotifier = new StatusNotifier(notificationManager, builder, notificationId);
     return notificationId;
