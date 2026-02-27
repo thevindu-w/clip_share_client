@@ -514,54 +514,38 @@ public class SettingsActivity extends AppCompatActivity {
         });
     this.secureSwitch.setChecked(settings.getSecure());
 
-    editPort.setOnFocusChangeListener(
+    View.OnFocusChangeListener portChangeListener =
         (view, focus) -> {
           try {
             if (focus) return;
-            String portStr = ((EditText) view).getText().toString();
+            EditText editor = (EditText) view;
+            String portStr = editor.getText().toString();
             int port = Integer.parseInt(portStr);
             if (port <= 0 || 65536 <= port) {
-              ((EditText) view).setText(settings.getPort());
+              if (editPort.equals(view)) port = settings.getPort();
+              else if (editPortSecure.equals(view)) port = settings.getPortSecure();
+              else if (editPortUDP.equals(view)) port = settings.getPortUDP();
+              else if (editServerPort.equals(view)) port = settings.getServerPort();
+              else if (editServerPortSecure.equals(view)) port = settings.getServerPortSecure();
+              else if (editServerPortUDP.equals(view)) port = settings.getServerPortUDP();
+              else port = 0;
+              if (port > 0) editor.setText(String.valueOf(port));
               Toast.makeText(SettingsActivity.this, "Invalid port", Toast.LENGTH_SHORT).show();
               return;
             }
-            settings.setPort(port);
+            if (editPort.equals(view)) settings.setPort(port);
+            else if (editPortSecure.equals(view)) settings.setPortSecure(port);
+            else if (editPortUDP.equals(view)) settings.setPortUDP(port);
+            else if (editServerPort.equals(view)) settings.setServerPort(port);
+            else if (editServerPortSecure.equals(view)) settings.setServerPortSecure(port);
+            else if (editServerPortUDP.equals(view)) settings.setServerPortUDP(port);
           } catch (Exception ignored) {
             Toast.makeText(SettingsActivity.this, "Error occurred", Toast.LENGTH_SHORT).show();
           }
-        });
-    editPortSecure.setOnFocusChangeListener(
-        (view, focus) -> {
-          try {
-            if (focus) return;
-            String portStr = ((EditText) view).getText().toString();
-            int port = Integer.parseInt(portStr);
-            if (port <= 0 || 65536 <= port) {
-              ((EditText) view).setText(settings.getPortSecure());
-              Toast.makeText(SettingsActivity.this, "Invalid port", Toast.LENGTH_SHORT).show();
-              return;
-            }
-            settings.setPortSecure(port);
-          } catch (Exception ignored) {
-            Toast.makeText(SettingsActivity.this, "Error occurred", Toast.LENGTH_SHORT).show();
-          }
-        });
-    editPortUDP.setOnFocusChangeListener(
-        (view, focus) -> {
-          try {
-            if (focus) return;
-            String portStr = ((EditText) view).getText().toString();
-            int port = Integer.parseInt(portStr);
-            if (port <= 0 || 65536 <= port) {
-              ((EditText) view).setText(settings.getPort());
-              Toast.makeText(SettingsActivity.this, "Invalid port", Toast.LENGTH_SHORT).show();
-              return;
-            }
-            settings.setPortUDP(port);
-          } catch (Exception ignored) {
-            Toast.makeText(SettingsActivity.this, "Error occurred", Toast.LENGTH_SHORT).show();
-          }
-        });
+        };
+    editPort.setOnFocusChangeListener(portChangeListener);
+    editPortSecure.setOnFocusChangeListener(portChangeListener);
+    editPortUDP.setOnFocusChangeListener(portChangeListener);
 
     editPort.setText(String.valueOf(settings.getPort()));
     editPortSecure.setText(String.valueOf(settings.getPortSecure()));
@@ -686,54 +670,9 @@ public class SettingsActivity extends AppCompatActivity {
         view -> settings.setUDPServerEnabled(udpServerSwitch.isChecked()));
     udpServerSwitch.setChecked(settings.getUDPServerEnabled());
 
-    editServerPort.setOnFocusChangeListener(
-        (view, focus) -> {
-          try {
-            if (focus) return;
-            String portStr = ((EditText) view).getText().toString();
-            int port = Integer.parseInt(portStr);
-            if (port <= 0 || 65536 <= port) {
-              ((EditText) view).setText(settings.getServerPort());
-              Toast.makeText(SettingsActivity.this, "Invalid port", Toast.LENGTH_SHORT).show();
-              return;
-            }
-            settings.setServerPort(port);
-          } catch (Exception ignored) {
-            Toast.makeText(SettingsActivity.this, "Error occurred", Toast.LENGTH_SHORT).show();
-          }
-        });
-    editServerPortSecure.setOnFocusChangeListener(
-        (view, focus) -> {
-          try {
-            if (focus) return;
-            String portStr = ((EditText) view).getText().toString();
-            int port = Integer.parseInt(portStr);
-            if (port <= 0 || 65536 <= port) {
-              ((EditText) view).setText(settings.getServerPortSecure());
-              Toast.makeText(SettingsActivity.this, "Invalid port", Toast.LENGTH_SHORT).show();
-              return;
-            }
-            settings.setServerPortSecure(port);
-          } catch (Exception ignored) {
-            Toast.makeText(SettingsActivity.this, "Error occurred", Toast.LENGTH_SHORT).show();
-          }
-        });
-    editServerPortUDP.setOnFocusChangeListener(
-        (view, focus) -> {
-          try {
-            if (focus) return;
-            String portStr = ((EditText) view).getText().toString();
-            int port = Integer.parseInt(portStr);
-            if (port <= 0 || 65536 <= port) {
-              ((EditText) view).setText(settings.getServerPortUDP());
-              Toast.makeText(SettingsActivity.this, "Invalid port", Toast.LENGTH_SHORT).show();
-              return;
-            }
-            settings.setServerPortUDP(port);
-          } catch (Exception ignored) {
-            Toast.makeText(SettingsActivity.this, "Error occurred", Toast.LENGTH_SHORT).show();
-          }
-        });
+    editServerPort.setOnFocusChangeListener(portChangeListener);
+    editServerPortSecure.setOnFocusChangeListener(portChangeListener);
+    editServerPortUDP.setOnFocusChangeListener(portChangeListener);
     editServerPort.setText(String.valueOf(settings.getServerPort()));
     editServerPortSecure.setText(String.valueOf(settings.getServerPortSecure()));
     editServerPortUDP.setText(String.valueOf(settings.getServerPortUDP()));
