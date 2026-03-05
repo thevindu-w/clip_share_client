@@ -91,22 +91,25 @@ public class ServerService extends Service {
   }
 
   private String receiveText(SocketConnection connection) {
+    final int min_proto = 1;
+    final int max_proto = 3;
     byte[] buf = new byte[1];
     if (connection.receive(buf)) return null;
     byte proto = buf[0];
-    if (proto != 3) {
-      buf[0] = proto < 3 ? PROTOCOL_OBSOLETE : PROTOCOL_UNKNOWN;
+    if (proto < min_proto || proto > max_proto) {
+      buf[0] = proto < min_proto ? PROTOCOL_OBSOLETE : PROTOCOL_UNKNOWN;
       connection.send(buf);
-      if (proto > 3) {
-        buf[0] = 3;
+      if (proto > max_proto) {
+        buf[0] = max_proto;
         connection.send(buf);
         if (connection.receive(buf)) return null;
         proto = buf[0];
       }
+    } else {
+      buf[0] = PROTOCOL_SUPPORTED;
+      if (connection.send(buf)) return null;
     }
-    if (proto > 3) return null;
-    buf[0] = PROTOCOL_SUPPORTED;
-    if (connection.send(buf)) return null;
+    if (proto < min_proto || proto > max_proto) return null;
 
     if (connection.receive(buf)) return null;
     if (buf[0] != 2) {
