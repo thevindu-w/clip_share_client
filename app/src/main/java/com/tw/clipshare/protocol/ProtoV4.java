@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2024-2025 H. Thevindu J. Wijesekera
+ * Copyright (c) 2026 H. Thevindu J. Wijesekera
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,49 +28,49 @@ import com.tw.clipshare.netConnection.SocketConnection;
 import com.tw.clipshare.platformUtils.AndroidUtils;
 import com.tw.clipshare.platformUtils.StatusNotifier;
 
-public class ProtoV3 extends Proto {
+public class ProtoV4 extends Proto {
 
-  ProtoV3(SocketConnection socketConnection, AndroidUtils utils, StatusNotifier notifier) {
-    super(3, socketConnection, utils, notifier);
+  ProtoV4(SocketConnection socketConnection, AndroidUtils utils, StatusNotifier notifier) {
+    super(4, socketConnection, utils, notifier);
   }
 
   @Override
   public boolean getText() {
-    return this.protoMethods.v1_getText();
+    return this.protoMethods.v4_getText();
   }
 
   @Override
   public boolean sendText(String text) {
-    return this.protoMethods.v1_sendText(text);
+    return this.protoMethods.v4_sendText(text);
   }
 
   @Override
   public boolean getFile() {
-    return this.protoMethods.v3_getFiles();
+    return this.protoMethods.v4_getFiles();
   }
 
   @Override
   public boolean sendFile() {
-    return this.protoMethods.v3_sendFiles();
+    return this.protoMethods.v4_sendFiles();
   }
 
   @Override
   public boolean getImage() {
-    return this.protoMethods.v1_getImage();
+    return this.protoMethods.v4_getImage();
   }
 
   @Override
   public boolean getCopiedImage() {
-    return this.protoMethods.v3_getCopiedImage();
+    return this.protoMethods.v4_getCopiedImage();
   }
 
   @Override
   public boolean getScreenshot(int display) {
-    return this.protoMethods.v3_getScreenshot(display);
+    return this.protoMethods.v4_getScreenshot(display);
   }
 
   @Override
   public String checkInfo() {
-    return this.protoMethods.v1_checkInfo();
+    return this.protoMethods.v4_checkInfo();
   }
 }

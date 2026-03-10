@@ -32,7 +32,7 @@ import java.net.ProtocolException;
 
 public class ProtocolSelector {
   private static final byte PROTO_MIN = 1;
-  public static final byte PROTO_MAX = 3;
+  public static final byte PROTO_MAX = 4;
 
   private ProtocolSelector() {}
 
@@ -74,6 +74,7 @@ public class ProtocolSelector {
       case 1 -> new ProtoV1(connection, utils, notifier);
       case 2 -> new ProtoV2(connection, utils, notifier);
       case 3 -> new ProtoV3(connection, utils, notifier);
+      case 4 -> new ProtoV4(connection, utils, notifier);
       default -> throw new ProtocolException("Unknown protocol");
     };
   }

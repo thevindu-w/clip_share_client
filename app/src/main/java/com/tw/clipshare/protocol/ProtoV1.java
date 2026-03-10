@@ -31,7 +31,7 @@ import com.tw.clipshare.platformUtils.StatusNotifier;
 public class ProtoV1 extends Proto {
 
   ProtoV1(SocketConnection socketConnection, AndroidUtils utils, StatusNotifier notifier) {
-    super(socketConnection, utils, notifier);
+    super(1, socketConnection, utils, notifier);
   }
 
   @Override

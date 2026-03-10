@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2022-2025 H. Thevindu J. Wijesekera
+ * Copyright (c) 2022-2026 H. Thevindu J. Wijesekera
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,10 +30,13 @@ import com.tw.clipshare.platformUtils.DataContainer;
 import com.tw.clipshare.platformUtils.StatusNotifier;
 
 public abstract class Proto {
+  protected final int version;
   protected final ProtoMethods protoMethods;
   public final DataContainer dataContainer;
 
-  protected Proto(SocketConnection socketConnection, AndroidUtils utils, StatusNotifier notifier) {
+  protected Proto(
+      int version, SocketConnection socketConnection, AndroidUtils utils, StatusNotifier notifier) {
+    this.version = version;
     this.dataContainer = new DataContainer();
     this.protoMethods = new ProtoMethods(socketConnection, utils, notifier, dataContainer);
   }
@@ -57,6 +60,14 @@ public abstract class Proto {
 
   public abstract boolean getImage();
 
+  public boolean getCopiedImage() {
+    throw new RuntimeException("Invalid method");
+  }
+
+  public boolean getScreenshot(int display) {
+    throw new RuntimeException("Invalid method");
+  }
+
   public abstract String checkInfo();
 
   public void requestStop() {
@@ -65,5 +76,9 @@ public abstract class Proto {
 
   public boolean isStopped() {
     return this.protoMethods.isStopped();
+  }
+
+  public int getVersion() {
+    return version;
   }
 }

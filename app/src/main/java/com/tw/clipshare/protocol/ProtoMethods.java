@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2022-2025 H. Thevindu J. Wijesekera
+ * Copyright (c) 2022-2026 H. Thevindu J. Wijesekera
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -392,6 +392,19 @@ public final class ProtoMethods {
 
   boolean v3_getScreenshot(int display) {
     return getImageCommon(GET_SCREENSHOT, display);
+  }
+
+  boolean v4_getText() {
+    if (!v1_getText()) return false;
+    return sendAck();
+  }
+
+  /**
+   * @return true on success or false on failure
+   */
+  private boolean sendAck() {
+    byte[] ack = {1};
+    return !this.socketConnection.send(ack);
   }
 
   /**
