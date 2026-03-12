@@ -242,7 +242,7 @@ public final class ProtoMethods {
           status = false;
           break;
         }
-        if (version == 3 && fileSize < 0) {
+        if (version >= 3 && fileSize < 0) {
           status &= fsUtils.createDirectory(fileName);
           continue;
         } else if (fileSize < 0) {
@@ -396,6 +396,11 @@ public final class ProtoMethods {
 
   boolean v4_getText() {
     if (!v1_getText()) return false;
+    return sendAck();
+  }
+
+  boolean v4_getFiles() {
+    if (!getFilesCommon(4)) return false;
     return sendAck();
   }
 
