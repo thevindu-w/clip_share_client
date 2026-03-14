@@ -404,6 +404,11 @@ public final class ProtoMethods {
     return sendAck();
   }
 
+  boolean v4_getImage() {
+    if (!v1_getImage()) return false;
+    return sendAck();
+  }
+
   /**
    * @return true on success or false on failure
    */
