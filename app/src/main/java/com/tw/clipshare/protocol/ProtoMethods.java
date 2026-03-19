@@ -414,6 +414,11 @@ public final class ProtoMethods {
     return sendAck();
   }
 
+  boolean v4_getScreenshot(int display) {
+    if (!v3_getScreenshot(display)) return false;
+    return sendAck();
+  }
+
   /**
    * @return true on success or false on failure
    */
