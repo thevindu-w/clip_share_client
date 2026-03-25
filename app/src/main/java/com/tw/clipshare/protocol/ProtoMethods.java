@@ -399,6 +399,11 @@ public final class ProtoMethods {
     return sendAck();
   }
 
+  boolean v4_sendText(String text) {
+    if (!v1_sendText(text)) return false;
+    return readAck();
+  }
+
   boolean v4_getFiles() {
     if (!getFilesCommon(4)) return false;
     return sendAck();
@@ -425,6 +430,14 @@ public final class ProtoMethods {
   private boolean sendAck() {
     byte[] ack = {1};
     return !this.socketConnection.send(ack);
+  }
+
+  /**
+   * @return true on success or false on failure
+   */
+  private boolean readAck() {
+    byte[] ack = new byte[1];
+    return !this.socketConnection.receive(ack) && (ack[0] == 1);
   }
 
   /**
