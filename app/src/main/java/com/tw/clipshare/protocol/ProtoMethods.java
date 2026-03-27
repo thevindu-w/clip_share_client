@@ -331,7 +331,7 @@ public final class ProtoMethods {
         }
         if (fileSize < 0) {
           if (version == 2) return false;
-          if (version == 3) {
+          if (version >= 3) {
             if (sendString(fileName)) return false;
             if (sendSize(fileSize)) return false;
             continue;
@@ -407,6 +407,11 @@ public final class ProtoMethods {
   boolean v4_getFiles() {
     if (!getFilesCommon(4)) return false;
     return sendAck();
+  }
+
+  boolean v4_sendFiles() {
+    if (!sendFilesCommon(4)) return false;
+    return readAck();
   }
 
   boolean v4_getImage() {
