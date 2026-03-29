@@ -429,6 +429,14 @@ public final class ProtoMethods {
     return sendAck();
   }
 
+  String v4_checkInfo() {
+    String info = v1_checkInfo();
+    // TODO(thevindu-w): Get more info
+    if (info == null) return null;
+    if (!sendAck()) return null;
+    return info;
+  }
+
   /**
    * @return true on success or false on failure
    */
