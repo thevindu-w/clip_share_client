@@ -1,4 +1,4 @@
-This is version <VERSION> of the Android client of ClipShare, which supports protocol versions 1, 2, and 3.
+This is version <VERSION> of the Android client of ClipShare, which supports protocol versions 1, 2, 3, and 4.
 You will need the ClipShare server running on a Windows, macOS, or Linux machine to connect. You can download the server at [github.com/thevindu-w/clip_share_server/releases](https://github.com/thevindu-w/clip_share_server/releases).
 
 There are 2 APK files included in the release assets for compatibility.
@@ -7,8 +7,4 @@ There are 2 APK files included in the release assets for compatibility.
 
 Refer to the [README](https://github.com/thevindu-w/clip_share_client/#how-to-use) for usage information.<br>
 **Changes:**
-- Bug fixes:
-  - Fix app crashes in older Android versions.
-  - Handle errors when changing port settings to invalid values.
-  - Fix protocol initialization in server mode.
-- Code quality improvements.
+- Add protocol version 4.
