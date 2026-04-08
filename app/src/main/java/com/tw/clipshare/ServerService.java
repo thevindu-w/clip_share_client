@@ -92,7 +92,7 @@ public class ServerService extends Service {
 
   private String receiveText(SocketConnection connection) {
     final int min_proto = 1;
-    final int max_proto = 3;
+    final int max_proto = 4;
     byte[] buf = new byte[1];
     if (connection.receive(buf)) return null;
     byte proto = buf[0];
@@ -130,6 +130,10 @@ public class ServerService extends Service {
     int len = (int) size;
     buf = new byte[len];
     if (connection.receive(buf)) return null;
+    if (proto >= 4) {
+      byte[] ack = {1};
+      connection.send(ack);
+    }
     return new String(buf, StandardCharsets.UTF_8);
   }
 
