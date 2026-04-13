@@ -24,7 +24,7 @@
 
 package com.tw.clipshare.proto;
 
-import static com.tw.clipshare.Utils.PROTOCOL_SUPPORTED;
+import static com.tw.clipshare.Utils.PROTOCOL_UNKNOWN;
 import static com.tw.clipshare.proto.ProtocolSelectorTest.MAX_PROTO;
 import static org.junit.Assert.*;
 
@@ -32,10 +32,12 @@ import android.app.Activity;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.net.Uri;
+import android.os.Build;
 import androidx.core.app.NotificationCompat;
 import androidx.test.core.app.ActivityScenario;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
+import androidx.test.rule.GrantPermissionRule;
 import com.tw.clipshare.ClipShareActivity;
 import com.tw.clipshare.FileService;
 import com.tw.clipshare.R;
@@ -68,6 +70,14 @@ public class ProtoV3Test {
   private StatusNotifier notifier;
 
   @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
+
+  @Rule
+  public GrantPermissionRule permissionRule =
+      Build.VERSION.SDK_INT <= Build.VERSION_CODES.Q
+          ? GrantPermissionRule.grant(
+              android.Manifest.permission.WRITE_EXTERNAL_STORAGE,
+              android.Manifest.permission.READ_EXTERNAL_STORAGE)
+          : GrantPermissionRule.grant();
 
   @BeforeClass
   public static void initialize() throws InterruptedException {
@@ -107,7 +117,8 @@ public class ProtoV3Test {
 
   private BAOStreamBuilder initProto(boolean methodOk) {
     BAOStreamBuilder builder = new BAOStreamBuilder();
-    builder.addByte(PROTOCOL_SUPPORTED);
+    builder.addByte(PROTOCOL_UNKNOWN);
+    builder.addByte(3);
     if (methodOk) builder.addByte(1);
     return builder;
   }
@@ -250,6 +261,7 @@ public class ProtoV3Test {
 
     builder = new BAOStreamBuilder();
     builder.addByte(MAX_PROTO);
+    builder.addByte(3);
     builder.addByte(2);
     builder.addString(sample);
     byte[] expected = builder.getArray();
@@ -282,6 +294,7 @@ public class ProtoV3Test {
 
     builder = new BAOStreamBuilder();
     builder.addByte(MAX_PROTO);
+    builder.addByte(3);
     builder.addByte(5);
     byte[] expected = builder.getArray();
     assertArrayEquals(expected, receivedBytes);
@@ -305,6 +318,7 @@ public class ProtoV3Test {
 
     builder = new BAOStreamBuilder();
     builder.addByte(MAX_PROTO);
+    builder.addByte(3);
     builder.addByte(6);
     byte[] expected = builder.getArray();
     assertArrayEquals(expected, receivedBytes);
@@ -330,6 +344,7 @@ public class ProtoV3Test {
 
     builder = new BAOStreamBuilder();
     builder.addByte(MAX_PROTO);
+    builder.addByte(3);
     builder.addByte(7);
     builder.addSize(display);
     byte[] expected = builder.getArray();
@@ -354,6 +369,7 @@ public class ProtoV3Test {
 
     builder = new BAOStreamBuilder();
     builder.addByte(MAX_PROTO);
+    builder.addByte(3);
     builder.addByte(7);
     builder.addSize(display);
     byte[] expected = builder.getArray();
@@ -443,6 +459,7 @@ public class ProtoV3Test {
 
     builder = new BAOStreamBuilder();
     builder.addByte(MAX_PROTO);
+    builder.addByte(3);
     builder.addByte(4);
     builder.addSize(fileContents.length);
     for (int i = 0; i < fileContents.length; i++) {
@@ -488,6 +505,7 @@ public class ProtoV3Test {
     String[] dirNames = {"dir/dir2", "dir/dir3/sub", "dir/dir3/sub2"};
     builder = new BAOStreamBuilder();
     builder.addByte(MAX_PROTO);
+    builder.addByte(3);
     builder.addByte(4);
     builder.addSize(dirNames.length + 1);
     for (String dirName : dirNames) {
@@ -518,6 +536,7 @@ public class ProtoV3Test {
 
     builder = new BAOStreamBuilder();
     builder.addByte(MAX_PROTO);
+    builder.addByte(3);
     builder.addByte(4);
     builder.addSize(1);
     builder.addString("empty");
@@ -537,7 +556,7 @@ public class ProtoV3Test {
     MockConnection connection = new MockConnection(istream);
     Proto proto = ProtocolSelector.getProto(connection, null, null);
     assertEquals(info, proto.checkInfo());
-    assertArrayEquals(new byte[] {MAX_PROTO, 125}, connection.getOutputBytes());
+    assertArrayEquals(new byte[] {MAX_PROTO, 3, 125}, connection.getOutputBytes());
     proto.close();
   }
 

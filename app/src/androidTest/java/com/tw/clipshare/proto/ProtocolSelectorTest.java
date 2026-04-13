@@ -76,6 +76,11 @@ public class ProtocolSelectorTest {
           protoClass = ProtoV3.class;
           break;
         }
+      case 4:
+        {
+          protoClass = ProtoV4.class;
+          break;
+        }
       default:
         {
           throw new ProtocolException("Unknown protocol version");
@@ -125,6 +130,21 @@ public class ProtocolSelectorTest {
     Proto proto = ProtocolSelector.getProto(connection, null, null);
     byte[] received = connection.getOutputBytes();
     assertArrayEquals(new byte[] {MAX_PROTO, 2}, received);
+    proto.close();
+  }
+
+  @SuppressWarnings("ConstantConditions")
+  @Test
+  public void testProtoNegotiateV3() throws ProtocolException {
+    if (MAX_PROTO <= 2) return;
+    BAOStreamBuilder builder = new BAOStreamBuilder();
+    builder.addByte(PROTOCOL_UNKNOWN);
+    builder.addByte(3);
+    ByteArrayInputStream istream = builder.getStream();
+    MockConnection connection = new MockConnection(istream);
+    Proto proto = ProtocolSelector.getProto(connection, null, null);
+    byte[] received = connection.getOutputBytes();
+    assertArrayEquals(new byte[] {MAX_PROTO, 3}, received);
     proto.close();
   }
 

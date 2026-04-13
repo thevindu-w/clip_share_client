@@ -32,10 +32,12 @@ import android.app.Activity;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.net.Uri;
+import android.os.Build;
 import androidx.core.app.NotificationCompat;
 import androidx.test.core.app.ActivityScenario;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
+import androidx.test.rule.GrantPermissionRule;
 import com.tw.clipshare.ClipShareActivity;
 import com.tw.clipshare.FileService;
 import com.tw.clipshare.R;
@@ -65,6 +67,14 @@ public class ProtoV2Test {
   private StatusNotifier notifier;
 
   @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
+
+  @Rule
+  public GrantPermissionRule permissionRule =
+      Build.VERSION.SDK_INT <= Build.VERSION_CODES.Q
+          ? GrantPermissionRule.grant(
+              android.Manifest.permission.WRITE_EXTERNAL_STORAGE,
+              android.Manifest.permission.READ_EXTERNAL_STORAGE)
+          : GrantPermissionRule.grant();
 
   @BeforeClass
   public static void initialize() throws InterruptedException {
