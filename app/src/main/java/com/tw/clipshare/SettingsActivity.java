@@ -28,6 +28,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
 import android.database.Cursor;
 import android.graphics.Rect;
 import android.net.Uri;
@@ -421,6 +422,12 @@ public class SettingsActivity extends AppCompatActivity {
   public boolean onCreateOptionsMenu(Menu menu) {
     MenuInflater inflater = getMenuInflater();
     inflater.inflate(R.menu.settings_action_bar, menu);
+    try {
+      Context context = getApplicationContext();
+      PackageInfo info = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
+      menu.findItem(R.id.lbl_version).setTitle("v" + info.versionName);
+    } catch (Exception ignored) {
+    }
     return true;
   }
 
