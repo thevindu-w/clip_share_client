@@ -1,6 +1,6 @@
-# ClipShare Android Client
+# ClipShare - Android Client
 
-### Client application of ClipShare for Android devices.
+### Share Clipboard and Files. Copy on one device. Paste on another device.
 
 ![Build and Test](https://github.com/thevindu-w/clip_share_client/actions/workflows/build-test.yml/badge.svg?branch=master)
 ![Last commit](https://img.shields.io/github/last-commit/thevindu-w/clip_share_client.svg?color=yellow)
@@ -9,10 +9,22 @@
 [![Latest release](https://img.shields.io/github/v/release/thevindu-w/clip_share_client?color=purple)](https://github.com/thevindu-w/clip_share_client/releases)
 [![Stars](https://img.shields.io/github/stars/thevindu-w/clip_share_client)](https://github.com/thevindu-w/clip_share_client/stargazers)
 
-Share the clipboard between your phone and desktop. Share files and screenshots securely.
 <br>
-ClipShare is a lightweight, cross-platform app for sharing copied text, files, and screenshots between an Android mobile
-and a desktop.
+
+ClipShare is a lightweight and cross-platform tool for clipboard sharing. ClipShare enables copying text, files, and images on one device and pasting on another. ClipShare is simple and easy to use while being highly configurable.
+The ClipShare Android client can connect to the server running on your desktop/laptop and share copied text, files, and images.
+
+## 🚀 Quick-start
+
+1. Download and install the ClipShare server: [https://github.com/thevindu-w/clip_share_server/releases](https://github.com/thevindu-w/clip_share_server/releases/latest) (Other installation methods are available in the [Installation section of the server](https://github.com/thevindu-w/clip_share_server#installation).)
+1. Download and install the ClipShare client.
+    - Mobile client (Android): [https://github.com/thevindu-w/clip_share_client/releases](https://github.com/thevindu-w/clip_share_client/releases/latest) or [apt.izzysoft.de/fdroid/index/apk/com.tw.clipshare](https://apt.izzysoft.de/fdroid/index/apk/com.tw.clipshare)
+    - Desktop client: [https://github.com/thevindu-w/clip_share_desktop/releases](https://github.com/thevindu-w/clip_share_desktop/releases/latest) (Other installation methods are available in the [Installation section of the desktop client](https://github.com/thevindu-w/clip_share_desktop#installation).)
+1. Start sharing clipboard contents across devices.
+
+    Copy some text on one device and use the ClipShare client to share it from/to the device running the server.
+
+More customization options and detailed instructions on each step are described below in the [How to Use](#how-to-use) section.
 
 ## Download
 
@@ -39,9 +51,9 @@ Download the server from <a href="https://github.com/thevindu-w/clip_share_serve
 </tr>
 <tr>
 <td align="center">
-<a href="https://apt.izzysoft.de/fdroid/index/apk/com.tw.clipshare"><img src="https://gitlab.com/IzzyOnDroid/repo/-/raw/master/assets/IzzyOnDroid.png" alt="Get it on IzzyOnDroid" width="250"/></a><br>
+<a href="https://apt.izzysoft.de/fdroid/index/apk/com.tw.clipshare"><img src="https://gitlab.com/IzzyOnDroid/repo/-/raw/master/assets/IzzyOnDroidLogo.png" alt="Get it on IzzyOnDroid" width="100"/></a><br>
 Download the Android client app
-from <a href="https://apt.izzysoft.de/fdroid/index/apk/com.tw.clipshare">apt.izzysoft.de/fdroid/index/apk/com.tw.clipshare</a>.<br>
+from <a href="https://apt.izzysoft.de/fdroid/index/apk/com.tw.clipshare">IzzyOnDroid</a>
 or from <a href="https://github.com/thevindu-w/clip_share_client/releases">GitHub Releases</a>.
 </td>
 <td align="center">
@@ -60,17 +72,18 @@ app. You can find more information on running the server on Windows, macOS, or L
 
 ## Table of Contents
 
-- [How to Use](#how-to-use)
-  - [Main screen](#main-screen)
+- [📖 How to Use](#how-to-use)
+  - [📱 Main screen](#main-screen)
     - [Get and Send operations](#get-and-send-operations)
     - [Other operations](#other-operations)
-  - [Settings](#settings)
+  - [⚙️ Settings](#settings)
     - [Auto send](#auto-send)
     - [Saved addresses](#saved-addresses)
     - [Secure mode](#secure-mode)
     - [Other settings](#other-settings)
       - [Ports](#ports)
       - [Run in background](#run-in-background)
+    - [Server mode (beta)](#server-mode-beta)
     - [Import/Export settings](#importexport-settings)
 
 <br>
@@ -219,7 +232,7 @@ app. You can find more information on running the server on Windows, macOS, or L
 - **Auto-scan at start:** When this setting is enabled, [scan operation](#other-operations) will scan the network for
   available servers when the app starts.
 
-#### Ports
+##### Ports
 
 - **Port:** This is the port on which the server on your laptop listens for plaintext TCP connections. The default value
   for this port is `4337`. If a different port is assigned for the server according to the
@@ -236,12 +249,12 @@ app. You can find more information on running the server on Windows, macOS, or L
 - **Run in background:** This will make the app run in the background with a notification. The notification has buttons
   to get and send copied text without opening the app.
 
-### Server mode (beta)
+#### Server mode (beta)
 
 - **UDP Scan:** When this setting is enabled, the server mode becomes discoverable to other devices using the scan
   operation. It is useful when using the auto-send in the desktop client.
 
-#### Ports
+##### Ports
 
 - **Port:** This is the port on which the server mode listens for plaintext TCP connections. The default value of this
   port is `4337`. If a different port is assigned, configure the other clients to use the same port.
