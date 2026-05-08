@@ -26,6 +26,7 @@ package com.tw.clipshare;
 
 import android.util.Base64;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatDelegate;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -66,6 +67,7 @@ public class Settings implements Serializable {
   private int serverPort;
   private int serverPortSecure;
   private int serverPortUDP;
+  @AppCompatDelegate.NightMode private int nightMode;
 
   private Settings() {
     this.secure = false;
@@ -93,6 +95,7 @@ public class Settings implements Serializable {
     this.serverPort = 4337;
     this.serverPortSecure = 4338;
     this.serverPortUDP = 4337;
+    this.nightMode = AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM;
   }
 
   private static ArrayList<String> objectToArrayList(Object listO) {
@@ -321,6 +324,18 @@ public class Settings implements Serializable {
     } catch (Exception ignored) {
     }
 
+    // Set nightMode
+    try {
+      Object value = map.get("nightMode");
+      if (value instanceof Integer) {
+        int mode = (Integer) value;
+        if (mode == AppCompatDelegate.MODE_NIGHT_YES
+            || mode == AppCompatDelegate.MODE_NIGHT_NO
+            || mode == AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM) settings.nightMode = mode;
+      }
+    } catch (Exception ignored) {
+    }
+
     return settings;
   }
 
@@ -361,6 +376,7 @@ public class Settings implements Serializable {
       map.put("serverPort", this.serverPort);
       map.put("serverPortSecure", this.serverPortSecure);
       map.put("serverPortUDP", this.serverPortUDP);
+      map.put("nightMode", this.nightMode);
     } catch (Exception ignored) {
     }
 
@@ -408,6 +424,7 @@ public class Settings implements Serializable {
         INSTANCE.serverPort = strSet.serverPort;
         INSTANCE.serverPortSecure = strSet.serverPortSecure;
         INSTANCE.serverPortUDP = strSet.serverPortUDP;
+        INSTANCE.nightMode = strSet.nightMode;
       } catch (Exception ignored) {
       }
     }
@@ -538,6 +555,11 @@ public class Settings implements Serializable {
 
   public int getServerPortUDP() {
     return serverPortUDP;
+  }
+
+  @AppCompatDelegate.NightMode
+  public int getNightMode() {
+    return nightMode;
   }
 
   public void setSecure(boolean secure) {

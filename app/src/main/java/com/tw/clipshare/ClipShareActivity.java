@@ -45,6 +45,7 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
@@ -187,17 +188,29 @@ public class ClipShareActivity extends AppCompatActivity {
     return true;
   }
 
+  //  @SuppressLint("WrongConstant")
   @Override
   protected void onCreate(Bundle savedInstanceState) {
+    this.context = getApplicationContext();
+    this.sharedPref =
+        context.getSharedPreferences(ClipShareActivity.PREFERENCES, Context.MODE_PRIVATE);
+    try {
+      Settings.loadInstance(sharedPref.getString("settings", null));
+    } catch (Exception ignored) {
+    }
+    try {
+      Settings settings = Settings.getInstance();
+      @AppCompatDelegate.NightMode int nightMode = settings.getNightMode();
+      if (AppCompatDelegate.getDefaultNightMode() != nightMode)
+        AppCompatDelegate.setDefaultNightMode(nightMode);
+    } catch (Exception ignored) {
+    }
+
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_main);
 
     this.editAddress = findViewById(R.id.hostTxt);
     this.output = findViewById(R.id.txtOutput);
-    this.context = getApplicationContext();
-    this.sharedPref =
-        context.getSharedPreferences(ClipShareActivity.PREFERENCES, Context.MODE_PRIVATE);
-
     output.setMovementMethod(new ScrollingMovementMethod());
     Button btnGet = findViewById(R.id.btnGetTxt);
     btnGet.setOnClickListener(view -> clkGetTxt());
@@ -233,10 +246,6 @@ public class ClipShareActivity extends AppCompatActivity {
           }
         });
 
-    try {
-      Settings.loadInstance(sharedPref.getString("settings", null));
-    } catch (Exception ignored) {
-    }
     try {
       List<String> servers = Settings.getInstance().getSavedServersList();
       if (!servers.isEmpty()) setAddress(servers.get(servers.size() - 1));
