@@ -522,6 +522,36 @@
                 android:background="@color/settingsTopic2BG"
                 android:layout_marginTop="1dp" />
 
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="2dp"
+                android:background="@color/settingsTopic2BG"
+                android:layout_marginTop="1dp">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.5"
+                    android:layout_marginStart="12dp"
+                    android:layout_marginEnd="2dp"
+                    android:layout_marginVertical="10dp"
+                    android:textSize="20sp"
+                    android:textColor="?android:textColorPrimary"
+                    android:text="@string/theme"
+                    android:layout_gravity="center_vertical"
+                    android:labelFor="@+id/nightModeSpinner" />
+
+                <Spinner
+                    android:id="@+id/nightModeSpinner"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.5"
+                    android:background="@android:drawable/btn_dropdown"
+                    android:spinnerMode="dropdown" />
+            </LinearLayout>
+
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

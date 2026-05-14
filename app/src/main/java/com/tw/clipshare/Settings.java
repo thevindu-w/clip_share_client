@@ -673,4 +673,8 @@ public class Settings implements Serializable {
   public void setServerPortUDP(int port) {
     this.serverPortUDP = port;
   }
+
+  public void setNightMode(@AppCompatDelegate.NightMode int nightMode) {
+    this.nightMode = nightMode;
+  }
 }

@@ -46,6 +46,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.IdRes;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.SwitchCompat;
 import androidx.core.content.ContextCompat;
 import com.tw.clipshare.netConnection.SecureConnection;
@@ -56,6 +57,11 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class SettingsActivity extends AppCompatActivity {
+  private static final List<Integer> THEMES =
+      List.of(
+          AppCompatDelegate.MODE_NIGHT_NO,
+          AppCompatDelegate.MODE_NIGHT_YES,
+          AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
   private SwitchCompat secureSwitch;
   private Intent intent;
   private AtomicInteger idTLS;
@@ -84,6 +90,7 @@ public class SettingsActivity extends AppCompatActivity {
   private EditText editServerPort;
   private EditText editServerPortSecure;
   private EditText editServerPortUDP;
+  private Spinner dropdownNightMode;
   private Settings settings;
   private final ActivityResultLauncher<Intent> clientActivityLauncher =
       registerForActivityResult(
@@ -231,6 +238,7 @@ public class SettingsActivity extends AppCompatActivity {
     editServerPort.setText(String.valueOf(settings.getServerPort()));
     editServerPortSecure.setText(String.valueOf(settings.getServerPortSecure()));
     editServerPortUDP.setText(String.valueOf(settings.getServerPortUDP()));
+    dropdownNightMode.setSelection(THEMES.indexOf(settings.getNightMode()));
   }
 
   private Cursor getCursorFromIntentUri(Intent intent) {
@@ -484,6 +492,7 @@ public class SettingsActivity extends AppCompatActivity {
     this.editServerPort = findViewById(R.id.editServerPort);
     this.editServerPortSecure = findViewById(R.id.editServerPortSecure);
     this.editServerPortUDP = findViewById(R.id.editServerPortUDP);
+    this.dropdownNightMode = findViewById(R.id.nightModeSpinner);
 
     expandBlock(R.id.autoSendLayout, R.id.expandAutoSendBtn);
     expandBlock(R.id.savedAddressLayout, R.id.expandSavedAddressBtn);
@@ -684,6 +693,23 @@ public class SettingsActivity extends AppCompatActivity {
     editServerPortSecure.setText(String.valueOf(settings.getServerPortSecure()));
     editServerPortUDP.setText(String.valueOf(settings.getServerPortUDP()));
 
+    dropdownNightMode.setOnItemSelectedListener(
+        new AdapterView.OnItemSelectedListener() {
+          @Override
+          public void onItemSelected(AdapterView<?> adapterView, View view, int ind, long l) {
+            settings.setNightMode(THEMES.get(ind));
+          }
+
+          @Override
+          public void onNothingSelected(AdapterView<?> ignored) {}
+        });
+    ArrayAdapter<CharSequence> adapter =
+        ArrayAdapter.createFromResource(
+            this, R.array.themes_array, android.R.layout.simple_spinner_item);
+    adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+    dropdownNightMode.setAdapter(adapter);
+    dropdownNightMode.setSelection(THEMES.indexOf(settings.getNightMode()));
+
     getOnBackPressedDispatcher()
         .addCallback(
             new OnBackPressedCallback(true) {
@@ -703,6 +729,8 @@ public class SettingsActivity extends AppCompatActivity {
                   SettingsActivity.this.setResult(Activity.RESULT_OK, intent);
                 }
                 SettingsActivity.this.finish();
+                if (AppCompatDelegate.getDefaultNightMode() != settings.getNightMode())
+                  AppCompatDelegate.setDefaultNightMode(settings.getNightMode());
               }
             });
 

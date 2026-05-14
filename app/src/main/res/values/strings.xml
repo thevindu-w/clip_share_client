@@ -78,5 +78,11 @@
     <string name="cancel">Cancel</string>
     <string name="reset">Reset</string>
     <string name="prompt_reset">Are you sure you need to reset settings to their defaults?</string>
+    <string name="theme">Theme</string>
+    <string-array name="themes_array">
+        <item>Light</item>
+        <item>Dark</item>
+        <item>Same as system</item>
+    </string-array>
     <string name="info">Info</string>
 </resources>
