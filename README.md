@@ -231,6 +231,8 @@ app. You can find more information on running the server on Windows, macOS, or L
   is slower and more resource-intensive than UDP scanning. Enable this only if there is any issue with the UDP scanning.
 - **Auto-scan at start:** When this setting is enabled, [scan operation](#other-operations) will scan the network for
   available servers when the app starts.
+- **Theme:** This sets the dark/light/default mode. The selected theme will be applied and saved when navigating back to
+  the main view.
 
 ##### Ports
 
