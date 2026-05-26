@@ -148,7 +148,14 @@ public class SettingsActivity extends AppCompatActivity {
           new ActivityResultContracts.StartActivityForResult(),
           result -> {
             try {
-              if (result.getResultCode() != Activity.RESULT_OK) throw new RuntimeException();
+              if (result.getResultCode() != Activity.RESULT_OK) {
+                runOnUiThread(
+                    () ->
+                        Toast.makeText(
+                                SettingsActivity.this, "No file selected", Toast.LENGTH_SHORT)
+                            .show());
+                return;
+              }
               Intent intent1 = result.getData();
               if (intent1 == null) throw new RuntimeException();
               Uri uri = intent1.getData();
@@ -173,7 +180,14 @@ public class SettingsActivity extends AppCompatActivity {
           new ActivityResultContracts.StartActivityForResult(),
           result -> {
             try {
-              if (result.getResultCode() != Activity.RESULT_OK) throw new RuntimeException();
+              if (result.getResultCode() != Activity.RESULT_OK) {
+                runOnUiThread(
+                    () ->
+                        Toast.makeText(
+                                SettingsActivity.this, "No file selected", Toast.LENGTH_SHORT)
+                            .show());
+                return;
+              }
               Intent intent1 = result.getData();
               Cursor cursor = getCursorFromIntentUri(intent1);
               String sizeStr = cursor.getString(cursor.getColumnIndexOrThrow(OpenableColumns.SIZE));
