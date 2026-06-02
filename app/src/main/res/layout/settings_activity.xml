@@ -366,7 +366,7 @@
                         android:layout_margin="12dp"
                         android:textSize="20sp"
                         android:textColor="?android:textColorPrimary"
-                        android:text="@string/trusted_servers" />
+                        android:text="@string/trusted_peers" />
 
                     <ImageButton
                         android:id="@+id/addTrustedServerBtn"

@@ -198,6 +198,7 @@ public class ServerService extends Service {
   private void startTCPServer() throws Exception {
     Settings settings = Settings.getInstance();
     ServerSocket ss;
+    String[] acceptedServers = null;
     if (settings.getSecure()) {
       ss =
           SecureConnection.getSecureServerSocket(
@@ -205,23 +206,23 @@ public class ServerService extends Service {
               settings.getCACertInputStream(),
               settings.getCertInputStream(),
               settings.getPasswd());
+      acceptedServers = settings.getTrustedList().toArray(new String[0]);
     } else {
       ss = new ServerSocket(settings.getServerPort(), 3);
     }
     ss.setSoTimeout(2000);
     while (running) {
-      Socket sock = null;
+      SocketConnection connection = null;
       try {
-        sock = ss.accept();
+        Socket sock = ss.accept();
+        if (settings.getSecure()) {
+          connection = new SecureConnection((SSLSocket) sock, acceptedServers);
+        } else {
+          connection = new PlainConnection(sock);
+        }
       } catch (SocketTimeoutException ignored) {
       }
-      if (sock == null) continue;
-      SocketConnection connection;
-      if (settings.getSecure()) {
-        connection = new SecureConnection((SSLSocket) sock);
-      } else {
-        connection = new PlainConnection(sock);
-      }
+      if (connection == null) continue;
       String text = receiveText(connection);
       connection.close();
       if (text != null) {

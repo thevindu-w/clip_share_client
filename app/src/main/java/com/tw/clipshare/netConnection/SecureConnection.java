@@ -86,8 +86,27 @@ public class SecureConnection extends SocketConnection {
     this.outStream = this.socket.getOutputStream();
   }
 
-  public SecureConnection(SSLSocket sslSocket) throws IOException {
+  public SecureConnection(SSLSocket sslSocket, String[] acceptedCNs)
+      throws IOException, SecurityException {
     this.socket = sslSocket;
+    boolean accepted = false;
+    try {
+      SSLSession sslSession = sslSocket.getSession();
+      X509Certificate serverCertificate = (X509Certificate) sslSession.getPeerCertificates()[0];
+      String cn = CertUtils.getCertCN(serverCertificate);
+      if (cn != null) {
+        for (String acceptedCN : acceptedCNs) {
+          if (acceptedCN.equals(cn)) {
+            accepted = true;
+            break;
+          }
+        }
+      }
+    } catch (Exception ignored) {
+    }
+    if (!accepted) {
+      throw new SecurityException("Untrusted Server");
+    }
     this.inStream = this.socket.getInputStream();
     this.outStream = this.socket.getOutputStream();
   }
