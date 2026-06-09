@@ -24,4 +24,5 @@ ClipShare is a simple, lightweight, and cross-platform app for sharing copied te
 </ul>
 </p>
 <p>This is the Android client of ClipShare. You need the server program running on your desktop to connect with it. The server is available for Windows, macOS, and Linux. You can find the server <a href='https://github.com/thevindu-w/clip_share_server/releases/latest'>here on GitHub</a>.
-A desktop client for ClipShare is also available <a href='https://github.com/thevindu-w/clip_share_desktop/releases/latest'>on GitHub</a>.</p>
+A desktop client for ClipShare is also available <a href='https://github.com/thevindu-w/clip_share_desktop/releases/latest'>on GitHub</a>.
+A legacy support APK for Android versions 7 to 9 is available at <a href='https://github.com/thevindu-w/clip_share_client/releases/latest'>GitHub</a>.</p>
