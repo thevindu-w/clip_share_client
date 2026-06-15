@@ -30,6 +30,7 @@ import android.app.*;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.os.IBinder;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
@@ -235,7 +236,14 @@ public class ServerService extends Service {
                   | Intent.FLAG_ACTIVITY_NO_ANIMATION
                   | Intent.FLAG_ACTIVITY_NO_USER_ACTION);
           InvisibleActivity.setIsServer(true);
-          startActivity(intent);
+          if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            ActivityOptions options = ActivityOptions.makeBasic();
+            options.setPendingIntentBackgroundActivityStartMode(
+                ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOWED);
+            startActivity(intent, options.toBundle());
+          } else {
+            startActivity(intent);
+          }
         } catch (Exception ignored) {
         }
       }
