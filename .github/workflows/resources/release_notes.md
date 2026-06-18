@@ -7,4 +7,6 @@ There are 2 APK files included in the release assets for compatibility.
 
 Refer to the [README](https://github.com/thevindu-w/clip_share_client/#how-to-use) for usage information.<br>
 **Changes:**
-- Add an option to select dark/light theme from settings.
+- Verify peer name in server mode with TLS.
+- Fix background mode and server mode clipboard access on newer Android versions.
+- Improve error handling in settings.
