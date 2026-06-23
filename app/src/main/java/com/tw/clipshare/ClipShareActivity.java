@@ -167,6 +167,7 @@ public class ClipShareActivity extends AppCompatActivity {
   @Override
   public boolean onOptionsItemSelected(MenuItem item) {
     try {
+      this.lastActivityTime = System.currentTimeMillis();
       int itemID = item.getItemId();
       if (itemID == R.id.action_settings) {
         if (!Settings.isIsSettingsLoaded()) return true;
@@ -703,10 +704,11 @@ public class ClipShareActivity extends AppCompatActivity {
 
   private void clkSendTxt() {
     try {
-      startActiveTask();
+      this.lastActivityTime = System.currentTimeMillis();
       outputReset();
       String address = this.getServerAddress();
       if (address == null) return;
+      startActiveTask();
       ExecutorService executorService = Executors.newSingleThreadExecutor();
       Runnable sendClip =
           () -> {
@@ -723,14 +725,14 @@ public class ClipShareActivity extends AppCompatActivity {
               utils.vibrate();
             } catch (Exception e) {
               outputAppend("Error " + e.getMessage());
+            } finally {
+              ClipShareActivity.this.lastActivityTime = System.currentTimeMillis();
+              endActiveTask();
             }
           };
       executorService.submit(sendClip);
     } catch (Exception e) {
       outputAppend("Error " + e.getMessage());
-    } finally {
-      this.lastActivityTime = System.currentTimeMillis();
-      endActiveTask();
     }
   }
 
@@ -874,10 +876,11 @@ public class ClipShareActivity extends AppCompatActivity {
 
   private void clkGetTxt() {
     try {
-      startActiveTask();
+      this.lastActivityTime = System.currentTimeMillis();
       outputReset();
       String address = this.getServerAddress();
       if (address == null) return;
+      startActiveTask();
       ExecutorService executorService = Executors.newSingleThreadExecutor();
       Runnable getClip =
           () -> {
@@ -897,14 +900,14 @@ public class ClipShareActivity extends AppCompatActivity {
               utils.vibrate();
             } catch (Exception e) {
               outputAppend("Error " + e.getMessage());
+            } finally {
+              ClipShareActivity.this.lastActivityTime = System.currentTimeMillis();
+              endActiveTask();
             }
           };
       executorService.submit(getClip);
     } catch (Exception e) {
       outputAppend("Error " + e.getMessage());
-    } finally {
-      this.lastActivityTime = System.currentTimeMillis();
-      endActiveTask();
     }
   }
 
@@ -915,8 +918,9 @@ public class ClipShareActivity extends AppCompatActivity {
    */
   private boolean longClkImg(View parent) {
     try {
-      startActiveTask();
+      this.lastActivityTime = System.currentTimeMillis();
       if (needsPermission(0)) return true;
+      startActiveTask();
       LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
       View popupView =
           inflater.inflate(R.layout.popup_display, findViewById(R.id.main_layout), false);
@@ -933,6 +937,8 @@ public class ClipShareActivity extends AppCompatActivity {
           view -> {
             getImageCommon(GET_COPIED_IMAGE, 0);
             popupWindow.dismiss();
+            ClipShareActivity.this.lastActivityTime = System.currentTimeMillis();
+            endActiveTask();
           });
 
       EditText editDisplay = popupView.findViewById(R.id.editDisplay);
@@ -950,17 +956,22 @@ public class ClipShareActivity extends AppCompatActivity {
             }
             getImageCommon(GET_SCREENSHOT, display);
             popupWindow.dismiss();
+            ClipShareActivity.this.lastActivityTime = System.currentTimeMillis();
+            endActiveTask();
           });
 
       popupView.findViewById(R.id.popup_bg).setOnClickListener(v -> {});
       popupView.setOnClickListener(v -> popupWindow.dismiss());
     } catch (Exception ignored) {
+      ClipShareActivity.this.lastActivityTime = System.currentTimeMillis();
+      endActiveTask();
     }
     return true;
   }
 
   private void getImageCommon(int method, int display) {
     try {
+      this.lastActivityTime = System.currentTimeMillis();
       if (needsPermission(method == GET_IMAGE ? WRITE_IMAGE : 0)) return;
       outputReset();
       String address = this.getServerAddress();
@@ -1018,7 +1029,6 @@ public class ClipShareActivity extends AppCompatActivity {
     try {
       startActiveTask();
       if (needsPermission(WRITE_FILE)) return;
-
       outputReset();
       String address = this.getServerAddress();
       if (address == null) return;
