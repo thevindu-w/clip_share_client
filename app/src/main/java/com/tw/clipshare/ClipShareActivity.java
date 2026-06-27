@@ -63,8 +63,6 @@ import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 public class ClipShareActivity extends AppCompatActivity {
-  public static final int WRITE_IMAGE = 222;
-  public static final int WRITE_FILE = 223;
   private static final String CHANNEL_ID = "notification_channel";
   public static final String PREFERENCES = "preferences";
   private static final int AUTO_SEND_TEXT = 1;
@@ -87,6 +85,7 @@ public class ClipShareActivity extends AppCompatActivity {
   private long lastActivityTime;
   private ExecutorService inactivityExecutor = null;
   private ExecutorService fileUpdateExecutor = null;
+  private Runnable pendingTask = null;
   private final ActivityResultLauncher<Intent> fileSelectActivityLauncher =
       registerForActivityResult(
           new ActivityResultContracts.StartActivityForResult(),
@@ -917,139 +916,166 @@ public class ClipShareActivity extends AppCompatActivity {
    * @noinspection SameReturnValue
    */
   private boolean longClkImg(View parent) {
+    Runnable task =
+        () -> {
+          try {
+            startActiveTask();
+            LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
+            View popupView =
+                inflater.inflate(R.layout.popup_display, findViewById(R.id.main_layout), false);
+            final PopupWindow popupWindow =
+                new PopupWindow(
+                    popupView,
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    true);
+            popupWindow.showAtLocation(parent, Gravity.CENTER, 0, 0);
+
+            Button btnGetCopiedImg = popupView.findViewById(R.id.btnGetCopiedImg);
+            btnGetCopiedImg.setOnClickListener(
+                view -> {
+                  getImageCommon(GET_COPIED_IMAGE, 0);
+                  popupWindow.dismiss();
+                  ClipShareActivity.this.lastActivityTime = System.currentTimeMillis();
+                  endActiveTask();
+                });
+
+            EditText editDisplay = popupView.findViewById(R.id.editDisplay);
+            if (editDisplay == null) return;
+            Button btnGetScreenshot = popupView.findViewById(R.id.btnGetScreenshot);
+            btnGetScreenshot.setOnClickListener(
+                view -> {
+                  int display;
+                  try {
+                    String displayStr = editDisplay.getText().toString();
+                    display = Integer.parseInt(displayStr);
+                    if (display < 0 || display >= 65536) display = 0;
+                  } catch (NumberFormatException ignored) {
+                    display = 0;
+                  }
+                  getImageCommon(GET_SCREENSHOT, display);
+                  popupWindow.dismiss();
+                  ClipShareActivity.this.lastActivityTime = System.currentTimeMillis();
+                  endActiveTask();
+                });
+
+            popupView.findViewById(R.id.popup_bg).setOnClickListener(v -> {});
+            popupView.setOnClickListener(v -> popupWindow.dismiss());
+          } catch (Exception ignored) {
+          } finally {
+            ClipShareActivity.this.lastActivityTime = System.currentTimeMillis();
+            endActiveTask();
+          }
+        };
     try {
       this.lastActivityTime = System.currentTimeMillis();
-      if (needsPermission(0)) return true;
-      startActiveTask();
-      LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
-      View popupView =
-          inflater.inflate(R.layout.popup_display, findViewById(R.id.main_layout), false);
-      final PopupWindow popupWindow =
-          new PopupWindow(
-              popupView,
-              LinearLayout.LayoutParams.MATCH_PARENT,
-              LinearLayout.LayoutParams.MATCH_PARENT,
-              true);
-      popupWindow.showAtLocation(parent, Gravity.CENTER, 0, 0);
-
-      Button btnGetCopiedImg = popupView.findViewById(R.id.btnGetCopiedImg);
-      btnGetCopiedImg.setOnClickListener(
-          view -> {
-            getImageCommon(GET_COPIED_IMAGE, 0);
-            popupWindow.dismiss();
-            ClipShareActivity.this.lastActivityTime = System.currentTimeMillis();
-            endActiveTask();
-          });
-
-      EditText editDisplay = popupView.findViewById(R.id.editDisplay);
-      if (editDisplay == null) return true;
-      Button btnGetScreenshot = popupView.findViewById(R.id.btnGetScreenshot);
-      btnGetScreenshot.setOnClickListener(
-          view -> {
-            int display;
-            try {
-              String displayStr = editDisplay.getText().toString();
-              display = Integer.parseInt(displayStr);
-              if (display < 0 || display >= 65536) display = 0;
-            } catch (NumberFormatException ignored) {
-              display = 0;
-            }
-            getImageCommon(GET_SCREENSHOT, display);
-            popupWindow.dismiss();
-            ClipShareActivity.this.lastActivityTime = System.currentTimeMillis();
-            endActiveTask();
-          });
-
-      popupView.findViewById(R.id.popup_bg).setOnClickListener(v -> {});
-      popupView.setOnClickListener(v -> popupWindow.dismiss());
+      if (needsPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)) this.pendingTask = task;
+      else task.run();
     } catch (Exception ignored) {
-      ClipShareActivity.this.lastActivityTime = System.currentTimeMillis();
-      endActiveTask();
     }
     return true;
   }
 
   private void getImageCommon(int method, int display) {
+    Runnable task =
+        () -> {
+          try {
+            outputReset();
+            String address = this.getServerAddress();
+            if (address == null) return;
+            startActiveTask();
+            ExecutorService executorService = Executors.newSingleThreadExecutor();
+            Runnable getImg =
+                () -> {
+                  try {
+                    FSUtils utils = new FSUtils(context);
+                    Proto proto = getProtoWrapper(address, utils);
+                    if (proto == null) return;
+                    if (method != GET_IMAGE && proto.getVersion() < 3) {
+                      runOnUiThread(
+                          () ->
+                              Toast.makeText(
+                                      ClipShareActivity.this,
+                                      "Server doesn't support this method",
+                                      Toast.LENGTH_SHORT)
+                                  .show());
+                      proto.close();
+                      return;
+                    }
+                    boolean status = false;
+                    if (method == GET_IMAGE) status = proto.getImage();
+                    else if (method == GET_COPIED_IMAGE) status = proto.getCopiedImage();
+                    else if (method == GET_SCREENSHOT) status = proto.getScreenshot(display);
+                    proto.close();
+                    if (status) {
+                      utils.vibrate();
+                      List<File> files = proto.dataContainer.getFiles();
+                      showShareButton(files, true);
+                      if (files != null && files.size() == 1) showViewFileButton(files.get(0));
+                    } else {
+                      runOnUiThread(
+                          () ->
+                              Toast.makeText(
+                                      ClipShareActivity.this,
+                                      "Getting image failed",
+                                      Toast.LENGTH_SHORT)
+                                  .show());
+                    }
+                  } catch (Exception e) {
+                    outputAppend("Error " + e.getMessage());
+                  } finally {
+                    this.lastActivityTime = System.currentTimeMillis();
+                    endActiveTask();
+                  }
+                };
+            executorService.submit(getImg);
+          } catch (Exception e) {
+            outputAppend("Error " + e.getMessage());
+          }
+        };
     try {
       this.lastActivityTime = System.currentTimeMillis();
-      if (needsPermission(method == GET_IMAGE ? WRITE_IMAGE : 0)) return;
-      outputReset();
-      String address = this.getServerAddress();
-      if (address == null) return;
-      startActiveTask();
-      ExecutorService executorService = Executors.newSingleThreadExecutor();
-      Runnable getImg =
-          () -> {
-            try {
-              FSUtils utils = new FSUtils(context);
-              Proto proto = getProtoWrapper(address, utils);
-              if (proto == null) return;
-              if (method != GET_IMAGE && proto.getVersion() < 3) {
-                runOnUiThread(
-                    () ->
-                        Toast.makeText(
-                                ClipShareActivity.this,
-                                "Server doesn't support this method",
-                                Toast.LENGTH_SHORT)
-                            .show());
-                proto.close();
-                return;
-              }
-              boolean status = false;
-              if (method == GET_IMAGE) status = proto.getImage();
-              else if (method == GET_COPIED_IMAGE) status = proto.getCopiedImage();
-              else if (method == GET_SCREENSHOT) status = proto.getScreenshot(display);
-              proto.close();
-              if (status) {
-                utils.vibrate();
-                List<File> files = proto.dataContainer.getFiles();
-                showShareButton(files, true);
-                if (files != null && files.size() == 1) showViewFileButton(files.get(0));
-              } else {
-                runOnUiThread(
-                    () ->
-                        Toast.makeText(
-                                ClipShareActivity.this, "Getting image failed", Toast.LENGTH_SHORT)
-                            .show());
-              }
-            } catch (Exception e) {
-              outputAppend("Error " + e.getMessage());
-            } finally {
-              this.lastActivityTime = System.currentTimeMillis();
-              endActiveTask();
-            }
-          };
-      executorService.submit(getImg);
+      if (needsPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)) this.pendingTask = task;
+      else task.run();
     } catch (Exception e) {
       outputAppend("Error " + e.getMessage());
     }
   }
 
   private void clkGetFile() {
+    Runnable task =
+        () -> {
+          try {
+            startActiveTask();
+            outputReset();
+            String address = this.getServerAddress();
+            if (address == null) return;
+            Runnable getFile =
+                () -> {
+                  try {
+                    FSUtils utils = new FSUtils(context);
+                    if (handleTaskFromService(address, utils, PendingTask.GET_FILES)) {
+                      outputAppend("Getting files\n");
+                    }
+                  } catch (Exception e) {
+                    outputAppend("Error " + e.getMessage());
+                  }
+                };
+            ExecutorService executorService = Executors.newSingleThreadExecutor();
+            executorService.submit(getFile);
+          } catch (Exception e) {
+            outputAppend("Error " + e.getMessage());
+          } finally {
+            this.lastActivityTime = System.currentTimeMillis();
+            endActiveTask();
+          }
+        };
     try {
-      startActiveTask();
-      if (needsPermission(WRITE_FILE)) return;
-      outputReset();
-      String address = this.getServerAddress();
-      if (address == null) return;
-      Runnable getFile =
-          () -> {
-            try {
-              FSUtils utils = new FSUtils(context);
-              if (handleTaskFromService(address, utils, PendingTask.GET_FILES)) {
-                outputAppend("Getting files\n");
-              }
-            } catch (Exception e) {
-              outputAppend("Error " + e.getMessage());
-            }
-          };
-      ExecutorService executorService = Executors.newSingleThreadExecutor();
-      executorService.submit(getFile);
+      this.lastActivityTime = System.currentTimeMillis();
+      if (needsPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)) this.pendingTask = task;
+      else task.run();
     } catch (Exception e) {
       outputAppend("Error " + e.getMessage());
-    } finally {
-      this.lastActivityTime = System.currentTimeMillis();
-      endActiveTask();
     }
   }
 
@@ -1072,16 +1098,13 @@ public class ClipShareActivity extends AppCompatActivity {
    * Checks if the app needs permission to write a file to storage. If the permission is not already
    * granted, this will request the permission from the user.
    *
-   * @param requestCode to check if permission is needed
    * @return true if permission is required or false otherwise
    */
-  private boolean needsPermission(int requestCode) {
-    String permission = Manifest.permission.WRITE_EXTERNAL_STORAGE;
+  private boolean needsPermission(String permission) {
     if (Build.VERSION.SDK_INT > Build.VERSION_CODES.Q) return false;
     if (ContextCompat.checkSelfPermission(ClipShareActivity.this, permission)
         == PackageManager.PERMISSION_DENIED) {
-      ActivityCompat.requestPermissions(
-          ClipShareActivity.this, new String[] {permission}, requestCode);
+      ActivityCompat.requestPermissions(ClipShareActivity.this, new String[] {permission}, 0);
       return true;
     } else {
       return false;
@@ -1092,25 +1115,13 @@ public class ClipShareActivity extends AppCompatActivity {
   public void onRequestPermissionsResult(
       int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
     super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
-    if (requestCode == 0 || requestCode == WRITE_IMAGE || requestCode == WRITE_FILE) {
-      if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-        switch (requestCode) {
-          case WRITE_IMAGE:
-            {
-              getImageCommon(GET_IMAGE, 0);
-              break;
-            }
-          case WRITE_FILE:
-            {
-              clkGetFile();
-              break;
-            }
-        }
-      } else {
-        Toast.makeText(ClipShareActivity.this, "Storage Permission Denied", Toast.LENGTH_SHORT)
-            .show();
-      }
+    Runnable task = this.pendingTask;
+    this.pendingTask = null;
+    if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+      task.run();
+    } else {
+      Toast.makeText(ClipShareActivity.this, "Storage Permission Denied", Toast.LENGTH_SHORT)
+          .show();
     }
   }
 
