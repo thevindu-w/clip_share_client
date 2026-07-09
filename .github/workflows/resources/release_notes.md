@@ -7,6 +7,6 @@ There are 2 APK files included in the release assets for compatibility.
 
 Refer to the [README](https://github.com/thevindu-w/clip_share_client/#how-to-use) for usage information.<br>
 **Changes:**
-- Verify peer name in server mode with TLS.
-- Fix background mode and server mode clipboard access on newer Android versions.
-- Improve error handling in settings.
+- Fix potential issues with auto-closing if idle.
+- Fix getting the correct image type after requesting storage permissions.
+- Upgrade build tools and environment.
