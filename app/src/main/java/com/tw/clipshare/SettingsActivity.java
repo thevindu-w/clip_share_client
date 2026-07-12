@@ -211,6 +211,10 @@ public class SettingsActivity extends AppCompatActivity {
                           .show());
             }
           });
+  private final ActivityResultLauncher<Intent> serverOverlayLauncher =
+      registerForActivityResult(
+          new ActivityResultContracts.StartActivityForResult(),
+          result -> startService(ServerService.class));
 
   private void loadSettingsAndUpdateUI(String jsonStr) {
     Settings.loadInstance(jsonStr);
@@ -827,13 +831,31 @@ public class SettingsActivity extends AppCompatActivity {
 
     Button startServerBtn = findViewById(R.id.btnStartServer);
     startServerBtn.setOnClickListener(
-        view -> {
-          try {
-            Intent serverIntent = new Intent(this, ServerService.class);
-            ContextCompat.startForegroundService(getApplicationContext(), serverIntent);
-          } catch (Exception ignored) {
-          }
-        });
+        view -> requestService(serverOverlayLauncher, ServerService.class));
+  }
+
+  private void requestService(ActivityResultLauncher<Intent> launcher, Class<?> serviceClass) {
+    try {
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R
+          && !android.provider.Settings.canDrawOverlays(this)) {
+        Intent intent =
+            new Intent(
+                android.provider.Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                Uri.parse("package:" + getPackageName()));
+        launcher.launch(intent);
+      } else {
+        startService(serviceClass);
+      }
+    } catch (Exception ignored) {
+    }
+  }
+
+  private void startService(Class<?> serviceClass) {
+    try {
+      Intent intent = new Intent(this, serviceClass);
+      ContextCompat.startForegroundService(getApplicationContext(), intent);
+    } catch (Exception ignored) {
+    }
   }
 
   @Override
