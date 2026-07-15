@@ -215,6 +215,10 @@ public class SettingsActivity extends AppCompatActivity {
       registerForActivityResult(
           new ActivityResultContracts.StartActivityForResult(),
           result -> startService(ServerService.class));
+  private final ActivityResultLauncher<Intent> bgServiceOverlayLauncher =
+      registerForActivityResult(
+          new ActivityResultContracts.StartActivityForResult(),
+          result -> startService(BackgroundService.class));
 
   private void loadSettingsAndUpdateUI(String jsonStr) {
     Settings.loadInstance(jsonStr);
@@ -821,13 +825,7 @@ public class SettingsActivity extends AppCompatActivity {
 
     Button startServiceBtn = findViewById(R.id.btnStartService);
     startServiceBtn.setOnClickListener(
-        view -> {
-          try {
-            Intent bgIntent = new Intent(this, BackgroundService.class);
-            ContextCompat.startForegroundService(getApplicationContext(), bgIntent);
-          } catch (Exception ignored) {
-          }
-        });
+        view -> requestService(bgServiceOverlayLauncher, BackgroundService.class));
 
     Button startServerBtn = findViewById(R.id.btnStartServer);
     startServerBtn.setOnClickListener(
