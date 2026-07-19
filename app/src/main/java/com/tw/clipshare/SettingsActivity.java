@@ -24,11 +24,13 @@
 
 package com.tw.clipshare;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Rect;
 import android.net.Uri;
@@ -92,6 +94,7 @@ public class SettingsActivity extends AppCompatActivity {
   private EditText editServerPortUDP;
   private Spinner dropdownNightMode;
   private Settings settings;
+  private Runnable pendingTask = null;
   private final ActivityResultLauncher<Intent> clientActivityLauncher =
       registerForActivityResult(
           new ActivityResultContracts.StartActivityForResult(),
@@ -219,6 +222,14 @@ public class SettingsActivity extends AppCompatActivity {
       registerForActivityResult(
           new ActivityResultContracts.StartActivityForResult(),
           result -> startService(BackgroundService.class));
+  ActivityResultLauncher<String> permissionLauncher =
+      registerForActivityResult(
+          new ActivityResultContracts.RequestPermission(),
+          result -> {
+            Runnable task = pendingTask;
+            this.pendingTask = null;
+            if (task != null) task.run();
+          });
 
   private void loadSettingsAndUpdateUI(String jsonStr) {
     Settings.loadInstance(jsonStr);
@@ -825,15 +836,25 @@ public class SettingsActivity extends AppCompatActivity {
 
     Button startServiceBtn = findViewById(R.id.btnStartService);
     startServiceBtn.setOnClickListener(
-        view -> requestService(bgServiceOverlayLauncher, BackgroundService.class));
+        view -> requestService(bgServiceOverlayLauncher, BackgroundService.class, true));
 
     Button startServerBtn = findViewById(R.id.btnStartServer);
     startServerBtn.setOnClickListener(
-        view -> requestService(serverOverlayLauncher, ServerService.class));
+        view -> requestService(serverOverlayLauncher, ServerService.class, true));
   }
 
-  private void requestService(ActivityResultLauncher<Intent> launcher, Class<?> serviceClass) {
+  private void requestService(
+      ActivityResultLauncher<Intent> launcher, Class<?> serviceClass, boolean requestPermissions) {
     try {
+      if (requestPermissions
+          && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
+          && ContextCompat.checkSelfPermission(
+                  getApplicationContext(), Manifest.permission.POST_NOTIFICATIONS)
+              != PackageManager.PERMISSION_GRANTED) {
+        this.pendingTask = () -> requestService(launcher, serviceClass, false);
+        permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
+        return;
+      }
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R
           && !android.provider.Settings.canDrawOverlays(this)) {
         Intent intent =
