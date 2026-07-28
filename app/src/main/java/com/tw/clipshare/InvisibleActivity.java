@@ -25,6 +25,7 @@
 package com.tw.clipshare;
 
 import android.app.Activity;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.WindowManager;
 import com.tw.clipshare.platformUtils.AndroidUtils;
@@ -42,17 +43,31 @@ public class InvisibleActivity extends Activity {
     try {
       setContentView(R.layout.activity_invisible);
       WindowManager.LayoutParams params = getWindow().getAttributes();
+      params.width = 1;
+      params.height = 1;
       params.dimAmount = 0;
       params.flags =
           WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
-              | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
-              | WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE;
+              | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL;
+      if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q)
+        params.flags |= WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE;
       getWindow().setAttributes(params);
-      AndroidUtils utils = new AndroidUtils(getApplicationContext(), this);
-      if (isServer) ServerService.doUIOperation(utils);
-      else BackgroundService.doUIOperation(utils);
-      this.finish();
+      if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) execute();
     } catch (Exception ignored) {
     }
+  }
+
+  @Override
+  public void onWindowFocusChanged(boolean hasFocus) {
+    super.onWindowFocusChanged(hasFocus);
+    if (!hasFocus || Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) return;
+    execute();
+  }
+
+  private void execute() {
+    AndroidUtils utils = new AndroidUtils(getApplicationContext(), this);
+    if (isServer) ServerService.doUIOperation(utils);
+    else BackgroundService.doUIOperation(utils);
+    this.finish();
   }
 }

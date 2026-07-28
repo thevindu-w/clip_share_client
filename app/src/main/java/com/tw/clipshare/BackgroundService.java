@@ -28,6 +28,7 @@ import android.app.*;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.os.IBinder;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
@@ -81,6 +82,8 @@ public class BackgroundService extends Service {
               .addAction(0, "Get", pendingIntentGet)
               .addAction(0, "Send", pendingIntentSend)
               .addAction(0, "Stop", pendingIntentStop);
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
+        builder = builder.setFullScreenIntent(pendingIntent, true);
       running = true;
       command = 0;
       startForeground(id, builder.build());
