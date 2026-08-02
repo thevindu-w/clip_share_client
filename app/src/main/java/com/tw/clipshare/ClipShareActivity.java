@@ -56,6 +56,7 @@ import com.tw.clipshare.protocol.Proto;
 import java.io.File;
 import java.net.InetAddress;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -1072,7 +1073,9 @@ public class ClipShareActivity extends AppCompatActivity {
         };
     try {
       this.lastActivityTime = System.currentTimeMillis();
-      if (needsPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)) this.pendingTask = task;
+      if (needsPermission(
+          Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.POST_NOTIFICATIONS))
+        this.pendingTask = task;
       else task.run();
     } catch (Exception e) {
       outputAppend("Error " + e.getMessage());
@@ -1100,15 +1103,22 @@ public class ClipShareActivity extends AppCompatActivity {
    *
    * @return true if permission is required or false otherwise
    */
-  private boolean needsPermission(String permission) {
-    if (Build.VERSION.SDK_INT > Build.VERSION_CODES.Q) return false;
-    if (ContextCompat.checkSelfPermission(ClipShareActivity.this, permission)
-        == PackageManager.PERMISSION_DENIED) {
-      ActivityCompat.requestPermissions(ClipShareActivity.this, new String[] {permission}, 0);
-      return true;
-    } else {
-      return false;
+  private boolean needsPermission(String... permissions) {
+    String[] temp = new String[permissions.length];
+    int cnt = 0;
+    for (String perm : permissions) {
+      if (Build.VERSION.SDK_INT > Build.VERSION_CODES.Q
+          && Manifest.permission.WRITE_EXTERNAL_STORAGE.equals(perm)) continue;
+      if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU
+          && Manifest.permission.POST_NOTIFICATIONS.equals(perm)) continue;
+      if (ContextCompat.checkSelfPermission(ClipShareActivity.this, perm)
+          == PackageManager.PERMISSION_GRANTED) continue;
+      temp[cnt++] = perm;
     }
+    if (cnt == 0) return false;
+    String[] reqPermissions = Arrays.copyOf(temp, cnt);
+    ActivityCompat.requestPermissions(ClipShareActivity.this, reqPermissions, 0);
+    return true;
   }
 
   @Override
@@ -1117,10 +1127,18 @@ public class ClipShareActivity extends AppCompatActivity {
     super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     Runnable task = this.pendingTask;
     this.pendingTask = null;
-    if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+    boolean allGranted = grantResults.length > 0;
+    for (int grantResult : grantResults) {
+      if (grantResult != PackageManager.PERMISSION_GRANTED) {
+        allGranted = false;
+        break;
+      }
+    }
+    if (allGranted) {
       task.run();
     } else {
-      Toast.makeText(ClipShareActivity.this, "Storage Permission Denied", Toast.LENGTH_SHORT)
+      Toast.makeText(
+              ClipShareActivity.this, "Required permissions are not granted", Toast.LENGTH_SHORT)
           .show();
     }
   }
