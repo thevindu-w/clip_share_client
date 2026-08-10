@@ -27,13 +27,16 @@ package com.tw.clipshare.platformUtils;
 import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.app.NotificationManager;
+import android.content.Context;
 import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
+import com.tw.clipshare.R;
 import java.util.Locale;
 
 public final class StatusNotifier {
 
   private static final int PROGRESS_MAX = 100;
+  private final Context context;
   private final NotificationManager notificationManager;
   private final NotificationCompat.Builder builder;
   private final int notificationId;
@@ -48,9 +51,11 @@ public final class StatusNotifier {
   private boolean finished;
 
   public StatusNotifier(
+      Context context,
       NotificationManager notificationManager,
       NotificationCompat.Builder builder,
       int notificationId) {
+    this.context = context;
     this.notificationManager = notificationManager;
     this.builder =
         builder
@@ -150,7 +155,7 @@ public final class StatusNotifier {
       builder
           .setProgress(PROGRESS_MAX, percent, false)
           .setContentText(progress + "/" + fileSizeStr);
-      if (timeRemaining.time >= 0) builder.setSubText(timeRemaining + " left");
+      if (timeRemaining.time >= 0) builder.setSubText(timeRemaining.format(context));
       notificationManager.notify(notificationId, builder.build());
     } catch (Exception ignored) {
     }
@@ -262,14 +267,14 @@ class DataSize {
 }
 
 class TimeContainer {
-  static final String SECOND = "sec";
-  static final String MINUTE = "min";
-  static final String HOUR = "hour";
-  static final String DAY = "day";
+  static final byte SECOND = 1;
+  static final byte MINUTE = 2;
+  static final byte HOUR = 3;
+  static final byte DAY = 4;
   final short time;
-  final String unit;
+  final byte unit;
 
-  private TimeContainer(short time, String unit) {
+  private TimeContainer(short time, byte unit) {
     this.time = time;
     this.unit = unit;
   }
@@ -297,15 +302,17 @@ class TimeContainer {
   public boolean equals(Object other) {
     if (!(other instanceof TimeContainer otherContainer)) return false;
     return (this.time == otherContainer.time
-        && (this.time < 0 || this.unit.equals(otherContainer.unit)));
+        && (this.time < 0 || this.unit == otherContainer.unit));
   }
 
-  @Override
-  @NonNull
-  public String toString() {
-    if (this.time == 1) {
-      return this.time + " " + this.unit;
-    }
-    return this.time + " " + this.unit + 's';
+  String format(Context context) {
+    int res =
+        switch (this.unit) {
+          case DAY -> R.plurals.days_left;
+          case HOUR -> R.plurals.hours_left;
+          case MINUTE -> R.plurals.mins_left;
+          default -> R.plurals.secs_left;
+        };
+    return context.getResources().getQuantityString(res, this.time, this.time);
   }
 }

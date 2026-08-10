@@ -1,62 +1,62 @@
 <resources>
     <string name="app_name" translatable="false">ClipShare</string>
-    <string name="btnImgTxt" translatable="false">Image</string>
-    <string name="btnTxt" translatable="false">Text</string>
-    <string name="addressLbl" translatable="false">Server:</string>
+    <string name="btnImgTxt">Image</string>
+    <string name="btnTxt">Text</string>
+    <string name="addressLbl">Server:</string>
     <string name="addressHint" translatable="false">192.168.1.2</string>
-    <string name="btnFileTxt" translatable="false">File</string>
-    <string name="btnFolderTxt" translatable="false">Folder</string>
-    <string name="scanBtnTxt" translatable="false">Scan</string>
-    <string name="btnOpenLink" translatable="false">Open link</string>
-    <string name="btnShareFile" translatable="false">Share</string>
-    <string name="fileSelectedTxt" translatable="false">File selected. Press send file button.</string>
-    <string name="channel_name" translatable="false">File transfer progress</string>
-    <string name="channel_description" translatable="false">File upload/download progress</string>
-    <plurals name="filesSelectedTxt" translatable="false">
+    <string name="btnFileTxt">File</string>
+    <string name="btnFolderTxt">Folder</string>
+    <string name="scanBtnTxt">Scan</string>
+    <string name="btnOpenLink">Open link</string>
+    <string name="btnShareFile">Share</string>
+    <string name="fileSelectedTxt">File selected. Press send file button.</string>
+    <string name="channel_name">File transfer progress</string>
+    <string name="channel_description">File upload/download progress</string>
+    <plurals name="filesSelectedTxt">
         <item quantity="one">%d file selected. Press send file button.</item>
         <item quantity="other">%d files selected. Press send file button.</item>
     </plurals>
-    <string name="noFilesTxt" translatable="false">No files selected</string>
-    <string name="settings" translatable="false">Settings</string>
-    <string name="secure_mode" translatable="false">Secure mode</string>
-    <string name="vibrate" translatable="false">Vibration alerts</string>
-    <string name="ipv6_scan" translatable="false">IPv6 Scan</string>
-    <string name="tcp_scan" translatable="false">TCP Scan</string>
-    <string name="security" translatable="false">Security</string>
-    <string name="delete" translatable="false">Delete</string>
-    <string name="add" translatable="false">Add</string>
-    <string name="trusted_peers" translatable="false">Trusted peers</string>
-    <string name="saved_servers" translatable="false">Saved servers</string>
-    <string name="auto_send_trusted_servers" translatable="false">Auto-send to</string>
-    <string name="enter_server_name" translatable="false">Enter server name</string>
-    <string name="password" translatable="false">Password :</string>
-    <string name="client_certificate" translatable="false">Client Certificate</string>
-    <string name="name" translatable="false">Name :</string>
-    <string name="browse" translatable="false">Browse</string>
-    <string name="ca_certificate" translatable="false">CA Certificate</string>
-    <string name="auto_send" translatable="false">Auto-send</string>
-    <string name="auto_send_text" translatable="false">Auto-send text</string>
-    <string name="auto_send_file" translatable="false">Auto-send files</string>
-    <string name="sendingFiles" translatable="false">Sending files\n</string>
-    <string name="tunnel" translatable="false">Tunnel</string>
-    <string name="textSelected" translatable="false">Text is selected. Press the Send button.\nEnable auto-send text in
+    <string name="noFilesTxt">No files selected</string>
+    <string name="settings">Settings</string>
+    <string name="secure_mode">Secure mode</string>
+    <string name="vibrate">Vibration alerts</string>
+    <string name="ipv6_scan">IPv6 Scan</string>
+    <string name="tcp_scan">TCP Scan</string>
+    <string name="security">Security</string>
+    <string name="delete">Delete</string>
+    <string name="add">Add</string>
+    <string name="trusted_peers">Trusted peers</string>
+    <string name="saved_servers">Saved servers</string>
+    <string name="auto_send_trusted_servers">Auto-send to</string>
+    <string name="enter_server_name">Enter server name</string>
+    <string name="password">Password :</string>
+    <string name="client_certificate">Client Certificate</string>
+    <string name="name">Name :</string>
+    <string name="browse">Browse</string>
+    <string name="ca_certificate">CA Certificate</string>
+    <string name="auto_send">Auto-send</string>
+    <string name="auto_send_text">Auto-send text</string>
+    <string name="auto_send_file">Auto-send files</string>
+    <string name="sendingFiles">Sending files\n</string>
+    <string name="tunnel">Tunnel</string>
+    <string name="textSelected">Text is selected. Press the Send button.\nEnable auto-send text in
         Settings to automatically send.
     </string>
-    <string name="ports" translatable="false">Ports</string>
-    <string name="port" translatable="false">Plaintext Port</string>
-    <string name="secure_port" translatable="false">Secure Port</string>
-    <string name="UDP_port" translatable="false">UDP Port</string>
+    <string name="ports">Ports</string>
+    <string name="port">Plaintext Port</string>
+    <string name="secure_port">Secure Port</string>
+    <string name="UDP_port">UDP Port</string>
     <string name="port_number" translatable="false">4337</string>
     <string name="secure_port_number" translatable="false">4338</string>
-    <string name="display" translatable="false">Display :</string>
-    <string name="copied_image" translatable="false">Copied Image</string>
-    <string name="screenshot" translatable="false">Screenshot</string>
-    <string name="export_settings" translatable="false">Export Settings</string>
-    <string name="import_settings" translatable="false">Import Settings</string>
-    <string name="reset_settings" translatable="false">Reset Settings</string>
-    <string name="close_app_if_idle" translatable="false">Close app if idle</string>
+    <string name="display">Display :</string>
+    <string name="copied_image">Copied Image</string>
+    <string name="screenshot">Screenshot</string>
+    <string name="export_settings">Export Settings</string>
+    <string name="import_settings">Import Settings</string>
+    <string name="reset_settings">Reset Settings</string>
+    <string name="close_app_if_idle">Close app if idle</string>
     <string name="autoCloseDelayDefault" translatable="false">120</string>
-    <string name="auto_close_delay" translatable="false">Auto-close delay (seconds)</string>
+    <string name="auto_close_delay">Auto-close delay (seconds)</string>
     <string name="other_settings">Other settings</string>
     <string name="expand">Expand</string>
     <string name="saved_addresses">Saved addresses</string>
@@ -85,4 +85,57 @@
         <item>Same as system</item>
     </string-array>
     <string name="info">Info</string>
+    <string name="change_in_settings">Change this in settings</string>
+    <string name="stop">Stop</string>
+    <string name="no_servers">No servers found!</string>
+    <string name="no_saved_servers">No saved servers!</string>
+    <string name="couldnt_connect">Couldn\'t connect</string>
+    <string name="couldnt_get_text">Couldn\'t get text</string>
+    <string name="invalid_address">Invalid address</string>
+    <string name="sent_msg">Sent: %1$s</string>
+    <string name="sent_msg_truncated">Sent: %1$s &#8230; (truncated)</string>
+    <string name="recvd_msg">Received: %1$s</string>
+    <string name="recvd_msg_truncated">Received: %1$s &#8230; (truncated)</string>
+    <string name="error_occurred">Error occurred</string>
+    <string name="unsupported_method">Server doesn\'t support this method</string>
+    <string name="getting_file">Getting file</string>
+    <string name="sending_file">Sending file</string>
+    <string name="get_files_complete">Getting files completed</string>
+    <string name="send_files_complete">Sending files completed</string>
+    <string name="get_img_failed">Getting image failed</string>
+    <string name="get_files_failed">Getting files failed</string>
+    <string name="send_files_failed">Sending files failed</string>
+    <string name="get_files_stopped">Getting files stopped</string>
+    <string name="send_files_stopped">Sending files stopped</string>
+    <string name="getting_files">Getting files\n</string>
+    <string name="permissions_not_granted">Required permissions are not granted</string>
+    <string name="invalid_client_cert">Invalid client certificate</string>
+    <string name="invalid_ca_cert">Invalid CA certificate</string>
+    <string name="no_file_selected">No file selected</string>
+    <string name="exported_settings">Exported settings</string>
+    <string name="imported_settings">Imported settings</string>
+    <string name="server_name">Server name</string>
+    <string name="no_ca_cert">No CA certificate</string>
+    <string name="no_client_key">No client key and certificate</string>
+    <string name="no_trusted_servers">No trusted servers</string>
+    <string name="invalid_port">Invalid port</string>
+    <string name="invalid_delay">Invalid delay</string>
+    <string name="sent_all_files">Sent all files</string>
+    <string name="cancelled">Cancelled</string>
+    <plurals name="secs_left">
+        <item quantity="one">%d sec left</item>
+        <item quantity="other">%d secs left</item>
+    </plurals>
+    <plurals name="mins_left">
+        <item quantity="one">%d min left</item>
+        <item quantity="other">%d mins left</item>
+    </plurals>
+    <plurals name="hours_left">
+        <item quantity="one">%d hour left</item>
+        <item quantity="other">%d hours left</item>
+    </plurals>
+    <plurals name="days_left">
+        <item quantity="one">%d day left</item>
+        <item quantity="other">%d days left</item>
+    </plurals>
 </resources>

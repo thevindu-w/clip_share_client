@@ -181,7 +181,7 @@ public class ClipShareActivity extends AppCompatActivity {
                 Uri.parse("https://github.com/thevindu-w/clip_share_client#how-to-use"));
         startActivity(intent);
       } else if (itemID == R.id.action_secure) {
-        Toast.makeText(ClipShareActivity.this, "Change this in settings", Toast.LENGTH_SHORT)
+        Toast.makeText(ClipShareActivity.this, R.string.change_in_settings, Toast.LENGTH_SHORT)
             .show();
       }
     } catch (Exception ignored) {
@@ -189,7 +189,6 @@ public class ClipShareActivity extends AppCompatActivity {
     return true;
   }
 
-  //  @SuppressLint("WrongConstant")
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     this.context = getApplicationContext();
@@ -570,7 +569,7 @@ public class ClipShareActivity extends AppCompatActivity {
                 if (serverAddresses.isEmpty()) {
                   runOnUiThread(
                       () ->
-                          Toast.makeText(context, "No servers found!", Toast.LENGTH_SHORT).show());
+                          Toast.makeText(context, R.string.no_servers, Toast.LENGTH_SHORT).show());
                   return;
                 }
                 List<String> addresses =
@@ -600,7 +599,8 @@ public class ClipShareActivity extends AppCompatActivity {
                 if (serverAddresses.isEmpty()) {
                   runOnUiThread(
                       () ->
-                          Toast.makeText(context, "No saved servers!", Toast.LENGTH_SHORT).show());
+                          Toast.makeText(context, R.string.no_saved_servers, Toast.LENGTH_SHORT)
+                              .show());
                   return;
                 }
                 serverAddresses.sort(String::compareTo);
@@ -660,7 +660,7 @@ public class ClipShareActivity extends AppCompatActivity {
   private Proto getProtoWrapper(@NonNull String address, AndroidUtils utils) {
     try {
       Proto proto = Utils.getProtoWrapper(address, utils);
-      if (proto == null) outputAppend("Couldn't connect");
+      if (proto == null) outputAppend(getString(R.string.couldnt_connect));
       return proto;
     } catch (Exception ex) {
       outputAppend(ex.getMessage());
@@ -679,7 +679,7 @@ public class ClipShareActivity extends AppCompatActivity {
     try {
       address = editAddress.getText().toString();
       if (!Utils.isValidIP(address)) {
-        Toast.makeText(ClipShareActivity.this, "Invalid address", Toast.LENGTH_SHORT).show();
+        Toast.makeText(ClipShareActivity.this, R.string.invalid_address, Toast.LENGTH_SHORT).show();
         return null;
       }
     } catch (Exception ignored) {
@@ -720,8 +720,9 @@ public class ClipShareActivity extends AppCompatActivity {
               boolean status = proto.sendText(clipData);
               proto.close();
               if (!status) return;
-              if (clipData.length() < 16384) outputSetText("Sent: " + clipData);
-              else outputSetText("Sent: " + clipData.substring(0, 1024) + " ... (truncated)");
+              if (clipData.length() < 16384) outputSetText(getString(R.string.sent_msg, clipData));
+              else
+                outputSetText(getString(R.string.sent_msg_truncated, clipData.substring(0, 1024)));
               utils.vibrate();
             } catch (Exception e) {
               outputAppend("Error " + e.getMessage());
@@ -754,7 +755,7 @@ public class ClipShareActivity extends AppCompatActivity {
         executorService.submit(sendURIs);
       }
     } catch (Exception ignored) {
-      outputAppend("Error occurred");
+      outputAppend(getString(R.string.error_occurred));
     } finally {
       this.lastActivityTime = System.currentTimeMillis();
     }
@@ -776,7 +777,7 @@ public class ClipShareActivity extends AppCompatActivity {
         executorService.submit(sendURIs);
       }
     } catch (Exception ignored) {
-      outputAppend("Error occurred");
+      outputAppend(getString(R.string.error_occurred));
     } finally {
       this.lastActivityTime = System.currentTimeMillis();
     }
@@ -894,8 +895,8 @@ public class ClipShareActivity extends AppCompatActivity {
               String text = proto.dataContainer.getString();
               if (text == null) return;
               utils.setClipboardText(text);
-              if (text.length() < 16384) outputSetText("Received: " + text);
-              else outputSetText("Received: " + text.substring(0, 1024) + " ... (truncated)");
+              if (text.length() < 16384) outputSetText(getString(R.string.recvd_msg, text));
+              else outputSetText(getString(R.string.recvd_msg_truncated, text.substring(0, 1024)));
               checkURL(text);
               utils.vibrate();
             } catch (Exception e) {
@@ -997,7 +998,7 @@ public class ClipShareActivity extends AppCompatActivity {
                           () ->
                               Toast.makeText(
                                       ClipShareActivity.this,
-                                      "Server doesn't support this method",
+                                      R.string.unsupported_method,
                                       Toast.LENGTH_SHORT)
                                   .show());
                       proto.close();
@@ -1018,7 +1019,7 @@ public class ClipShareActivity extends AppCompatActivity {
                           () ->
                               Toast.makeText(
                                       ClipShareActivity.this,
-                                      "Getting image failed",
+                                      R.string.get_img_failed,
                                       Toast.LENGTH_SHORT)
                                   .show());
                     }
@@ -1056,7 +1057,7 @@ public class ClipShareActivity extends AppCompatActivity {
                   try {
                     FSUtils utils = new FSUtils(context);
                     if (handleTaskFromService(address, utils, PendingTask.GET_FILES)) {
-                      outputAppend("Getting files\n");
+                      outputAppend(getString(R.string.getting_files));
                     }
                   } catch (Exception e) {
                     outputAppend("Error " + e.getMessage());
@@ -1137,8 +1138,7 @@ public class ClipShareActivity extends AppCompatActivity {
     if (allGranted) {
       task.run();
     } else {
-      Toast.makeText(
-              ClipShareActivity.this, "Required permissions are not granted", Toast.LENGTH_SHORT)
+      Toast.makeText(ClipShareActivity.this, R.string.permissions_not_granted, Toast.LENGTH_SHORT)
           .show();
     }
   }

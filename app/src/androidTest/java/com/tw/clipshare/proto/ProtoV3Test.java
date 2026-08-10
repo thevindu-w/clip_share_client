@@ -111,7 +111,7 @@ public class ProtoV3Test {
             .setContentTitle("Sending files");
     Random rnd = new Random();
     int notificationId = Math.abs(rnd.nextInt(Integer.MAX_VALUE - 1)) + 1;
-    this.notifier = new StatusNotifier(notificationManager, builder, notificationId);
+    this.notifier = new StatusNotifier(context, notificationManager, builder, notificationId);
     assertNotNull(this.notifier);
   }
 

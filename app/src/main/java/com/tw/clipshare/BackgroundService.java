@@ -79,9 +79,9 @@ public class BackgroundService extends Service {
               .setContentIntent(pendingIntent)
               .setContentTitle(getApplicationContext().getString(R.string.app_name))
               .setSmallIcon(R.drawable.clip_share_icon_mono)
-              .addAction(0, "Get", pendingIntentGet)
-              .addAction(0, "Send", pendingIntentSend)
-              .addAction(0, "Stop", pendingIntentStop);
+              .addAction(0, getString(R.string.get), pendingIntentGet)
+              .addAction(0, getString(R.string.send), pendingIntentSend)
+              .addAction(0, getString(R.string.stop), pendingIntentStop);
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
         builder = builder.setFullScreenIntent(pendingIntent, true);
       running = true;
@@ -120,7 +120,7 @@ public class BackgroundService extends Service {
             AndroidUtils utils = new AndroidUtils(getApplicationContext(), null);
             Proto proto = Utils.getProtoWrapper(ClipShareActivity.lastAddress, utils);
             if (proto == null) {
-              utils.showToast("Couldn't connect");
+              utils.showToast(getString(R.string.couldnt_connect));
               return;
             }
             boolean status = proto.getText();
@@ -128,7 +128,7 @@ public class BackgroundService extends Service {
             String text = null;
             if (status) text = proto.dataContainer.getString();
             if (text == null) {
-              utils.showToast("Couldn't get text");
+              utils.showToast(getString(R.string.couldnt_get_text));
               return;
             }
             synchronized (TEXT_LOCK) {
@@ -163,7 +163,7 @@ public class BackgroundService extends Service {
             AndroidUtils utils = new AndroidUtils(getApplicationContext(), null);
             Proto proto = Utils.getProtoWrapper(ClipShareActivity.lastAddress, utils);
             if (proto == null) {
-              utils.showToast("Couldn't connect");
+              utils.showToast(getString(R.string.couldnt_connect));
               return;
             }
             proto.sendText(text);

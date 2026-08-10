@@ -115,7 +115,7 @@ public class SettingsActivity extends AppCompatActivity {
                 cnTxt.setText(cn);
               } else {
                 Toast.makeText(
-                        SettingsActivity.this, "Invalid client certificate", Toast.LENGTH_SHORT)
+                        SettingsActivity.this, R.string.invalid_client_cert, Toast.LENGTH_SHORT)
                     .show();
               }
             } catch (Exception ignored) {
@@ -140,7 +140,7 @@ public class SettingsActivity extends AppCompatActivity {
                 SecureConnection.resetSSLContext();
                 caCnTxt.setText(CA_CN);
               } else {
-                Toast.makeText(SettingsActivity.this, "Invalid CA certificate", Toast.LENGTH_SHORT)
+                Toast.makeText(SettingsActivity.this, R.string.invalid_ca_cert, Toast.LENGTH_SHORT)
                     .show();
               }
             } catch (Exception ignored) {
@@ -155,7 +155,9 @@ public class SettingsActivity extends AppCompatActivity {
                 runOnUiThread(
                     () ->
                         Toast.makeText(
-                                SettingsActivity.this, "No file selected", Toast.LENGTH_SHORT)
+                                SettingsActivity.this,
+                                R.string.no_file_selected,
+                                Toast.LENGTH_SHORT)
                             .show());
                 return;
               }
@@ -169,12 +171,14 @@ public class SettingsActivity extends AppCompatActivity {
               }
               runOnUiThread(
                   () ->
-                      Toast.makeText(SettingsActivity.this, "Exported settings", Toast.LENGTH_SHORT)
+                      Toast.makeText(
+                              SettingsActivity.this, R.string.exported_settings, Toast.LENGTH_SHORT)
                           .show());
             } catch (Exception ignored) {
               runOnUiThread(
                   () ->
-                      Toast.makeText(SettingsActivity.this, "Error occurred", Toast.LENGTH_SHORT)
+                      Toast.makeText(
+                              SettingsActivity.this, R.string.error_occurred, Toast.LENGTH_SHORT)
                           .show());
             }
           });
@@ -187,7 +191,9 @@ public class SettingsActivity extends AppCompatActivity {
                 runOnUiThread(
                     () ->
                         Toast.makeText(
-                                SettingsActivity.this, "No file selected", Toast.LENGTH_SHORT)
+                                SettingsActivity.this,
+                                R.string.no_file_selected,
+                                Toast.LENGTH_SHORT)
                             .show());
                 return;
               }
@@ -205,12 +211,14 @@ public class SettingsActivity extends AppCompatActivity {
               }
               runOnUiThread(
                   () ->
-                      Toast.makeText(SettingsActivity.this, "Imported settings", Toast.LENGTH_SHORT)
+                      Toast.makeText(
+                              SettingsActivity.this, R.string.imported_settings, Toast.LENGTH_SHORT)
                           .show());
             } catch (Exception ignored) {
               runOnUiThread(
                   () ->
-                      Toast.makeText(SettingsActivity.this, "Error occurred", Toast.LENGTH_SHORT)
+                      Toast.makeText(
+                              SettingsActivity.this, R.string.error_occurred, Toast.LENGTH_SHORT)
                           .show());
             }
           });
@@ -296,7 +304,7 @@ public class SettingsActivity extends AppCompatActivity {
       trustServer.setId(idTLS.getAndIncrement());
       Settings st = Settings.getInstance();
       List<String> servers = st.getTrustedList();
-      cnTxt.setText(name != null ? name : "Server_name");
+      cnTxt.setText(name != null ? name : getString(R.string.server_name));
       if (addToList) servers.add(cnTxt.getText().toString());
       trustList.addView(trustServer, 0);
       cnTxt.setTextColor(caCnTxt.getTextColors());
@@ -375,7 +383,7 @@ public class SettingsActivity extends AppCompatActivity {
               boolean isValid = "*".equals(newText) || Utils.isValidIP(newText);
               if (isValid) addressTxt.setText(newText);
               else
-                Toast.makeText(SettingsActivity.this, "Invalid IPv4 address", Toast.LENGTH_SHORT)
+                Toast.makeText(SettingsActivity.this, R.string.invalid_address, Toast.LENGTH_SHORT)
                     .show();
               addressEdit.setVisibility(View.GONE);
               addressTxt.setVisibility(View.VISIBLE);
@@ -426,7 +434,7 @@ public class SettingsActivity extends AppCompatActivity {
               boolean isValid = Utils.isValidIP(newText);
               if (isValid) addressTxt.setText(newText);
               else
-                Toast.makeText(SettingsActivity.this, "Invalid IPv4 address", Toast.LENGTH_SHORT)
+                Toast.makeText(SettingsActivity.this, R.string.invalid_address, Toast.LENGTH_SHORT)
                     .show();
               addressEdit.setVisibility(View.GONE);
               addressTxt.setVisibility(View.VISIBLE);
@@ -540,21 +548,21 @@ public class SettingsActivity extends AppCompatActivity {
             return;
           }
           if (settings.getCACertCN() == null) {
-            Toast.makeText(SettingsActivity.this, "No CA certificate", Toast.LENGTH_SHORT).show();
+            Toast.makeText(SettingsActivity.this, R.string.no_ca_cert, Toast.LENGTH_SHORT).show();
             SettingsActivity.this.secureSwitch.setChecked(false);
             settings.setSecure(false);
             return;
           }
           if (settings.getCertCN() == null) {
-            Toast.makeText(
-                    SettingsActivity.this, "No client key and certificate", Toast.LENGTH_SHORT)
+            Toast.makeText(SettingsActivity.this, R.string.no_client_key, Toast.LENGTH_SHORT)
                 .show();
             SettingsActivity.this.secureSwitch.setChecked(false);
             settings.setSecure(false);
             return;
           }
           if (settings.getTrustedList().isEmpty()) {
-            Toast.makeText(SettingsActivity.this, "No trusted servers", Toast.LENGTH_SHORT).show();
+            Toast.makeText(SettingsActivity.this, R.string.no_trusted_servers, Toast.LENGTH_SHORT)
+                .show();
             SettingsActivity.this.secureSwitch.setChecked(false);
             settings.setSecure(false);
             return;
@@ -579,7 +587,8 @@ public class SettingsActivity extends AppCompatActivity {
               else if (editServerPortUDP.equals(view)) port = settings.getServerPortUDP();
               else port = 0;
               if (port > 0) editor.setText(String.valueOf(port));
-              Toast.makeText(SettingsActivity.this, "Invalid port", Toast.LENGTH_SHORT).show();
+              Toast.makeText(SettingsActivity.this, R.string.invalid_port, Toast.LENGTH_SHORT)
+                  .show();
               return;
             }
             if (editPort.equals(view)) settings.setPort(port);
@@ -589,7 +598,8 @@ public class SettingsActivity extends AppCompatActivity {
             else if (editServerPortSecure.equals(view)) settings.setServerPortSecure(port);
             else if (editServerPortUDP.equals(view)) settings.setServerPortUDP(port);
           } catch (Exception ignored) {
-            Toast.makeText(SettingsActivity.this, "Error occurred", Toast.LENGTH_SHORT).show();
+            Toast.makeText(SettingsActivity.this, R.string.error_occurred, Toast.LENGTH_SHORT)
+                .show();
           }
         };
     editPort.setOnFocusChangeListener(portChangeListener);
@@ -670,12 +680,14 @@ public class SettingsActivity extends AppCompatActivity {
             int delay = Integer.parseInt(delayStr);
             if (delay <= 0 || 10000 <= delay) {
               ((EditText) view).setText(settings.getAutoCloseDelay());
-              Toast.makeText(SettingsActivity.this, "Invalid delay", Toast.LENGTH_SHORT).show();
+              Toast.makeText(SettingsActivity.this, R.string.invalid_delay, Toast.LENGTH_SHORT)
+                  .show();
               return;
             }
             settings.setAutoCloseDelay(delay);
           } catch (Exception ignored) {
-            Toast.makeText(SettingsActivity.this, "Error occurred", Toast.LENGTH_SHORT).show();
+            Toast.makeText(SettingsActivity.this, R.string.error_occurred, Toast.LENGTH_SHORT)
+                .show();
           }
         });
     editAutoCloseDelay.setText(String.valueOf(settings.getAutoCloseDelay()));

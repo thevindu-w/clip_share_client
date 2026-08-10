@@ -45,10 +45,10 @@ public class StatusNotifierTest {
   private static long[] curSizes;
   private static long[] curTimes;
   private static long[] speeds;
-  private static final String SEC = TimeContainer.SECOND;
-  private static final String MIN = TimeContainer.MINUTE;
-  private static final String HOUR = TimeContainer.HOUR;
-  private static final String DAY = TimeContainer.DAY;
+  private static final byte SEC = TimeContainer.SECOND;
+  private static final byte MIN = TimeContainer.MINUTE;
+  private static final byte HOUR = TimeContainer.HOUR;
+  private static final byte DAY = TimeContainer.DAY;
   private StatusNotifier statusNotifier;
 
   @BeforeClass
@@ -111,7 +111,7 @@ public class StatusNotifierTest {
     assertNotNull(builder);
     Random rnd = new Random();
     int notificationId = Math.abs(rnd.nextInt(Integer.MAX_VALUE - 1)) + 1;
-    this.statusNotifier = new StatusNotifier(notificationManager, builder, notificationId);
+    this.statusNotifier = new StatusNotifier(context, notificationManager, builder, notificationId);
     statusNotifier.setFileSize(curSizes[curSizes.length - 1]);
   }
 
@@ -128,7 +128,7 @@ public class StatusNotifierTest {
     int[] times = {
       -1, -1, -1, 5, 5, 4, 4, 4, 4, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 2, 1, 3, 1, 10, 1, 0, 0
     };
-    String[] units = {
+    byte[] units = {
       SEC, SEC, SEC, DAY, DAY, DAY, DAY, DAY, DAY, DAY, DAY, DAY, DAY, DAY, DAY, DAY, DAY, DAY, DAY,
       DAY, HOUR, HOUR, MIN, MIN, SEC, SEC, SEC, SEC
     };

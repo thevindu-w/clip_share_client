@@ -26,33 +26,44 @@ package com.tw.clipshare.platformUtils;
 
 import static org.junit.Assert.*;
 
+import android.content.Context;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import androidx.test.platform.app.InstrumentationRegistry;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith(AndroidJUnit4.class)
 public class TimeContainerTest {
+  private static Context context;
+
+  @BeforeClass
+  public static void initialize() throws InterruptedException {
+    context = InstrumentationRegistry.getInstrumentation().getTargetContext();
+    assertNotNull(context);
+  }
+
   @Test
-  public void toStringTest() {
+  public void remainingTimeTest() {
     TimeContainer time;
     time = TimeContainer.initBySeconds(200000);
-    assertEquals("2 days", time.toString());
+    assertEquals("2 days left", time.format(context));
     time = TimeContainer.initBySeconds(100000);
-    assertEquals("1 day", time.toString());
+    assertEquals("1 day left", time.format(context));
     time = TimeContainer.initBySeconds(20000);
-    assertEquals("6 hours", time.toString());
+    assertEquals("6 hours left", time.format(context));
     time = TimeContainer.initBySeconds(4000);
-    assertEquals("1 hour", time.toString());
+    assertEquals("1 hour left", time.format(context));
     time = TimeContainer.initBySeconds(400);
-    assertEquals("7 mins", time.toString());
+    assertEquals("7 mins left", time.format(context));
     time = TimeContainer.initBySeconds(80);
-    assertEquals("1 min", time.toString());
+    assertEquals("1 min left", time.format(context));
     time = TimeContainer.initBySeconds(10);
-    assertEquals("10 secs", time.toString());
+    assertEquals("10 secs left", time.format(context));
     time = TimeContainer.initBySeconds(1);
-    assertEquals("1 sec", time.toString());
+    assertEquals("1 sec left", time.format(context));
     time = TimeContainer.initBySeconds(0);
-    assertEquals("0 secs", time.toString());
+    assertEquals("0 secs left", time.format(context));
   }
 
   @Test

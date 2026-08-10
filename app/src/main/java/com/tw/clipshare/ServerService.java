@@ -74,7 +74,7 @@ public class ServerService extends Service {
               .setContentIntent(pendingIntent)
               .setContentTitle(getApplicationContext().getString(R.string.app_name))
               .setSmallIcon(R.drawable.clip_share_icon_mono)
-              .addAction(0, "Stop", pendingIntentStop);
+              .addAction(0, getString(R.string.stop), pendingIntentStop);
       running = true;
       startForeground(id, builder.build());
       serverThread =

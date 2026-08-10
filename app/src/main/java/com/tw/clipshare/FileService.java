@@ -183,8 +183,8 @@ public class FileService extends Service {
         new NotificationCompat.Builder(context, FileService.CHANNEL_ID)
             .setContentIntent(pendingIntent)
             .setSmallIcon(R.drawable.clip_share_icon_mono)
-            .addAction(0, "Stop", pendingIntentStop);
-    this.statusNotifier = new StatusNotifier(notificationManager, builder, notificationId);
+            .addAction(0, getString(R.string.stop), pendingIntentStop);
+    this.statusNotifier = new StatusNotifier(context, notificationManager, builder, notificationId);
     return notificationId;
   }
 
@@ -215,36 +215,41 @@ public class FileService extends Service {
             switch (pendingTask.task()) {
               case PendingTask.GET_FILES:
                 {
-                  statusNotifier.setTitle("Getting file");
+                  statusNotifier.setTitle(getString(R.string.getting_file));
                   statusNotifier.setIcon(R.drawable.ic_download_icon);
                   if (proto.getFile()) success = true;
-                  else if (!proto.isStopped()) utils.showToast("Failed getting files");
+                  else if (!proto.isStopped())
+                    utils.showToast(getString(R.string.get_files_failed));
                   break;
                 }
               case PendingTask.SEND_FILES:
                 {
-                  statusNotifier.setTitle("Sending file");
+                  statusNotifier.setTitle(getString(R.string.sending_file));
                   statusNotifier.setIcon(R.drawable.ic_upload_icon);
                   if (proto.sendFile()) {
                     success = true;
-                    utils.showToast("Sent all files");
-                  } else if (!proto.isStopped()) utils.showToast("Failed sending files");
+                    utils.showToast(getString(R.string.sent_all_files));
+                  } else if (!proto.isStopped())
+                    utils.showToast(getString(R.string.send_files_failed));
                   break;
                 }
             }
             if (proto.isStopped()) {
               setMessage(
                   null,
-                  (pendingTask.task() == PendingTask.GET_FILES ? "Getting" : "Sending")
-                      + " files stopped");
+                  getString(
+                      pendingTask.task() == PendingTask.GET_FILES
+                          ? R.string.get_files_stopped
+                          : R.string.send_files_stopped));
               break;
             }
             utils.vibrate();
             setMessage(
                 proto.dataContainer,
-                (pendingTask.task() == PendingTask.GET_FILES ? "Getting" : "Sending")
-                    + " files "
-                    + (success ? "completed" : "failed"));
+                getString(
+                    pendingTask.task() == PendingTask.GET_FILES
+                        ? (success ? R.string.get_files_complete : R.string.get_files_failed)
+                        : (success ? R.string.send_files_complete : R.string.send_files_failed)));
           } catch (Exception ignored) {
           } finally {
             proto.close();
@@ -275,7 +280,7 @@ public class FileService extends Service {
         }
         if (runnable == null) return;
         runnable.requestStop();
-        Toast.makeText(context, "Cancelled", Toast.LENGTH_SHORT).show();
+        Toast.makeText(context, R.string.cancelled, Toast.LENGTH_SHORT).show();
       } catch (Exception ignored) {
       }
     }
