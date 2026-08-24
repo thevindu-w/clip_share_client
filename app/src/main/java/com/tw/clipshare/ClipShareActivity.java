@@ -55,10 +55,7 @@ import com.tw.clipshare.platformUtils.directoryTree.*;
 import com.tw.clipshare.protocol.Proto;
 import java.io.File;
 import java.net.InetAddress;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
@@ -247,8 +244,8 @@ public class ClipShareActivity extends AppCompatActivity {
         });
 
     try {
-      List<String> servers = Settings.getInstance().getSavedServersList();
-      if (!servers.isEmpty()) setAddress(servers.get(servers.size() - 1));
+      List<Host> servers = Settings.getInstance().getSavedServersList();
+      if (!servers.isEmpty()) setAddress(servers.get(servers.size() - 1).address);
     } catch (Exception ignored) {
     }
 
@@ -572,9 +569,9 @@ public class ClipShareActivity extends AppCompatActivity {
                           Toast.makeText(context, R.string.no_servers, Toast.LENGTH_SHORT).show());
                   return;
                 }
-                List<String> addresses =
+                List<Host> addresses =
                     serverAddresses.stream()
-                        .map(InetAddress::getHostAddress)
+                        .map(addr -> new Host(addr.getHostAddress()))
                         .collect(Collectors.toList());
                 showAddressList(addresses, parent);
               } catch (Exception ignored) {
@@ -592,9 +589,9 @@ public class ClipShareActivity extends AppCompatActivity {
             () -> {
               try {
                 Settings settings = Settings.getInstance();
-                List<String> serverAddresses =
+                List<Host> serverAddresses =
                     settings.getSavedServersList().stream()
-                        .filter(addr -> !"0.0.0.0".equals(addr))
+                        .filter(addr -> !"0.0.0.0".equals(addr.address))
                         .collect(Collectors.toList());
                 if (serverAddresses.isEmpty()) {
                   runOnUiThread(
@@ -603,7 +600,7 @@ public class ClipShareActivity extends AppCompatActivity {
                               .show());
                   return;
                 }
-                serverAddresses.sort(String::compareTo);
+                serverAddresses.sort(Comparator.comparing((Host a) -> a.address));
                 showAddressList(serverAddresses, parent);
               } catch (Exception ignored) {
               } finally {
@@ -614,9 +611,9 @@ public class ClipShareActivity extends AppCompatActivity {
         .start();
   }
 
-  private void showAddressList(List<String> addresses, View parent) {
-    if (addresses.size() == 1) {
-      String address = addresses.get(0);
+  private void showAddressList(List<Host> hosts, View parent) {
+    if (hosts.size() == 1) {
+      String address = hosts.get(0).address;
       runOnUiThread(() -> setAddress(address));
       return;
     }
@@ -637,10 +634,10 @@ public class ClipShareActivity extends AppCompatActivity {
     if (popupLayout == null) return;
     View popupElemView;
     TextView txtView;
-    for (String serverAddress : addresses) {
+    for (Host serverAddress : hosts) {
       popupElemView = View.inflate(this, R.layout.popup_elem, null);
       txtView = popupElemView.findViewById(R.id.popElemTxt);
-      txtView.setText(serverAddress);
+      txtView.setText(serverAddress.address);
       txtView.setOnClickListener(
           view -> {
             runOnUiThread(() -> setAddress(((TextView) view).getText().toString()));
@@ -688,12 +685,13 @@ public class ClipShareActivity extends AppCompatActivity {
     try {
       Settings settings = Settings.getInstance();
       if (!settings.getSaveServers()) return address;
-      List<String> savedServers = settings.getSavedServersList();
-      int ind = savedServers.lastIndexOf(address);
+      List<Host> savedServers = settings.getSavedServersList();
+      Host addrHost = new Host(address);
+      int ind = savedServers.lastIndexOf(addrHost);
       if (ind == savedServers.size() - 1 && ind >= 0) return address;
-      if (ind >= 0) savedServers.remove(address);
+      if (ind >= 0) savedServers.remove(addrHost);
       if (savedServers.size() >= 50) savedServers.remove(0);
-      savedServers.add(address);
+      savedServers.add(addrHost);
       SharedPreferences.Editor editor = sharedPref.edit();
       editor.putString("settings", settings.toString());
       editor.apply();

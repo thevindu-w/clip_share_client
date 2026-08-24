@@ -270,9 +270,9 @@ public class SettingsActivity extends AppCompatActivity {
     editAutoCloseDelay.setText(String.valueOf(settings.getAutoCloseDelay()));
     layoutAutoCloseDelay.setVisibility(autoClose ? View.VISIBLE : View.GONE);
     saveAddressesSwitch.setChecked(settings.getSaveServers());
-    List<String> savedServers = settings.getSavedServersList();
+    List<Host> savedServers = settings.getSavedServersList();
     savedServersList.removeAllViews();
-    for (String server : savedServers) {
+    for (Host server : savedServers) {
       addRowToSavedServersList(false, server);
     }
     udpServerSwitch.setChecked(settings.getUDPServerEnabled());
@@ -394,8 +394,9 @@ public class SettingsActivity extends AppCompatActivity {
     }
   }
 
-  private void addRowToSavedServersList(boolean addToList, String address) {
+  private void addRowToSavedServersList(boolean addToList, Host host) {
     try {
+      String address = host.address;
       if (address == null) address = "0.0.0.0";
       else if (!Utils.isValidIP(address)) return;
       View savedServer = View.inflate(getApplicationContext(), R.layout.list_element, null);
@@ -404,16 +405,16 @@ public class SettingsActivity extends AppCompatActivity {
       EditText addressEdit = savedServer.findViewById(R.id.editTxt);
       savedServer.setId(idSavedServer.getAndIncrement());
       Settings st = Settings.getInstance();
-      List<String> servers = st.getSavedServersList();
+      List<Host> servers = st.getSavedServersList();
       addressTxt.setText(address);
-      if (addToList) servers.add(addressTxt.getText().toString());
+      if (addToList) servers.add(new Host(addressTxt.getText().toString()));
       savedServersList.addView(savedServer, 0);
       addressTxt.setTextColor(caCnTxt.getTextColors());
       addressEdit.setTextColor(caCnTxt.getTextColors());
       delBtn.setOnClickListener(
           view1 -> {
             try {
-              if (servers.remove(addressTxt.getText().toString())) {
+              if (servers.remove(new Host(addressTxt.getText().toString()))) {
                 savedServersList.removeView(savedServer);
               }
             } catch (Exception ignored) {
@@ -438,7 +439,8 @@ public class SettingsActivity extends AppCompatActivity {
                     .show();
               addressEdit.setVisibility(View.GONE);
               addressTxt.setVisibility(View.VISIBLE);
-              if (isValid && servers.remove(oldText.toString())) servers.add(newText);
+              if (isValid && servers.remove(new Host(oldText.toString())))
+                servers.add(new Host(newText));
             }
           });
     } catch (Exception ignored) {
@@ -627,7 +629,7 @@ public class SettingsActivity extends AppCompatActivity {
       addRowToAutoSendTrustList(false, server);
     }
 
-    for (String server : settings.getSavedServersList()) {
+    for (Host server : settings.getSavedServersList()) {
       addRowToSavedServersList(false, server);
     }
 
@@ -697,7 +699,7 @@ public class SettingsActivity extends AppCompatActivity {
     saveAddressesSwitch.setChecked(settings.getSaveServers());
 
     ImageButton addSavedServerBtn = findViewById(R.id.addSavedServerBtn);
-    addSavedServerBtn.setOnClickListener(view -> addRowToSavedServersList(true, null));
+    addSavedServerBtn.setOnClickListener(view -> addRowToSavedServersList(true, new Host(null)));
 
     ImageButton addTrustedCNBtn = findViewById(R.id.addTrustedServerBtn);
     addTrustedCNBtn.setOnClickListener(view -> addRowToTrustList(true, null));

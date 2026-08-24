@@ -31,6 +31,7 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -44,7 +45,7 @@ public class Settings implements Serializable {
   private static volatile Settings INSTANCE = null;
   private final List<String> trustedList;
   private final List<String> autoSendTrustedList;
-  private final List<String> savedServersList;
+  private final List<Host> savedServersList;
   private boolean secure;
   private byte[] caCert;
   private byte[] cert;
@@ -98,15 +99,30 @@ public class Settings implements Serializable {
     this.nightMode = AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM;
   }
 
-  private static ArrayList<String> objectToArrayList(Object listO) {
+  private static <T> ArrayList<T> objectToArrayList(Object listO, Class<T> clazz) {
     try {
-      ArrayList<String> list = null;
+      ArrayList<T> list = null;
       if (listO instanceof JSONArray jsonArray) {
         int len = jsonArray.length();
         list = new ArrayList<>(len);
         for (int i = 0; i < len; i++) {
-          String item = jsonArray.getString(i);
-          if (item.isEmpty() || item.length() > 256) continue;
+          Object elem = jsonArray.get(i);
+          String val = "";
+          String name = null;
+          if (elem instanceof String) {
+            val = (String) elem;
+          } else if (clazz == Host.class && elem instanceof JSONObject obj) {
+            name = obj.optString("name", "");
+            val = obj.getString("address");
+            if (name.isEmpty() || name.length() > 256) name = null;
+          }
+          if (val.isEmpty() || val.length() > 256) continue;
+          T item;
+          if (clazz == Host.class) {
+            item = clazz.cast(new Host(val, name));
+          } else {
+            item = clazz.cast(val);
+          }
           list.add(item);
         }
       }
@@ -142,7 +158,7 @@ public class Settings implements Serializable {
 
     // Set trustedList
     try {
-      ArrayList<String> trustedList = objectToArrayList(map.get("trustedList"));
+      ArrayList<String> trustedList = objectToArrayList(map.get("trustedList"), String.class);
       if (trustedList != null) {
         settings.trustedList.clear();
         settings.trustedList.addAll(trustedList);
@@ -152,7 +168,8 @@ public class Settings implements Serializable {
 
     // Set autoSendTrustedList
     try {
-      ArrayList<String> autoSendTrustedList = objectToArrayList(map.get("autoSendTrustedList"));
+      ArrayList<String> autoSendTrustedList =
+          objectToArrayList(map.get("autoSendTrustedList"), String.class);
       if (autoSendTrustedList != null) {
         settings.autoSendTrustedList.clear();
         settings.autoSendTrustedList.addAll(autoSendTrustedList);
@@ -162,11 +179,11 @@ public class Settings implements Serializable {
 
     // Set savedServersList
     try {
-      ArrayList<String> savedServersList = objectToArrayList(map.get("savedServersList"));
+      ArrayList<Host> savedServersList = objectToArrayList(map.get("savedServersList"), Host.class);
       if (savedServersList != null) {
         settings.savedServersList.clear();
         settings.savedServersList.addAll(savedServersList);
-        settings.savedServersList.removeAll(List.of("0.0.0.0"));
+        settings.savedServersList.remove(new Host("0.0.0.0"));
       }
     } catch (Exception ignored) {
     }
@@ -349,7 +366,7 @@ public class Settings implements Serializable {
   public String toString(boolean includePassword) {
     HashMap<String, Object> map = new HashMap<>(32);
     try {
-      this.savedServersList.removeAll(List.of("0.0.0.0"));
+      this.savedServersList.remove(new Host("0.0.0.0"));
       if (this.caCert != null)
         map.put("caCert", Base64.encodeToString(this.caCert, Base64.DEFAULT));
       if (this.cert != null) map.put("cert", Base64.encodeToString(this.cert, Base64.DEFAULT));
@@ -370,7 +387,9 @@ public class Settings implements Serializable {
       map.put("autoScan", this.autoScan);
       map.put("closeIfIdle", this.closeIfIdle);
       map.put("autoCloseDelay", this.autoCloseDelay);
-      map.put("savedServersList", this.savedServersList);
+      map.put(
+          "savedServersList",
+          this.savedServersList.stream().map(Host::toMap).collect(Collectors.toList()));
       map.put("saveServers", this.saveServers);
       map.put("udpServerEnabled", this.udpServerEnabled);
       map.put("serverPort", this.serverPort);
@@ -418,7 +437,7 @@ public class Settings implements Serializable {
         INSTANCE.autoCloseDelay = strSet.autoCloseDelay;
         INSTANCE.savedServersList.clear();
         INSTANCE.savedServersList.addAll(strSet.savedServersList);
-        INSTANCE.savedServersList.removeAll(List.of("0.0.0.0"));
+        INSTANCE.savedServersList.remove(new Host("0.0.0.0"));
         INSTANCE.saveServers = strSet.saveServers;
         INSTANCE.udpServerEnabled = strSet.udpServerEnabled;
         INSTANCE.serverPort = strSet.serverPort;
@@ -537,7 +556,7 @@ public class Settings implements Serializable {
     return saveServers;
   }
 
-  public List<String> getSavedServersList() {
+  public List<Host> getSavedServersList() {
     return this.savedServersList;
   }
 
