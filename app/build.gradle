@@ -15,7 +15,7 @@ android {
         targetSdkVersion 34
         versionCode = 40104
         versionName = "4.1.4"
-        resConfigs "en"
+        resConfigs "en", "ar"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
