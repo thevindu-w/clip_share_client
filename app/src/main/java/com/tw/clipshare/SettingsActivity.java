@@ -31,6 +31,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.content.res.ColorStateList;
 import android.database.Cursor;
 import android.graphics.Rect;
 import android.net.Uri;
@@ -299,8 +300,8 @@ public class SettingsActivity extends AppCompatActivity {
     try {
       View trustServer = View.inflate(getApplicationContext(), R.layout.list_element, null);
       ImageButton delBtn = trustServer.findViewById(R.id.delBtn);
-      TextView cnTxt = trustServer.findViewById(R.id.viewTxt);
-      EditText cnEdit = trustServer.findViewById(R.id.editTxt);
+      TextView cnTxt = trustServer.findViewById(R.id.viewAddr);
+      EditText cnEdit = trustServer.findViewById(R.id.editAddr);
       trustServer.setId(idTLS.getAndIncrement());
       Settings st = Settings.getInstance();
       List<String> servers = st.getTrustedList();
@@ -349,8 +350,8 @@ public class SettingsActivity extends AppCompatActivity {
     try {
       View trustServer = View.inflate(getApplicationContext(), R.layout.list_element, null);
       ImageButton delBtn = trustServer.findViewById(R.id.delBtn);
-      TextView addressTxt = trustServer.findViewById(R.id.viewTxt);
-      EditText addressEdit = trustServer.findViewById(R.id.editTxt);
+      TextView addressTxt = trustServer.findViewById(R.id.viewAddr);
+      EditText addressEdit = trustServer.findViewById(R.id.editAddr);
       trustServer.setId(idAutoSend.getAndIncrement());
       Settings st = Settings.getInstance();
       List<String> servers = st.getAutoSendTrustedList();
@@ -400,19 +401,28 @@ public class SettingsActivity extends AppCompatActivity {
       if (address == null) address = "0.0.0.0";
       else if (!Utils.isValidIP(address)) return;
       View savedServer = View.inflate(getApplicationContext(), R.layout.list_element, null);
+      LinearLayout nameLayout = savedServer.findViewById(R.id.layoutName);
+      nameLayout.setVisibility(View.VISIBLE);
       ImageButton delBtn = savedServer.findViewById(R.id.delBtn);
-      TextView addressTxt = savedServer.findViewById(R.id.viewTxt);
-      EditText addressEdit = savedServer.findViewById(R.id.editTxt);
+      TextView addressTxt = savedServer.findViewById(R.id.viewAddr);
+      EditText addressEdit = savedServer.findViewById(R.id.editAddr);
+      TextView nameTxt = nameLayout.findViewById(R.id.viewName);
+      EditText nameEdit = nameLayout.findViewById(R.id.editName);
       savedServer.setId(idSavedServer.getAndIncrement());
       Settings st = Settings.getInstance();
       List<Host> servers = st.getSavedServersList();
+      addressTxt.setGravity(Gravity.CENTER_VERTICAL | Gravity.END);
       addressTxt.setText(address);
-      if (addToList) servers.add(new Host(addressTxt.getText().toString()));
+      nameTxt.setText(host.name != null ? host.name : getString(R.string.unknown));
+      if (addToList) servers.add(new Host(address, host.name));
       savedServersList.addView(savedServer, 0);
-      addressTxt.setTextColor(caCnTxt.getTextColors());
-      addressEdit.setTextColor(caCnTxt.getTextColors());
+      ColorStateList textColor = caCnTxt.getTextColors();
+      addressTxt.setTextColor(textColor);
+      addressEdit.setTextColor(textColor);
+      nameTxt.setTextColor(textColor);
+      nameEdit.setTextColor(textColor);
       delBtn.setOnClickListener(
-          view1 -> {
+          view -> {
             try {
               if (servers.remove(new Host(addressTxt.getText().toString()))) {
                 savedServersList.removeView(savedServer);
@@ -421,14 +431,14 @@ public class SettingsActivity extends AppCompatActivity {
             }
           });
       addressTxt.setOnClickListener(
-          view1 -> {
+          view -> {
             addressEdit.setText(addressTxt.getText());
             addressTxt.setVisibility(View.GONE);
             addressEdit.setVisibility(View.VISIBLE);
             addressEdit.requestFocus();
           });
       addressEdit.setOnFocusChangeListener(
-          (view1, hasFocus) -> {
+          (view, hasFocus) -> {
             if (!hasFocus) {
               CharSequence oldText = addressTxt.getText();
               String newText = addressEdit.getText().toString();
@@ -441,6 +451,33 @@ public class SettingsActivity extends AppCompatActivity {
               addressTxt.setVisibility(View.VISIBLE);
               if (isValid && servers.remove(new Host(oldText.toString())))
                 servers.add(new Host(newText));
+            }
+          });
+      nameTxt.setOnClickListener(
+          view -> {
+            String name = nameTxt.getText().toString();
+            nameEdit.setText(getString(R.string.unknown).equals(name) ? "" : name);
+            nameTxt.setVisibility(View.GONE);
+            nameEdit.setVisibility(View.VISIBLE);
+            nameEdit.requestFocus();
+          });
+      nameEdit.setOnFocusChangeListener(
+          (view, hasFocus) -> {
+            if (!hasFocus) {
+              String newText = nameEdit.getText().toString();
+              boolean isValid = Utils.isValidHostName(newText);
+              if (isValid) {
+                nameTxt.setText(newText);
+                String addr = addressTxt.getText().toString();
+                servers.stream()
+                    .filter(h -> addr.equals(h.address))
+                    .findFirst()
+                    .ifPresent(value -> value.name = newText);
+              } else
+                Toast.makeText(SettingsActivity.this, R.string.invalid_name, Toast.LENGTH_SHORT)
+                    .show();
+              nameEdit.setVisibility(View.GONE);
+              nameTxt.setVisibility(View.VISIBLE);
             }
           });
     } catch (Exception ignored) {

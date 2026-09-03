@@ -29,6 +29,7 @@
     <string name="saved_servers">Saved servers</string>
     <string name="auto_send_trusted_servers">Auto-send to</string>
     <string name="enter_server_name">Enter server name</string>
+    <string name="enter_server_addr">Enter server address</string>
     <string name="password">Password :</string>
     <string name="client_certificate">Client Certificate</string>
     <string name="name">Name :</string>
@@ -122,6 +123,8 @@
     <string name="invalid_delay">Invalid delay</string>
     <string name="sent_all_files">Sent all files</string>
     <string name="cancelled">Cancelled</string>
+    <string name="unknown">unknown</string>
+    <string name="invalid_name">Invalid server name</string>
     <plurals name="secs_left">
         <item quantity="one">%d sec left</item>
         <item quantity="other">%d secs left</item>

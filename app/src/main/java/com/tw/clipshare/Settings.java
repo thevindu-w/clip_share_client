@@ -114,7 +114,7 @@ public class Settings implements Serializable {
           } else if (clazz == Host.class && elem instanceof JSONObject obj) {
             name = obj.optString("name", "");
             val = obj.getString("address");
-            if (name.isEmpty() || name.length() > 256) name = null;
+            if (!Utils.isValidHostName(name)) name = null;
           }
           if (val.isEmpty() || val.length() > 256) continue;
           T item;

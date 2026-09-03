@@ -54,6 +54,15 @@ public class Utils {
     return false;
   }
 
+  public static boolean isValidHostName(String name) {
+    try {
+      if (name == null || name.isEmpty() || name.length() > 256) return false;
+      return name.matches("^[A-Za-z0-9](?:[\\x20-\\x7e]*[\\x21-\\x7e])?$");
+    } catch (Exception ignored) {
+    }
+    return false;
+  }
+
   /** Opens a SocketConnection. Returns null on error. */
   private static SocketConnection getServerConnection(@NonNull String addressStr) {
     int retries = 2;
