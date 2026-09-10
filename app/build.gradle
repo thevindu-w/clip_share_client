@@ -13,8 +13,8 @@ android {
         applicationId = "com.tw.clipshare"
         minSdkVersion 24
         targetSdkVersion 34
-        versionCode = 40104
-        versionName = "4.1.4"
+        versionCode = 40200
+        versionName = "4.2.0"
         resConfigs "en", "ar"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -52,11 +52,13 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             signingConfig = signingConfigs.release
             testCoverageEnabled = false
+            debuggable = false
         }
         debug {
             minifyEnabled = false
             shrinkResources = false
             testCoverageEnabled = true
+            debuggable = true
         }
     }
 
