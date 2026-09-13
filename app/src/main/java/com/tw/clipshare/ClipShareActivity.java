@@ -633,14 +633,17 @@ public class ClipShareActivity extends AppCompatActivity {
     LinearLayout popupLayout = popupView.findViewById(R.id.popupLayout);
     if (popupLayout == null) return;
     View popupElemView;
-    TextView txtView;
     for (Host serverAddress : hosts) {
       popupElemView = View.inflate(this, R.layout.popup_elem, null);
-      txtView = popupElemView.findViewById(R.id.popElemTxt);
-      txtView.setText(serverAddress.address);
-      txtView.setOnClickListener(
+      TextView addrView = popupElemView.findViewById(R.id.popElemAddrTxt);
+      addrView.setText(serverAddress.address);
+      if (serverAddress.name != null) {
+        TextView nameView = popupElemView.findViewById(R.id.popElemNameTxt);
+        nameView.setText(serverAddress.name);
+      }
+      popupElemView.setOnClickListener(
           view -> {
-            runOnUiThread(() -> setAddress(((TextView) view).getText().toString()));
+            runOnUiThread(() -> setAddress((addrView).getText().toString()));
             popupView.performClick();
           });
       popupLayout.addView(popupElemView);

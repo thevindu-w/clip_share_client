@@ -3,13 +3,15 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/popupElem"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="5dp">
 
     <TextView
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="40sp"
-        android:id="@+id/popElemTxt"
-        android:layout_margin="5dp"
+        android:layout_weight="0.5"
+        android:id="@+id/popElemAddrTxt"
         android:paddingHorizontal="10dp"
         app:autoSizeTextType="uniform"
         app:autoSizeMinTextSize="12sp"
@@ -17,6 +19,22 @@
         app:autoSizeStepGranularity="1sp"
         android:lines="1"
         android:gravity="center_vertical"
+        android:background="@color/popupTextBackground"
+        android:text="" />
+
+    <TextView
+        android:layout_width="0dp"
+        android:layout_height="40sp"
+        android:layout_weight="0.5"
+        android:id="@+id/popElemNameTxt"
+        android:paddingHorizontal="10dp"
+        app:autoSizeTextType="uniform"
+        app:autoSizeMinTextSize="12sp"
+        app:autoSizeMaxTextSize="18sp"
+        app:autoSizeStepGranularity="1sp"
+        android:lines="1"
+        android:gravity="center_vertical|end"
+        android:ellipsize="end"
         android:background="@color/popupTextBackground"
         android:text="" />
 </LinearLayout>
