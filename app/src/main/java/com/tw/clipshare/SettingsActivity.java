@@ -53,9 +53,14 @@ import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.SwitchCompat;
 import androidx.core.content.ContextCompat;
 import com.tw.clipshare.netConnection.SecureConnection;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
 import java.nio.charset.StandardCharsets;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -484,7 +489,7 @@ public class SettingsActivity extends AppCompatActivity {
     }
   }
 
-  private void toggleLayout(ImageButton btn, LinearLayout layout) {
+  private void toggleLayout(ImageButton btn, LinearLayout layout, Runnable other) {
     Object tag = btn.getTag();
     if (tag instanceof Boolean && (Boolean) tag) {
       btn.setTag(false);
@@ -495,15 +500,20 @@ public class SettingsActivity extends AppCompatActivity {
       layout.setVisibility(View.VISIBLE);
       btn.setImageResource(android.R.drawable.arrow_up_float);
     }
+    if (other != null) other.run();
   }
 
-  private void expandBlock(@IdRes int layoutId, @IdRes int buttonId) {
+  private void expandBlock(@IdRes int layoutId, @IdRes int buttonId, Runnable other) {
     LinearLayout layout = findViewById(layoutId);
     layout.setVisibility(View.GONE);
     ImageButton expandButton = findViewById(buttonId);
     expandButton.setImageResource(android.R.drawable.arrow_down_float);
     expandButton.setTag(false);
-    expandButton.setOnClickListener(view -> toggleLayout((ImageButton) view, layout));
+    expandButton.setOnClickListener(view -> toggleLayout((ImageButton) view, layout, other));
+  }
+
+  private void expandBlock(@IdRes int layoutId, @IdRes int buttonId) {
+    expandBlock(layoutId, buttonId, null);
   }
 
   @Override
@@ -533,6 +543,20 @@ public class SettingsActivity extends AppCompatActivity {
     } catch (Exception ignored) {
     }
     return true;
+  }
+
+  private static String getDeviceAddr() throws IOException {
+    Enumeration<NetworkInterface> netIfs = NetworkInterface.getNetworkInterfaces();
+    while (netIfs.hasMoreElements()) {
+      NetworkInterface ni = netIfs.nextElement();
+      if (ni.isLoopback() || !ni.isUp() || ni.isVirtual()) continue;
+      Enumeration<InetAddress> addrs = ni.getInetAddresses();
+      while (addrs.hasMoreElements()) {
+        InetAddress addr = addrs.nextElement();
+        if (addr instanceof Inet4Address addr4) return addr4.getHostAddress();
+      }
+    }
+    return null;
   }
 
   @Override
@@ -573,12 +597,24 @@ public class SettingsActivity extends AppCompatActivity {
     this.editServerPortSecure = findViewById(R.id.editServerPortSecure);
     this.editServerPortUDP = findViewById(R.id.editServerPortUDP);
     this.dropdownNightMode = findViewById(R.id.nightModeSpinner);
+    TextView lblIP = findViewById(R.id.lbl_ip);
 
     expandBlock(R.id.autoSendLayout, R.id.expandAutoSendBtn);
     expandBlock(R.id.savedAddressLayout, R.id.expandSavedAddressBtn);
     expandBlock(R.id.secureModeLayout, R.id.expandSecureModeBtn);
     expandBlock(R.id.otherSettingsLayout, R.id.expandOtherSettingsBtn);
-    expandBlock(R.id.serverModeLayout, R.id.expandServerModeBtn);
+    expandBlock(
+        R.id.serverModeLayout,
+        R.id.expandServerModeBtn,
+        () -> {
+          try {
+            String ip = getDeviceAddr();
+            if (ip == null) return;
+            lblIP.setText(ip);
+            lblIP.setVisibility(View.VISIBLE);
+          } catch (Exception ignored) {
+          }
+        });
 
     this.secureSwitch.setOnClickListener(
         view -> {

@@ -721,6 +721,15 @@
             android:visibility="gone"
             android:orientation="vertical">
 
+            <TextView
+                android:id="@+id/lbl_ip"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAlignment="center"
+                android:textSize="16sp"
+                android:textColor="?android:textColorPrimary"
+                android:visibility="gone" />
+
             <androidx.appcompat.widget.SwitchCompat
                 android:id="@+id/udpServerSwitch"
                 android:text="@string/udp_server"
