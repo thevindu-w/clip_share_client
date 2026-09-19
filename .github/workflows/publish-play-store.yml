@@ -1,0 +1,46 @@
+name: Publish-Play-Store
+run-name: Publish ${{github.event.workflow_run.head_branch || inputs.tag}} to Play Store
+
+on:
+  workflow_run:
+    workflows:
+    - Create-Release
+    types:
+    - completed
+
+jobs:
+  Publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    permissions:
+      contents: read
+      actions: read
+
+    steps:
+    - name: Set variables
+      run: |
+        tag="${{ github.event.workflow_run.head_branch || inputs.tag }}"
+        version="$(echo "$tag" | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')"
+        [ -n "$version" ]
+        echo TITLE="Version ${version}" >> $GITHUB_ENV
+        echo RUN_ID="${{ github.event.workflow_run.id || inputs.run_id }}" >> $GITHUB_ENV
+
+    - name: Download App Bundle artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: play-store-bundle
+        path: bundle
+        run-id: ${{ env.RUN_ID }}
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Publish to Google Play
+      uses: r0adkll/upload-google-play@v1
+      with:
+        serviceAccountJsonPlainText: ${{ secrets.PLAY_STORE_SERVICE_ACCOUNT_JSON }}
+        packageName: com.tw.clipshare
+        releaseFiles: bundle/clip_share_client.aab
+        releaseName: ${{ env.TITLE }}
+        tracks: ${{ inputs.track || 'production' }}
+        status: completed
+        mappingFile: bundle/mapping.txt
