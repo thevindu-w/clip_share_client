@@ -7,6 +7,5 @@ There are 2 APK files included in the release assets for compatibility.
 
 Refer to the [README](https://github.com/thevindu-w/clip_share_client/#how-to-use) for usage information.<br>
 **Changes:**
-- Include translations.
-- Exclude dependency info block in APK builds.
-- Code quality improvements.
+- Save friendly names with saved server addresses.
+- Show device IP address on UI.
