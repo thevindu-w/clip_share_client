@@ -91,3 +91,18 @@ jobs:
         gh release create "${{env.TAG}}" --latest --verify-tag \
         --notes-file ../.github/workflows/resources/release_notes.md \
         --title "${{env.TITLE}}" *
+
+    - name: Build App Bundle
+      run: |
+        ./gradlew bundleLatestRelease
+        mkdir -p bundle
+        mv app/build/outputs/bundle/latestRelease/*.aab bundle/clip_share_client.aab
+        cp app/build/outputs/mapping/latestRelease/mapping.txt bundle/mapping.txt
+
+    - name: Upload App Bundle artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: play-store-bundle
+        path: bundle/
+        if-no-files-found: error
+        retention-days: 7
