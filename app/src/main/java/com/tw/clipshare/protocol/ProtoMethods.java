@@ -35,7 +35,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public final class ProtoMethods {
   private static final int MAX_TEXT_LENGTH = 4194304; // 4 MiB
@@ -429,12 +431,17 @@ public final class ProtoMethods {
     return sendAck();
   }
 
-  String v4_checkInfo() {
+  Map<String, String> v4_getAllInfo() {
     String info = v1_checkInfo();
-    // TODO(thevindu-w): Get more info
-    if (info == null) return null;
-    if (!sendAck()) return null;
-    return info;
+    if (info == null || !sendAck()) return Map.of();
+    String[] lines = info.split("\n");
+    Map<String, String> infoMap = new HashMap<>(2);
+    for (String line : lines) {
+      String[] entry = line.split("=");
+      if (entry.length != 2) continue;
+      infoMap.put(entry[0], entry[1]);
+    }
+    return infoMap;
   }
 
   /**

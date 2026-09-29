@@ -53,11 +53,13 @@ import androidx.documentfile.provider.DocumentFile;
 import com.tw.clipshare.platformUtils.*;
 import com.tw.clipshare.platformUtils.directoryTree.*;
 import com.tw.clipshare.protocol.Proto;
+import com.tw.clipshare.protocol.ProtoV4;
 import java.io.File;
 import java.net.InetAddress;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public class ClipShareActivity extends AppCompatActivity {
@@ -573,6 +575,30 @@ public class ClipShareActivity extends AppCompatActivity {
                     serverAddresses.stream()
                         .map(addr -> new Host(addr.getHostAddress()))
                         .collect(Collectors.toList());
+                try {
+                  ExecutorService executor =
+                      Executors.newFixedThreadPool(Math.min(addresses.size(), 8));
+                  addresses.forEach(
+                      host -> {
+                        executor.submit(
+                            () -> {
+                              try {
+                                Proto proto = Utils.getProtoWrapper(host.address, null);
+                                if (proto == null) return;
+                                if (proto instanceof ProtoV4 protoV4) {
+                                  String name = protoV4.getAllInfo().get("server_name");
+                                  if (name != null && !name.isEmpty()) host.name = name;
+                                }
+                                proto.close();
+                              } catch (Exception ignored) {
+                              }
+                            });
+                      });
+                  executor.shutdown();
+                  executor.awaitTermination(5, TimeUnit.SECONDS);
+                  executor.shutdownNow();
+                } catch (Exception ignored) {
+                }
                 showAddressList(addresses, parent);
               } catch (Exception ignored) {
               } finally {

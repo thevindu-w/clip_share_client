@@ -27,6 +27,7 @@ package com.tw.clipshare.protocol;
 import com.tw.clipshare.netConnection.SocketConnection;
 import com.tw.clipshare.platformUtils.AndroidUtils;
 import com.tw.clipshare.platformUtils.StatusNotifier;
+import java.util.Map;
 
 public class ProtoV4 extends Proto {
 
@@ -71,6 +72,10 @@ public class ProtoV4 extends Proto {
 
   @Override
   public String checkInfo() {
-    return this.protoMethods.v4_checkInfo();
+    return this.protoMethods.v1_checkInfo();
+  }
+
+  public Map<String, String> getAllInfo() {
+    return this.protoMethods.v4_getAllInfo();
   }
 }
