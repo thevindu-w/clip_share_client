@@ -28,9 +28,7 @@ import android.util.Base64;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatDelegate;
 import java.io.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -46,6 +44,7 @@ public class Settings implements Serializable {
   private final List<String> trustedList;
   private final List<String> autoSendTrustedList;
   private final List<Host> savedServersList;
+  private final Map<String, String> serverNameMap;
   private boolean secure;
   private byte[] caCert;
   private byte[] cert;
@@ -85,6 +84,7 @@ public class Settings implements Serializable {
     this.autoSendFiles = false;
     this.autoSendTrustedList = new ArrayList<>(1);
     this.savedServersList = new ArrayList<>(1);
+    this.serverNameMap = new HashMap<>(2);
     this.vibrate = true;
     this.scanIPv6 = false;
     this.scanTCP = false;
@@ -185,6 +185,9 @@ public class Settings implements Serializable {
         settings.savedServersList.addAll(savedServersList);
         settings.savedServersList.remove(new Host("0.0.0.0"));
       }
+      settings.savedServersList.stream()
+          .filter(h -> h.name != null && !h.name.isEmpty())
+          .forEach(server -> settings.serverNameMap.put(server.address, server.name));
     } catch (Exception ignored) {
     }
 
@@ -438,6 +441,8 @@ public class Settings implements Serializable {
         INSTANCE.savedServersList.clear();
         INSTANCE.savedServersList.addAll(strSet.savedServersList);
         INSTANCE.savedServersList.remove(new Host("0.0.0.0"));
+        INSTANCE.serverNameMap.clear();
+        INSTANCE.serverNameMap.putAll(strSet.serverNameMap);
         INSTANCE.saveServers = strSet.saveServers;
         INSTANCE.udpServerEnabled = strSet.udpServerEnabled;
         INSTANCE.serverPort = strSet.serverPort;
@@ -579,6 +584,15 @@ public class Settings implements Serializable {
   @AppCompatDelegate.NightMode
   public int getNightMode() {
     return nightMode;
+  }
+
+  public String getServerName(String address) {
+    return serverNameMap.getOrDefault(address, null);
+  }
+
+  public void putServerName(String address, String name) {
+    if (address == null || address.isEmpty() || name == null || name.isEmpty()) return;
+    this.serverNameMap.put(address, name);
   }
 
   public void setSecure(boolean secure) {

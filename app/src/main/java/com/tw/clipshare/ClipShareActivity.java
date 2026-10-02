@@ -583,11 +583,18 @@ public class ClipShareActivity extends AppCompatActivity {
                         executor.submit(
                             () -> {
                               try {
+                                String name = settings.getServerName(host.address);
+                                if (name != null) {
+                                  host.name = name;
+                                  return;
+                                }
                                 Proto proto = Utils.getProtoWrapper(host.address, null);
                                 if (proto == null) return;
                                 if (proto instanceof ProtoV4 protoV4) {
-                                  String name = protoV4.getAllInfo().get("server_name");
-                                  if (name != null && !name.isEmpty()) host.name = name;
+                                  name = protoV4.getAllInfo().get("server_name");
+                                  if (name == null || name.isEmpty()) return;
+                                  host.name = name;
+                                  settings.putServerName(host.address, name);
                                 }
                                 proto.close();
                               } catch (Exception ignored) {
@@ -715,7 +722,7 @@ public class ClipShareActivity extends AppCompatActivity {
       Settings settings = Settings.getInstance();
       if (!settings.getSaveServers()) return address;
       List<Host> savedServers = settings.getSavedServersList();
-      Host addrHost = new Host(address);
+      Host addrHost = new Host(address, settings.getServerName(address));
       int ind = savedServers.lastIndexOf(addrHost);
       if (ind == savedServers.size() - 1 && ind >= 0) return address;
       if (ind >= 0) savedServers.remove(addrHost);
