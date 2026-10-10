@@ -198,55 +198,59 @@ public class ServerService extends Service {
 
   private void startTCPServer() throws Exception {
     Settings settings = Settings.getInstance();
-    ServerSocket ss;
+    ServerSocket ss = null;
     String[] acceptedServers = null;
-    if (settings.getSecure()) {
-      ss =
-          SecureConnection.getSecureServerSocket(
-              settings.getServerPortSecure(),
-              settings.getCACertInputStream(),
-              settings.getCertInputStream(),
-              settings.getPasswd());
-      acceptedServers = settings.getTrustedList().toArray(new String[0]);
-    } else {
-      ss = new ServerSocket(settings.getServerPort(), 3);
-    }
-    ss.setSoTimeout(2000);
-    while (running) {
-      SocketConnection connection = null;
-      try {
-        Socket sock = ss.accept();
-        if (settings.getSecure()) {
-          connection = new SecureConnection((SSLSocket) sock, acceptedServers);
-        } else {
-          connection = new PlainConnection(sock);
-        }
-      } catch (SocketTimeoutException ignored) {
+    try {
+      if (settings.getSecure()) {
+        ss =
+            SecureConnection.getSecureServerSocket(
+                settings.getServerPortSecure(),
+                settings.getCACertInputStream(),
+                settings.getCertInputStream(),
+                settings.getPasswd());
+        acceptedServers = settings.getTrustedList().toArray(new String[0]);
+      } else {
+        ss = new ServerSocket(settings.getServerPort(), 3);
       }
-      if (connection == null) continue;
-      String text = receiveText(connection);
-      connection.close();
-      if (text != null) {
-        receivedText = text;
+      ss.setSoTimeout(2000);
+      while (running) {
+        SocketConnection connection = null;
         try {
-          Intent intent = new Intent(this, InvisibleActivity.class);
-          intent.setFlags(
-              Intent.FLAG_ACTIVITY_CLEAR_TASK
-                  | Intent.FLAG_ACTIVITY_NEW_TASK
-                  | Intent.FLAG_ACTIVITY_NO_ANIMATION
-                  | Intent.FLAG_ACTIVITY_NO_USER_ACTION);
-          InvisibleActivity.setIsServer(true);
-          if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-            ActivityOptions options = ActivityOptions.makeBasic();
-            options.setPendingIntentBackgroundActivityStartMode(
-                ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOWED);
-            startActivity(intent, options.toBundle());
+          Socket sock = ss.accept();
+          if (settings.getSecure()) {
+            connection = new SecureConnection((SSLSocket) sock, acceptedServers);
           } else {
-            startActivity(intent);
+            connection = new PlainConnection(sock);
           }
-        } catch (Exception ignored) {
+        } catch (SocketTimeoutException ignored) {
+        }
+        if (connection == null) continue;
+        String text = receiveText(connection);
+        connection.close();
+        if (text != null) {
+          receivedText = text;
+          try {
+            Intent intent = new Intent(this, InvisibleActivity.class);
+            intent.setFlags(
+                Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    | Intent.FLAG_ACTIVITY_NEW_TASK
+                    | Intent.FLAG_ACTIVITY_NO_ANIMATION
+                    | Intent.FLAG_ACTIVITY_NO_USER_ACTION);
+            InvisibleActivity.setIsServer(true);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+              ActivityOptions options = ActivityOptions.makeBasic();
+              options.setPendingIntentBackgroundActivityStartMode(
+                  ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOWED);
+              startActivity(intent, options.toBundle());
+            } else {
+              startActivity(intent);
+            }
+          } catch (Exception ignored) {
+          }
         }
       }
+    } finally {
+      if (ss != null) ss.close();
     }
   }
 
