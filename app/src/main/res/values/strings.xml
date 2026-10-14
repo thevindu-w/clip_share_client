@@ -125,6 +125,7 @@
     <string name="cancelled">Cancelled</string>
     <string name="unknown">unknown</string>
     <string name="invalid_name">Invalid server name</string>
+    <string name="scan_names">Fetch server names with scan</string>
     <plurals name="secs_left">
         <item quantity="one">%d sec left</item>
         <item quantity="other">%d secs left</item>

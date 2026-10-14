@@ -60,6 +60,7 @@ public class Settings implements Serializable {
   private boolean scanIPv6;
   private boolean scanTCP;
   private boolean autoScan;
+  private boolean scanNames;
   private boolean closeIfIdle;
   private int autoCloseDelay;
   private boolean saveServers;
@@ -89,6 +90,7 @@ public class Settings implements Serializable {
     this.scanIPv6 = false;
     this.scanTCP = false;
     this.autoScan = false;
+    this.scanNames = true;
     this.closeIfIdle = true;
     this.autoCloseDelay = 120;
     this.saveServers = true;
@@ -298,6 +300,12 @@ public class Settings implements Serializable {
     } catch (Exception ignored) {
     }
 
+    // Set scanNames
+    try {
+      settings.scanNames = extractBool(map, "scanNames");
+    } catch (Exception ignored) {
+    }
+
     // Set closeIfIdle
     try {
       settings.closeIfIdle = extractBool(map, "closeIfIdle");
@@ -388,6 +396,7 @@ public class Settings implements Serializable {
       map.put("scanIPv6", this.scanIPv6);
       map.put("scanTCP", this.scanTCP);
       map.put("autoScan", this.autoScan);
+      map.put("scanNames", this.scanNames);
       map.put("closeIfIdle", this.closeIfIdle);
       map.put("autoCloseDelay", this.autoCloseDelay);
       map.put(
@@ -436,6 +445,7 @@ public class Settings implements Serializable {
         INSTANCE.scanIPv6 = strSet.scanIPv6;
         INSTANCE.scanTCP = strSet.scanTCP;
         INSTANCE.autoScan = strSet.autoScan;
+        INSTANCE.scanNames = strSet.scanNames;
         INSTANCE.closeIfIdle = strSet.closeIfIdle;
         INSTANCE.autoCloseDelay = strSet.autoCloseDelay;
         INSTANCE.savedServersList.clear();
@@ -547,6 +557,10 @@ public class Settings implements Serializable {
 
   public boolean getAutoScan() {
     return autoScan;
+  }
+
+  public boolean getScanNames() {
+    return scanNames;
   }
 
   public boolean getCloseIfIdle() {
@@ -677,6 +691,10 @@ public class Settings implements Serializable {
 
   public void setAutoScan(boolean autoScan) {
     this.autoScan = autoScan;
+  }
+
+  public void setScanNames(boolean scanNames) {
+    this.scanNames = scanNames;
   }
 
   public void setCloseIfIdle(boolean closeIfIdle) {

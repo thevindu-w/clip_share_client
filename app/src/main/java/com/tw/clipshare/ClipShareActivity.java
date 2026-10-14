@@ -576,6 +576,7 @@ public class ClipShareActivity extends AppCompatActivity {
                         .map(addr -> new Host(addr.getHostAddress()))
                         .collect(Collectors.toList());
                 try {
+                  boolean scan = settings.getScanNames();
                   ExecutorService executor =
                       Executors.newFixedThreadPool(Math.min(addresses.size(), 8));
                   addresses.forEach(
@@ -584,7 +585,7 @@ public class ClipShareActivity extends AppCompatActivity {
                             () -> {
                               try {
                                 String name = settings.getServerName(host.address);
-                                if (name != null) {
+                                if (name != null || !scan) {
                                   host.name = name;
                                   return;
                                 }
