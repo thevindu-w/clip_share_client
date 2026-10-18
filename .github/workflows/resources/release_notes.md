@@ -7,5 +7,5 @@ There are 2 APK files included in the release assets for compatibility.
 
 Refer to the [README](https://github.com/thevindu-w/clip_share_client/#how-to-use) for usage information.<br>
 **Changes:**
-- Save friendly names with saved server addresses.
-- Show device IP address on UI.
+- Get and display server names with scan results.
+- Add a settings option to enable/disable this feature.
