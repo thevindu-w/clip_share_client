@@ -38,6 +38,9 @@ import com.tw.clipshare.netConnection.PlainConnection;
 import com.tw.clipshare.netConnection.SecureConnection;
 import com.tw.clipshare.netConnection.SocketConnection;
 import com.tw.clipshare.platformUtils.AndroidUtils;
+import com.tw.clipshare.platformUtils.FSUtils;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -47,6 +50,7 @@ import javax.net.ssl.SSLSocket;
 
 public class ServerService extends Service {
   private static volatile boolean running = false;
+  private static final int BUF_SZ = 65536;
   private static Thread serverThread;
   private static String receivedText;
 
@@ -91,51 +95,121 @@ public class ServerService extends Service {
     return START_REDELIVER_INTENT;
   }
 
-  private String receiveText(SocketConnection connection) {
-    final int min_proto = 1;
-    final int max_proto = 4;
-    byte[] buf = new byte[1];
-    if (connection.receive(buf)) return null;
-    byte proto = buf[0];
-    if (proto < min_proto || proto > max_proto) {
-      buf[0] = proto < min_proto ? PROTOCOL_OBSOLETE : PROTOCOL_UNKNOWN;
-      connection.send(buf);
-      if (proto > max_proto) {
-        buf[0] = max_proto;
-        connection.send(buf);
-        if (connection.receive(buf)) return null;
-        proto = buf[0];
-      }
-    } else {
-      buf[0] = PROTOCOL_SUPPORTED;
-      if (connection.send(buf)) return null;
-    }
-    if (proto < min_proto || proto > max_proto) return null;
-
-    if (connection.receive(buf)) return null;
-    if (buf[0] != 2) {
-      buf[0] = 4;
-      connection.send(buf);
-      return null;
-    }
-    buf[0] = 1;
-    if (connection.send(buf)) return null;
-
-    buf = new byte[8];
-    if (connection.receive(buf)) return null;
+  private long readSize(SocketConnection connection) throws IOException {
+    byte[] buf = new byte[8];
+    if (connection.receive(buf)) throw new IOException();
     long size = 0;
     for (byte b : buf) {
       size = (size << 8) | (b & 0xFF);
     }
-    if (size <= 0 || size >= 65536) return null;
+    return size;
+  }
+
+  private String readString(SocketConnection connection, int maxLen) throws IOException {
+    long size = readSize(connection);
+    if (size <= 0 || size >= maxLen) throw new IOException();
     int len = (int) size;
-    buf = new byte[len];
-    if (connection.receive(buf)) return null;
+    byte[] buf = new byte[len];
+    if (connection.receive(buf)) throw new IOException();
+    return new String(buf, StandardCharsets.UTF_8);
+  }
+
+  private void receiveText(SocketConnection connection, byte proto) throws IOException {
+    String text = readString(connection, 65536);
     if (proto >= 4) {
       byte[] ack = {1};
       connection.send(ack);
     }
-    return new String(buf, StandardCharsets.UTF_8);
+    receivedText = text;
+    connection.close();
+
+    try {
+      Intent intent = new Intent(this, InvisibleActivity.class);
+      intent.setFlags(
+          Intent.FLAG_ACTIVITY_CLEAR_TASK
+              | Intent.FLAG_ACTIVITY_NEW_TASK
+              | Intent.FLAG_ACTIVITY_NO_ANIMATION
+              | Intent.FLAG_ACTIVITY_NO_USER_ACTION);
+      InvisibleActivity.setIsServer(true);
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+        ActivityOptions options = ActivityOptions.makeBasic();
+        options.setPendingIntentBackgroundActivityStartMode(
+            ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOWED);
+        startActivity(intent, options.toBundle());
+      } else {
+        startActivity(intent);
+      }
+    } catch (Exception ignored) {
+    }
+  }
+
+  private void receiveFiles(SocketConnection connection, byte proto) throws IOException {
+    long fileCnt = readSize(connection);
+    if (fileCnt <= 0 || fileCnt > 4096) return;
+    FSUtils utils = new FSUtils(getApplicationContext());
+    for (long fileNum = 0; fileNum < fileCnt && running; fileNum++) {
+      String fileName = readString(connection, 1024);
+      if (fileName.isEmpty()) return;
+      long fileSize = readSize(connection);
+      if (fileSize < 0) {
+        if (utils.createDirectory(fileName)) continue;
+        return;
+      } else if (fileSize > 1073741824L) return;
+      OutputStream out = utils.getFileOutStream(fileName);
+      if (out == null) return;
+      byte[] buf = new byte[BUF_SZ];
+      while (fileSize > 0 && running) {
+        int readSz = (int) Math.min(fileSize, BUF_SZ);
+        if (connection.receive(buf, 0, readSz)) return;
+        fileSize -= readSz;
+        out.write(buf, 0, readSz);
+      }
+      out.close();
+    }
+    if (proto >= 4) {
+      byte[] ack = {1};
+      connection.send(ack);
+    }
+    connection.close();
+    utils.finish();
+  }
+
+  private void handleConnection(SocketConnection connection) {
+    try {
+      final int min_proto = 3;
+      final int max_proto = 4;
+      byte[] buf = new byte[1];
+      if (connection.receive(buf)) return;
+      byte proto = buf[0];
+      if (proto < min_proto || proto > max_proto) {
+        buf[0] = proto < min_proto ? PROTOCOL_OBSOLETE : PROTOCOL_UNKNOWN;
+        connection.send(buf);
+        if (proto > max_proto) {
+          buf[0] = max_proto;
+          connection.send(buf);
+          if (connection.receive(buf)) return;
+          proto = buf[0];
+        }
+      } else {
+        buf[0] = PROTOCOL_SUPPORTED;
+        if (connection.send(buf)) return;
+      }
+      if (proto < min_proto || proto > max_proto) return;
+
+      if (connection.receive(buf)) return;
+      byte method = buf[0];
+      if (method != 2 && method != 4) {
+        buf[0] = 4;
+        connection.send(buf);
+        return;
+      }
+      buf[0] = 1;
+      if (connection.send(buf)) return;
+
+      if (method == 2) receiveText(connection, proto);
+      else if (method == 4) receiveFiles(connection, proto);
+    } catch (IOException | RuntimeException ignored) {
+    }
   }
 
   public static void doUIOperation(AndroidUtils utils) {
@@ -225,29 +299,8 @@ public class ServerService extends Service {
         } catch (SocketTimeoutException ignored) {
         }
         if (connection == null) continue;
-        String text = receiveText(connection);
+        handleConnection(connection);
         connection.close();
-        if (text != null) {
-          receivedText = text;
-          try {
-            Intent intent = new Intent(this, InvisibleActivity.class);
-            intent.setFlags(
-                Intent.FLAG_ACTIVITY_CLEAR_TASK
-                    | Intent.FLAG_ACTIVITY_NEW_TASK
-                    | Intent.FLAG_ACTIVITY_NO_ANIMATION
-                    | Intent.FLAG_ACTIVITY_NO_USER_ACTION);
-            InvisibleActivity.setIsServer(true);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-              ActivityOptions options = ActivityOptions.makeBasic();
-              options.setPendingIntentBackgroundActivityStartMode(
-                  ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOWED);
-              startActivity(intent, options.toBundle());
-            } else {
-              startActivity(intent);
-            }
-          } catch (Exception ignored) {
-          }
-        }
       }
     } finally {
       if (ss != null) ss.close();

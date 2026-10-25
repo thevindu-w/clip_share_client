@@ -178,7 +178,7 @@ public class FSUtils extends AndroidUtils {
       scanMediaFile(newFile.getAbsolutePath());
       if (newFile.isFile()) files.add(newFile);
     }
-    if (status) dataContainer.setData(files);
+    if (status && (dataContainer != null)) dataContainer.setData(files);
     status &= dataDir.delete();
     return status;
   }
