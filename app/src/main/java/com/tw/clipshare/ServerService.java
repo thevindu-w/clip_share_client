@@ -79,6 +79,21 @@ public class ServerService extends Service {
               .setContentTitle(getApplicationContext().getString(R.string.app_name))
               .setSmallIcon(R.drawable.clip_share_icon_mono)
               .addAction(0, getString(R.string.stop), pendingIntentStop);
+      try {
+        Enumeration<NetworkInterface> netIFEnum = NetworkInterface.getNetworkInterfaces();
+        List<NetworkInterface> netIFList = Collections.list(netIFEnum);
+        List<String> addresses = new ArrayList<>(netIFList.size());
+        for (NetworkInterface netIF : netIFList) {
+          if (netIF == null || netIF.isLoopback() || !netIF.isUp() || netIF.isVirtual()) continue;
+          List<InterfaceAddress> addrs = netIF.getInterfaceAddresses();
+          for (InterfaceAddress intAddr : addrs) {
+            InetAddress myAddr = intAddr.getAddress();
+            if (myAddr instanceof Inet4Address) addresses.add(myAddr.getHostAddress());
+          }
+        }
+        if (!addresses.isEmpty()) builder.setContentText(String.join(", ", addresses));
+      } catch (Exception ignored) {
+      }
       running = true;
       startForeground(id, builder.build());
       serverThread =
