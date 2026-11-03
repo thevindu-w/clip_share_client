@@ -46,13 +46,15 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
 import javax.net.ssl.SSLSocket;
 
 public class ServerService extends Service {
   private static volatile boolean running = false;
   private static final int BUF_SZ = 65536;
   private static Thread serverThread;
-  private static String receivedText;
+  private static final LinkedBlockingQueue<PendingOperation> pendingOperations =
+      new LinkedBlockingQueue<>(8);
 
   @Nullable
   @Override
@@ -120,6 +122,15 @@ public class ServerService extends Service {
     return size;
   }
 
+  private void sendSize(SocketConnection connection, long size) throws IOException {
+    byte[] buf = new byte[8];
+    for (int i = 7; size > 0; i--) {
+      buf[i] = (byte) (size & 0xFF);
+      size >>= 8;
+    }
+    if (connection.send(buf)) throw new IOException();
+  }
+
   private String readString(SocketConnection connection, int maxLen) throws IOException {
     long size = readSize(connection);
     if (size <= 0 || size >= maxLen) throw new IOException();
@@ -129,16 +140,68 @@ public class ServerService extends Service {
     return new String(buf, StandardCharsets.UTF_8);
   }
 
+  private void sendText(SocketConnection connection, byte proto) throws IOException {
+    List<String> container = new LinkedList<>();
+    try {
+      pendingOperations.put(
+          (AndroidUtils utils) -> {
+            String text = utils.getClipboardText();
+            synchronized (container) {
+              container.add(text);
+              container.notifyAll();
+            }
+          });
+      Intent intent = new Intent(this, InvisibleActivity.class);
+      intent.setFlags(
+          Intent.FLAG_ACTIVITY_CLEAR_TASK
+              | Intent.FLAG_ACTIVITY_NEW_TASK
+              | Intent.FLAG_ACTIVITY_NO_ANIMATION
+              | Intent.FLAG_ACTIVITY_NO_USER_ACTION);
+      InvisibleActivity.setIsServer(true);
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+        ActivityOptions options = ActivityOptions.makeBasic();
+        options.setPendingIntentBackgroundActivityStartMode(
+            ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOWED);
+        startActivity(intent, options.toBundle());
+      } else {
+        startActivity(intent);
+      }
+
+      String text = null;
+      synchronized (container) {
+        container.wait(2000);
+        if (!container.isEmpty()) text = container.remove(0);
+      }
+      if (text == null) {
+        byte[] method_ack = {2};
+        connection.send(method_ack);
+        return;
+      }
+      byte[] method_ack = {1};
+      if (connection.send(method_ack)) return;
+      byte[] buf = text.getBytes(StandardCharsets.UTF_8);
+      sendSize(connection, buf.length);
+      if (connection.send(buf)) return;
+      if (proto >= 4) {
+        byte[] ack = new byte[1];
+        connection.receive(ack);
+      }
+    } catch (Exception ignored) {
+    }
+  }
+
   private void receiveText(SocketConnection connection, byte proto) throws IOException {
+    byte[] method_ack = {1};
+    if (connection.send(method_ack)) return;
     String text = readString(connection, 65536);
     if (proto >= 4) {
       byte[] ack = {1};
       connection.send(ack);
     }
-    receivedText = text;
     connection.close();
 
     try {
+      pendingOperations.put((AndroidUtils utils) -> utils.setClipboardText(text));
       Intent intent = new Intent(this, InvisibleActivity.class);
       intent.setFlags(
           Intent.FLAG_ACTIVITY_CLEAR_TASK
@@ -159,6 +222,8 @@ public class ServerService extends Service {
   }
 
   private void receiveFiles(SocketConnection connection, byte proto) throws IOException {
+    byte[] method_ack = {1};
+    if (connection.send(method_ack)) return;
     long fileCnt = readSize(connection);
     if (fileCnt <= 0 || fileCnt > 4096) return;
     FSUtils utils = new FSUtils(getApplicationContext());
@@ -213,24 +278,26 @@ public class ServerService extends Service {
 
       if (connection.receive(buf)) return;
       byte method = buf[0];
-      if (method != 2 && method != 4) {
+      if (method == 1) sendText(connection, proto);
+      else if (method == 2) receiveText(connection, proto);
+      else if (method == 4) receiveFiles(connection, proto);
+      else {
         buf[0] = 4;
         connection.send(buf);
-        return;
       }
-      buf[0] = 1;
-      if (connection.send(buf)) return;
-
-      if (method == 2) receiveText(connection, proto);
-      else if (method == 4) receiveFiles(connection, proto);
+      connection.close();
     } catch (IOException | RuntimeException ignored) {
     }
   }
 
   public static void doUIOperation(AndroidUtils utils) {
-    if (receivedText == null) return;
-    utils.setClipboardText(receivedText);
-    receivedText = null;
+    while (!pendingOperations.isEmpty()) {
+      try {
+        PendingOperation operation = pendingOperations.take();
+        operation.execute(utils);
+      } catch (Exception ignored) {
+      }
+    }
   }
 
   private static ExecutorService startUDPServer() throws SocketException, InterruptedException {
@@ -330,6 +397,10 @@ public class ServerService extends Service {
     }
     if (udpService != null) udpService.shutdownNow();
     stopForeground(STOP_FOREGROUND_REMOVE);
+  }
+
+  private interface PendingOperation {
+    void execute(AndroidUtils utils);
   }
 
   public static class EventReceiver extends BroadcastReceiver {
