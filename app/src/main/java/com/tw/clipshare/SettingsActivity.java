@@ -91,6 +91,7 @@ public class SettingsActivity extends AppCompatActivity {
   private LinearLayout layoutAutoCloseDelay;
   private SwitchCompat saveAddressesSwitch;
   private SwitchCompat udpServerSwitch;
+  private SwitchCompat serverGetSwitch;
   private EditText editServerPort;
   private EditText editServerPortSecure;
   private EditText editServerPortUDP;
@@ -279,6 +280,7 @@ public class SettingsActivity extends AppCompatActivity {
       addRowToSavedServersList(false, server);
     }
     udpServerSwitch.setChecked(settings.getUDPServerEnabled());
+    serverGetSwitch.setChecked(settings.getServerGetEnabled());
     editServerPort.setText(String.valueOf(settings.getServerPort()));
     editServerPortSecure.setText(String.valueOf(settings.getServerPortSecure()));
     editServerPortUDP.setText(String.valueOf(settings.getServerPortUDP()));
@@ -572,6 +574,7 @@ public class SettingsActivity extends AppCompatActivity {
     this.layoutAutoCloseDelay = findViewById(R.id.layoutAutoCloseDelay);
     this.saveAddressesSwitch = findViewById(R.id.saveAddressesSwitch);
     this.udpServerSwitch = findViewById(R.id.udpServerSwitch);
+    this.serverGetSwitch = findViewById(R.id.serverGetSwitch);
     this.editServerPort = findViewById(R.id.editServerPort);
     this.editServerPortSecure = findViewById(R.id.editServerPortSecure);
     this.editServerPortUDP = findViewById(R.id.editServerPortUDP);
@@ -775,6 +778,10 @@ public class SettingsActivity extends AppCompatActivity {
     udpServerSwitch.setOnClickListener(
         view -> settings.setUDPServerEnabled(udpServerSwitch.isChecked()));
     udpServerSwitch.setChecked(settings.getUDPServerEnabled());
+
+    serverGetSwitch.setOnClickListener(
+        view -> settings.setServerGetEnabled(serverGetSwitch.isChecked()));
+    serverGetSwitch.setChecked(settings.getServerGetEnabled());
 
     editServerPort.setOnFocusChangeListener(portChangeListener);
     editServerPortSecure.setOnFocusChangeListener(portChangeListener);

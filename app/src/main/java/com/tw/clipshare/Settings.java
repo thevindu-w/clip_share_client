@@ -65,6 +65,7 @@ public class Settings implements Serializable {
   private int autoCloseDelay;
   private boolean saveServers;
   private boolean udpServerEnabled;
+  private boolean serverGetEnabled;
   private int serverPort;
   private int serverPortSecure;
   private int serverPortUDP;
@@ -95,6 +96,7 @@ public class Settings implements Serializable {
     this.autoCloseDelay = 120;
     this.saveServers = true;
     this.udpServerEnabled = true;
+    this.serverGetEnabled = false;
     this.serverPort = 4337;
     this.serverPortSecure = 4338;
     this.serverPortUDP = 4337;
@@ -334,6 +336,12 @@ public class Settings implements Serializable {
     } catch (Exception ignored) {
     }
 
+    // Set serverGetEnabled
+    try {
+      settings.serverGetEnabled = extractBool(map, "serverGetEnabled");
+    } catch (Exception ignored) {
+    }
+
     // Set serverPort
     try {
       settings.serverPort = extractPort(map, "serverPort");
@@ -404,6 +412,7 @@ public class Settings implements Serializable {
           this.savedServersList.stream().map(Host::toMap).collect(Collectors.toList()));
       map.put("saveServers", this.saveServers);
       map.put("udpServerEnabled", this.udpServerEnabled);
+      map.put("serverGetEnabled", this.serverGetEnabled);
       map.put("serverPort", this.serverPort);
       map.put("serverPortSecure", this.serverPortSecure);
       map.put("serverPortUDP", this.serverPortUDP);
@@ -455,6 +464,7 @@ public class Settings implements Serializable {
         INSTANCE.serverNameMap.putAll(strSet.serverNameMap);
         INSTANCE.saveServers = strSet.saveServers;
         INSTANCE.udpServerEnabled = strSet.udpServerEnabled;
+        INSTANCE.serverGetEnabled = strSet.serverGetEnabled;
         INSTANCE.serverPort = strSet.serverPort;
         INSTANCE.serverPortSecure = strSet.serverPortSecure;
         INSTANCE.serverPortUDP = strSet.serverPortUDP;
@@ -581,6 +591,10 @@ public class Settings implements Serializable {
 
   public boolean getUDPServerEnabled() {
     return udpServerEnabled;
+  }
+
+  public boolean getServerGetEnabled() {
+    return serverGetEnabled;
   }
 
   public int getServerPort() {
@@ -711,6 +725,10 @@ public class Settings implements Serializable {
 
   public void setUDPServerEnabled(boolean udpServerEnabled) {
     this.udpServerEnabled = udpServerEnabled;
+  }
+
+  public void setServerGetEnabled(boolean serverGetEnabled) {
+    this.serverGetEnabled = serverGetEnabled;
   }
 
   public void setServerPort(int port) {

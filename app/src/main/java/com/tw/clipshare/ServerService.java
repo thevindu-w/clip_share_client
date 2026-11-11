@@ -55,6 +55,7 @@ public class ServerService extends Service {
   private static Thread serverThread;
   private static final LinkedBlockingQueue<PendingOperation> pendingOperations =
       new LinkedBlockingQueue<>(8);
+  private Settings settings;
 
   @Nullable
   @Override
@@ -98,6 +99,7 @@ public class ServerService extends Service {
       }
       running = true;
       startForeground(id, builder.build());
+      this.settings = Settings.getInstance();
       serverThread =
           new Thread(
               () -> {
@@ -278,7 +280,7 @@ public class ServerService extends Service {
 
       if (connection.receive(buf)) return;
       byte method = buf[0];
-      if (method == 1) sendText(connection, proto);
+      if (method == 1 && settings.getServerGetEnabled()) sendText(connection, proto);
       else if (method == 2) receiveText(connection, proto);
       else if (method == 4) receiveFiles(connection, proto);
       else {
