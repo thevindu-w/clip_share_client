@@ -62,8 +62,8 @@ public class SecureConnection extends SocketConnection {
       throws IOException, GeneralSecurityException {
     SSLContext ctx = getCtxInstance(caCertInput, clientCertStoreInput, certStorePassword);
     SSLSocketFactory sslsocketfactory = ctx.getSocketFactory();
-    SSLSocket sslsocket = (SSLSocket) sslsocketfactory.createSocket(serverAddress, port);
-    SSLSession sslSession = sslsocket.getSession();
+    SSLSocket sslSocket = (SSLSocket) sslsocketfactory.createSocket(serverAddress, port);
+    SSLSession sslSession = sslSocket.getSession();
     X509Certificate serverCertificate = (X509Certificate) sslSession.getPeerCertificates()[0];
     boolean accepted = false;
     try {
@@ -81,13 +81,15 @@ public class SecureConnection extends SocketConnection {
     if (!accepted) {
       throw new SecurityException("Untrusted Server");
     }
-    this.socket = sslsocket;
+    sslSocket.setSoTimeout(10000);
+    this.socket = sslSocket;
     this.inStream = this.socket.getInputStream();
     this.outStream = this.socket.getOutputStream();
   }
 
   public SecureConnection(SSLSocket sslSocket, String[] acceptedCNs)
       throws IOException, SecurityException {
+    sslSocket.setSoTimeout(10000);
     this.socket = sslSocket;
     boolean accepted = false;
     try {

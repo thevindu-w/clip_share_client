@@ -904,7 +904,10 @@ public class SettingsActivity extends AppCompatActivity {
 
     Button startServerBtn = findViewById(R.id.btnStartServer);
     startServerBtn.setOnClickListener(
-        view -> requestService(serverOverlayLauncher, ServerService.class, true));
+        view -> {
+          ServerService.stopServer();
+          requestService(serverOverlayLauncher, ServerService.class, true);
+        });
   }
 
   private void requestService(

@@ -117,6 +117,10 @@ public abstract class SocketConnection {
     return this.receive(buffer, 0, buffer.length);
   }
 
+  public void setSoTimeout(int timeout) throws SocketException {
+    if (this.socket != null) this.socket.setSoTimeout(timeout);
+  }
+
   public void close() {
     synchronized (this) {
       if (this.closed) return;

@@ -114,6 +114,11 @@ public class ServerService extends Service {
     return START_REDELIVER_INTENT;
   }
 
+  public static void stopServer() {
+    running = false;
+    if (serverThread != null) serverThread.interrupt();
+  }
+
   private long readSize(SocketConnection connection) throws IOException {
     byte[] buf = new byte[8];
     if (connection.receive(buf)) throw new IOException();
@@ -142,7 +147,8 @@ public class ServerService extends Service {
     return new String(buf, StandardCharsets.UTF_8);
   }
 
-  private void sendText(SocketConnection connection, byte proto) throws IOException {
+  private void sendText(SocketConnection connection, byte proto)
+      throws IOException, InterruptedException {
     List<String> container = new LinkedList<>();
     try {
       pendingOperations.put(
@@ -174,6 +180,7 @@ public class ServerService extends Service {
         container.wait(2000);
         if (!container.isEmpty()) text = container.remove(0);
       }
+      if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
       if (text == null) {
         byte[] method_ack = {2};
         connection.send(method_ack);
@@ -188,11 +195,12 @@ public class ServerService extends Service {
         byte[] ack = new byte[1];
         connection.receive(ack);
       }
-    } catch (Exception ignored) {
+    } catch (IOException | RuntimeException ignored) {
     }
   }
 
-  private void receiveText(SocketConnection connection, byte proto) throws IOException {
+  private void receiveText(SocketConnection connection, byte proto)
+      throws IOException, InterruptedException {
     byte[] method_ack = {1};
     if (connection.send(method_ack)) return;
     String text = readString(connection, 65536);
@@ -211,6 +219,7 @@ public class ServerService extends Service {
               | Intent.FLAG_ACTIVITY_NO_ANIMATION
               | Intent.FLAG_ACTIVITY_NO_USER_ACTION);
       InvisibleActivity.setIsServer(true);
+      if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
         ActivityOptions options = ActivityOptions.makeBasic();
         options.setPendingIntentBackgroundActivityStartMode(
@@ -219,17 +228,19 @@ public class ServerService extends Service {
       } else {
         startActivity(intent);
       }
-    } catch (Exception ignored) {
+    } catch (RuntimeException ignored) {
     }
   }
 
-  private void receiveFiles(SocketConnection connection, byte proto) throws IOException {
+  private void receiveFiles(SocketConnection connection, byte proto)
+      throws IOException, InterruptedException {
     byte[] method_ack = {1};
     if (connection.send(method_ack)) return;
     long fileCnt = readSize(connection);
     if (fileCnt <= 0 || fileCnt > 4096) return;
     FSUtils utils = new FSUtils(getApplicationContext());
     for (long fileNum = 0; fileNum < fileCnt && running; fileNum++) {
+      if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
       String fileName = readString(connection, 1024);
       if (fileName.isEmpty()) return;
       long fileSize = readSize(connection);
@@ -241,6 +252,10 @@ public class ServerService extends Service {
       if (out == null) return;
       byte[] buf = new byte[BUF_SZ];
       while (fileSize > 0 && running) {
+        if (Thread.currentThread().isInterrupted()) {
+          out.close();
+          throw new InterruptedException();
+        }
         int readSz = (int) Math.min(fileSize, BUF_SZ);
         if (connection.receive(buf, 0, readSz)) return;
         fileSize -= readSz;
@@ -256,7 +271,7 @@ public class ServerService extends Service {
     utils.finish();
   }
 
-  private void handleConnection(SocketConnection connection) {
+  private void handleConnection(SocketConnection connection) throws InterruptedException {
     try {
       final int min_proto = 3;
       final int max_proto = 4;
@@ -277,7 +292,7 @@ public class ServerService extends Service {
         if (connection.send(buf)) return;
       }
       if (proto < min_proto || proto > max_proto) return;
-
+      if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
       if (connection.receive(buf)) return;
       byte method = buf[0];
       if (method == 1 && settings.getServerGetEnabled()) sendText(connection, proto);
@@ -287,8 +302,9 @@ public class ServerService extends Service {
         buf[0] = 4;
         connection.send(buf);
       }
-      connection.close();
     } catch (IOException | RuntimeException ignored) {
+    } finally {
+      connection.close();
     }
   }
 
@@ -371,7 +387,7 @@ public class ServerService extends Service {
         ss = new ServerSocket(settings.getServerPort(), 3);
       }
       ss.setSoTimeout(2000);
-      while (running) {
+      while (running && !Thread.currentThread().isInterrupted()) {
         SocketConnection connection = null;
         try {
           Socket sock = ss.accept();
@@ -380,9 +396,11 @@ public class ServerService extends Service {
           } else {
             connection = new PlainConnection(sock);
           }
-        } catch (SocketTimeoutException ignored) {
+          connection.setSoTimeout(5000);
+        } catch (SocketTimeoutException | SocketException ignored) {
+          if (connection != null) connection.close();
+          continue;
         }
-        if (connection == null) continue;
         handleConnection(connection);
         connection.close();
       }
