@@ -7,5 +7,7 @@ There are 2 APK files included in the release assets for compatibility.
 
 Refer to the [README](https://github.com/thevindu-w/clip_share_client/#how-to-use) for usage information.<br>
 **Changes:**
-- Get and display server names with scan results.
-- Add a settings option to enable/disable this feature.
+- Implement Send Files method in server mode.
+- Implement Get Text method in server mode.
+- Add a settings option to enable Get Text method in server mode.
+- Other improvements.
